@@ -524,6 +524,294 @@
       gap: 11px;
     }
 
+    .category-open-btn {
+      width: 100%;
+      min-height: 68px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      text-align: left;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+      transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+
+    .category-open-btn:active {
+      transform: scale(0.98);
+    }
+
+    .category-open-btn small {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .category-open-btn strong {
+      display: block;
+      font-size: 1.22rem;
+      line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+
+    .category-open-btn span:last-child {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 9px 12px;
+      color: #071124;
+      background: var(--cyan);
+      font-size: 0.84rem;
+      font-weight: 950;
+    }
+
+    .category-window {
+      min-height: min(760px, calc(100svh - 36px));
+      padding: 0;
+      overflow: hidden;
+      background: #161719;
+    }
+
+    .category-shell {
+      display: grid;
+      gap: 22px;
+      padding: clamp(20px, 5vw, 30px);
+      position: relative;
+      z-index: 1;
+    }
+
+    .category-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .category-title-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .category-back {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      background: transparent;
+      cursor: pointer;
+      font-size: 1.7rem;
+      line-height: 1;
+    }
+
+    .category-window h2 {
+      font-size: clamp(2rem, 8vw, 2.85rem);
+      line-height: 1;
+    }
+
+    .category-count {
+      color: #f8fbff;
+      font-size: 1.35rem;
+      font-weight: 950;
+    }
+
+    .category-done {
+      border: 0;
+      color: #6f92ff;
+      background: transparent;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 850;
+    }
+
+    .category-featured {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 138px;
+      gap: 14px;
+      margin-inline: calc(clamp(20px, 5vw, 30px) * -1);
+      padding: 2px clamp(20px, 5vw, 30px) 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .category-featured::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-tile {
+      min-height: 132px;
+      border: 7px solid rgba(255, 255, 255, 0.08);
+      border-radius: 30px;
+      padding: 16px 12px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 10px;
+      color: #fff;
+      background: var(--category-color);
+      cursor: pointer;
+      box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34);
+      position: relative;
+      text-align: center;
+    }
+
+    .category-tile.active::after {
+      content: "x";
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: #171717;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .category-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 1.55rem;
+      font-weight: 950;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .category-tile span:last-child {
+      font-size: 0.96rem;
+      font-weight: 950;
+      line-height: 1.05;
+    }
+
+    .category-filter {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      gap: 12px;
+      margin-inline: calc(clamp(20px, 5vw, 30px) * -1);
+      padding-inline: clamp(20px, 5vw, 30px);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .category-filter::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-pill {
+      min-height: 50px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 20px;
+      color: #f8fbff;
+      background: #343437;
+      cursor: pointer;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .category-pill.active {
+      color: #171717;
+      background: #fff;
+    }
+
+    .category-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .category-row {
+      width: 100%;
+      min-height: 100px;
+      border: 0;
+      border-radius: 28px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 34px;
+      align-items: center;
+      gap: 16px;
+      color: #f8fbff;
+      background: #343437;
+      cursor: pointer;
+      text-align: left;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    }
+
+    .category-row.active {
+      outline: 2px solid rgba(255, 255, 255, 0.82);
+      background: #3d3d42;
+    }
+
+    .category-row-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--category-color);
+      font-size: 1.35rem;
+      font-weight: 950;
+    }
+
+    .category-row-copy {
+      min-width: 0;
+    }
+
+    .category-row-copy strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 1.26rem;
+      line-height: 1.05;
+      overflow-wrap: anywhere;
+    }
+
+    .category-row-copy span {
+      display: block;
+      color: #c6c7ce;
+      font-size: 0.95rem;
+      line-height: 1.35;
+    }
+
+    .category-check {
+      justify-self: end;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: #171717;
+      background: #fff;
+      font-size: 0.86rem;
+      font-weight: 950;
+      opacity: 0;
+    }
+
+    .category-row.active .category-check {
+      opacity: 1;
+    }
+
     .custom-word-wrap {
       display: none;
     }
@@ -2157,7 +2445,13 @@
             <p class="mode-summary" id="modeSummary"></p>
             <div class="section-block" id="categorySection">
               <h3 id="categoryTitle">Locations</h3>
-              <div class="option-grid" id="categoryGrid"></div>
+              <button class="category-open-btn" id="openCategoryButton" type="button">
+                <span>
+                  <small>Selected</small>
+                  <strong id="selectedCategoryName">Classic</strong>
+                </span>
+                <span>Choose</span>
+              </button>
             </div>
             <div class="custom-word-wrap" id="customWordWrap">
               <input id="customWordInput" type="text" maxlength="32" autocomplete="off" placeholder="Enter custom location" />
@@ -2191,6 +2485,29 @@
               <button class="btn" id="assignButton" type="button">Shuffle roles</button>
               <button class="btn secondary" type="button" data-go="players">Back</button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Category picker -->
+      <section class="screen" data-screen="categories">
+        <div class="card category-window">
+          <div class="category-shell">
+            <div class="category-topbar">
+              <div class="category-title-row">
+                <button class="category-back" id="categoryBackButton" type="button" aria-label="Back to setup">&lt;</button>
+                <h2>Categories</h2>
+              </div>
+              <button class="category-done" id="categoryDoneButton" type="button">Done</button>
+            </div>
+            <div class="category-count" id="categoryCount">0 Categories</div>
+            <div class="category-featured" id="categoryFeatured" aria-label="Featured categories"></div>
+            <div class="category-filter" id="categoryFilter" aria-label="Category filters">
+              <button class="category-pill" type="button" data-filter="custom">Custom</button>
+              <button class="category-pill active" type="button" data-filter="popular">Popular</button>
+              <button class="category-pill" type="button" data-filter="general">General</button>
+            </div>
+            <div class="category-list" id="categoryGrid" aria-label="Choose category"></div>
           </div>
         </div>
       </section>
@@ -2676,6 +2993,7 @@
       players: loadSavedPlayers(),
       gameId: "werewolf",
       category: "Classic",
+      categories: ["Classic"],
       secretWord: "",
       imposters: 1,
       roles: [],
@@ -2683,6 +3001,7 @@
       currentRevealIndex: 0,
       selectedVotes: new Set(),
       imposterHints: false,
+      categoryFilter: "popular",
       timerTotal: 180,
       timerRemaining: 180,
       timerMinutes: 3,
@@ -2707,6 +3026,13 @@
     const categorySection = document.getElementById("categorySection");
     const categoryTitle = document.getElementById("categoryTitle");
     const categoryGrid = document.getElementById("categoryGrid");
+    const selectedCategoryName = document.getElementById("selectedCategoryName");
+    const openCategoryButton = document.getElementById("openCategoryButton");
+    const categoryBackButton = document.getElementById("categoryBackButton");
+    const categoryDoneButton = document.getElementById("categoryDoneButton");
+    const categoryCount = document.getElementById("categoryCount");
+    const categoryFeatured = document.getElementById("categoryFeatured");
+    const categoryFilter = document.getElementById("categoryFilter");
     const customWordWrap = document.getElementById("customWordWrap");
     const customWordInput = document.getElementById("customWordInput");
     const customHintWrap = document.getElementById("customHintWrap");
@@ -3040,6 +3366,96 @@
       return count === 1 ? `1 ${mode.threatSingular}` : `${count} ${mode.threatPlural}`;
     }
 
+    function getCategoryBanks(mode) {
+      return mode.wordBanks || mode.criteriaBanks || null;
+    }
+
+    function getCategoryOptions(mode) {
+      const banks = getCategoryBanks(mode);
+      if (!banks) return [];
+
+      const categories = Object.keys(banks);
+      if (mode.hasSecret) categories.push("Custom");
+      return categories;
+    }
+
+    function selectedCategories(mode = currentMode()) {
+      const options = getCategoryOptions(mode);
+      const selected = state.categories.filter((category) => options.includes(category));
+
+      if (selected.includes("Custom")) return ["Custom"];
+      if (selected.length) return selected;
+      if (mode.defaultCategory) return [mode.defaultCategory];
+      return [];
+    }
+
+    function syncPrimaryCategory(mode = currentMode()) {
+      const selected = selectedCategories(mode);
+      state.categories = selected;
+      state.category = selected[0] || mode.defaultCategory || "";
+    }
+
+    function isCategorySelected(category) {
+      return selectedCategories().includes(category);
+    }
+
+    function selectedCategoryLabel(mode = currentMode()) {
+      const selected = selectedCategories(mode);
+      if (!selected.length) return "Choose categories";
+      if (selected.length === 1) return selected[0];
+      return `${selected[0]} + ${selected.length - 1}`;
+    }
+
+    function categoryInitials(category) {
+      if (category === "Custom") return "CU";
+      return category
+        .split(/\s+/)
+        .map((word) => word.charAt(0))
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+    }
+
+    function categoryColor(category, index) {
+      const colors = ["#3478f6", "#9b4de0", "#f4ad3d", "#e94c48", "#38a169", "#4a9aa8", "#c45588", "#6c63ff"];
+      if (category === "Custom") return "#343437";
+      return colors[index % colors.length];
+    }
+
+    function describeCategory(category, mode) {
+      if (category === "Custom") return mode.hasSecret ? "Type your own secret word for this round." : "Create a custom round.";
+
+      const descriptions = {
+        Food: "Snacks, meals, desserts and things people crave.",
+        Places: "Everyday locations and familiar destinations.",
+        Objects: "Common things you can hold, use or spot nearby.",
+        Movies: "Blockbusters, animated hits and big-screen clues.",
+        Bible: "People, places and stories from the Bible.",
+        "Filipino Party": "Party food, games and Filipino gathering staples.",
+        Classic: "The core locations for a balanced spy round.",
+        Everyday: "Simple places from normal daily life.",
+        Travel: "Trips, transport and vacation locations.",
+        Party: "Loud places, games, events and group hangouts.",
+        Mixed: "A balanced mix of word-bomb letter prompts.",
+        Easy: "Shorter, friendlier letter prompts.",
+        Hard: "Tougher letter prompts for fast thinkers."
+      };
+
+      return descriptions[category] || "A focused set of prompts for this game.";
+    }
+
+    function filteredCategoryOptions(options) {
+      if (state.categoryFilter === "custom") return options.filter((category) => category === "Custom");
+
+      const presets = options.filter((category) => category !== "Custom");
+      if (state.categoryFilter === "general") {
+        const general = presets.slice(4);
+        return general.length ? general : presets;
+      }
+
+      return presets.slice(0, Math.min(4, presets.length));
+    }
+
     function renderGameHub() {
       gameGrid.innerHTML = "";
 
@@ -3094,7 +3510,10 @@
       state.selectedVotes = new Set();
       state.imposterHints = false;
       customHintInput.value = "";
-      if (mode.hasSecret || mode.criteriaBanks) state.category = mode.defaultCategory;
+      if (mode.hasSecret || mode.criteriaBanks) {
+        state.category = mode.defaultCategory;
+        state.categories = [mode.defaultCategory];
+      }
       setError(playerError, "");
       setError(setupError, "");
       renderSetup();
@@ -3137,50 +3556,99 @@
 
     function syncCustomHintInput() {
       const mode = currentMode();
-      const showCustomHint = mode.hasImposterHints && state.imposterHints && state.category === "Custom";
+      const showCustomHint = mode.hasImposterHints && state.imposterHints && selectedCategories(mode).includes("Custom");
       customHintWrap.classList.toggle("active", showCustomHint);
     }
 
     function renderCategoryButtons() {
       const mode = currentMode();
       categoryGrid.innerHTML = "";
+      categoryFeatured.innerHTML = "";
 
-      const optionBanks = mode.wordBanks || mode.criteriaBanks;
+      const optionBanks = getCategoryBanks(mode);
       if (!optionBanks) {
         customWordWrap.classList.remove("active");
+        customHintWrap.classList.remove("active");
         return;
       }
 
-      if (!optionBanks[state.category] && state.category !== "Custom") {
-        state.category = mode.defaultCategory;
-      }
+      syncPrimaryCategory(mode);
 
       categoryTitle.textContent = mode.secretSectionTitle;
+      selectedCategoryName.textContent = selectedCategoryLabel(mode);
       customWordInput.placeholder = mode.customPlaceholder || "";
+      const categories = getCategoryOptions(mode);
+      const countLabel = categories.length === 1 ? "1 Category" : `${categories.length} Categories`;
+      const selectedCount = selectedCategories(mode).length;
+      categoryCount.textContent = `${countLabel} - ${selectedCount} selected`;
 
-      Object.keys(optionBanks).forEach((category) => {
-        const button = document.createElement("button");
-        button.className = "option-btn";
-        button.type = "button";
-        button.textContent = category;
-        button.dataset.category = category;
-        if (category === state.category) button.classList.add("active");
-        categoryGrid.appendChild(button);
+      const hasCustom = categories.includes("Custom");
+      categoryFilter.querySelector('[data-filter="custom"]').classList.toggle("is-hidden", !hasCustom);
+      if (!hasCustom && state.categoryFilter === "custom") state.categoryFilter = "popular";
+
+      categoryFilter.querySelectorAll("[data-filter]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.filter === state.categoryFilter);
       });
 
-      if (!mode.hasSecret) {
-        customWordWrap.classList.remove("active");
-        return;
-      }
+      categories.slice(0, 5).forEach((category, index) => {
+        categoryFeatured.appendChild(createCategoryTile(category, mode, index));
+      });
 
-      const customButton = document.createElement("button");
-      customButton.className = "option-btn";
-      customButton.type = "button";
-      customButton.textContent = "Custom";
-      customButton.dataset.category = "Custom";
-      if (state.category === "Custom") customButton.classList.add("active");
-      categoryGrid.appendChild(customButton);
-      customWordWrap.classList.toggle("active", state.category === "Custom");
+      filteredCategoryOptions(categories).forEach((category, index) => {
+        categoryGrid.appendChild(createCategoryRow(category, mode, index));
+      });
+
+      customWordWrap.classList.toggle("active", mode.hasSecret && selectedCategories(mode).includes("Custom"));
+      syncCustomHintInput();
+    }
+
+    function createCategoryTile(category, mode, index) {
+      const button = document.createElement("button");
+      button.className = "category-tile";
+      button.type = "button";
+      button.dataset.category = category;
+      button.style.setProperty("--category-color", categoryColor(category, index));
+      if (isCategorySelected(category)) button.classList.add("active");
+
+      const icon = document.createElement("span");
+      icon.className = "category-icon";
+      icon.textContent = categoryInitials(category);
+
+      const label = document.createElement("span");
+      label.textContent = category;
+
+      button.append(icon, label);
+      return button;
+    }
+
+    function createCategoryRow(category, mode, index) {
+      const button = document.createElement("button");
+      button.className = "category-row";
+      button.type = "button";
+      button.dataset.category = category;
+      button.style.setProperty("--category-color", categoryColor(category, index + 2));
+      if (isCategorySelected(category)) button.classList.add("active");
+
+      const icon = document.createElement("span");
+      icon.className = "category-row-icon";
+      icon.textContent = categoryInitials(category);
+
+      const copy = document.createElement("span");
+      copy.className = "category-row-copy";
+
+      const title = document.createElement("strong");
+      title.textContent = category;
+
+      const description = document.createElement("span");
+      description.textContent = describeCategory(category, mode);
+
+      const check = document.createElement("span");
+      check.className = "category-check";
+      check.textContent = "OK";
+
+      copy.append(title, description);
+      button.append(icon, copy, check);
+      return button;
     }
 
     function renderThreatOptions() {
@@ -3262,17 +3730,19 @@
       const mode = currentMode();
       if (!mode.hasSecret) return "";
 
-      if (state.category === "Custom") {
+      const selected = selectedCategories(mode);
+      if (selected.includes("Custom")) {
         return customWordInput.value.trim().replace(/\s+/g, " ");
       }
 
-      return randomItem(mode.wordBanks[state.category]);
+      const words = selected.flatMap((category) => mode.wordBanks[category] || []);
+      return randomItem(words.length ? words : mode.wordBanks[mode.defaultCategory]);
     }
 
     function makeImposterHint(secretWord) {
       if (!state.imposterHints || !secretWord) return "";
 
-      if (state.category === "Custom") {
+      if (selectedCategories().includes("Custom")) {
         return customHintInput.value.trim().replace(/\s+/g, " ");
       }
 
@@ -3284,9 +3754,12 @@
     function chooseBombPrompt() {
       const mode = currentMode();
       const banks = mode.criteriaBanks || {};
-      const bank = banks[state.category] || banks[mode.defaultCategory] || [];
-      if (!bank.length) return { type: "Contains", letters: "AR" };
-      const [type, letters] = randomItem(bank);
+      const selected = selectedCategories(mode).filter((category) => category !== "Custom");
+      const bank = selected.flatMap((category) => banks[category] || []);
+      const fallbackBank = banks[mode.defaultCategory] || [];
+      const prompts = bank.length ? bank : fallbackBank;
+      if (!prompts.length) return { type: "Contains", letters: "AR" };
+      const [type, letters] = randomItem(prompts);
       return { type, letters };
     }
 
@@ -3321,7 +3794,7 @@
         return;
       }
 
-      if (mode.hasImposterHints && state.imposterHints && state.category === "Custom" && !makeImposterHint(state.secretWord)) {
+      if (mode.hasImposterHints && state.imposterHints && selectedCategories(mode).includes("Custom") && !makeImposterHint(state.secretWord)) {
         setError(setupError, "Enter a similar hint word for the imposter.");
         return;
       }
@@ -3761,15 +4234,64 @@
       showScreen("setup");
     });
 
-    categoryGrid.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-category]");
-      if (!button) return;
+    function selectCategory(category) {
+      if (category === "Custom") {
+        state.categories = ["Custom"];
+      } else {
+        const selected = selectedCategories().filter((item) => item !== "Custom");
+        if (selected.includes(category)) {
+          const next = selected.filter((item) => item !== category);
+          state.categories = next.length ? next : [category];
+        } else {
+          state.categories = [...selected, category];
+        }
+      }
 
-      state.category = button.dataset.category;
+      syncPrimaryCategory();
       renderCategoryButtons();
       syncCustomHintInput();
       setError(setupError, "");
       playSound("tap");
+    }
+
+    openCategoryButton.addEventListener("click", () => {
+      state.categoryFilter = selectedCategories().includes("Custom") ? "custom" : "popular";
+      renderCategoryButtons();
+      playSound("tap");
+      showScreen("categories");
+    });
+
+    categoryBackButton.addEventListener("click", () => {
+      playSound("tap");
+      showScreen("setup");
+    });
+
+    categoryDoneButton.addEventListener("click", () => {
+      playSound("tap");
+      showScreen("setup");
+    });
+
+    categoryFilter.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-filter]");
+      if (!button) return;
+
+      state.categoryFilter = button.dataset.filter;
+      renderCategoryButtons();
+      playSound("tap");
+    });
+
+    categoryFeatured.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-category]");
+      if (!button) return;
+
+      selectCategory(button.dataset.category);
+    });
+
+    categoryGrid.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-category]");
+      if (!button) return;
+
+      selectCategory(button.dataset.category);
     });
 
     imposterSwitch.addEventListener("click", (event) => {
