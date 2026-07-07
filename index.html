@@ -533,6 +533,15 @@
       animation: screenIn 220ms ease both;
     }
 
+    .custom-hint-wrap {
+      display: none;
+    }
+
+    .custom-hint-wrap.active {
+      display: block;
+      animation: screenIn 220ms ease both;
+    }
+
     .is-hidden {
       display: none !important;
     }
@@ -2160,6 +2169,9 @@
                 <button class="option-btn" type="button" data-hints="on">Give hints</button>
               </div>
             </div>
+            <div class="custom-hint-wrap" id="customHintWrap">
+              <input id="customHintInput" type="text" maxlength="32" autocomplete="off" placeholder="Similar hint word for imposter" />
+            </div>
             <div class="section-block" id="threatSection">
               <h3 id="threatTitle">Hidden roles</h3>
               <div class="number-switch" style="--cols: 2;" id="imposterSwitch">
@@ -2344,6 +2356,69 @@
       Movies: ["Titanic", "Frozen", "Avengers", "Finding Nemo", "Home Alone", "Moana", "Spider-Man", "Toy Story", "Shrek", "Black Panther"],
       Bible: ["Noah's Ark", "Moses", "David and Goliath", "Bethlehem", "The Good Samaritan", "Daniel", "Jonah", "Eden", "Jericho", "The Last Supper"],
       "Filipino Party": ["Karaoke", "Lechon", "Lumpia", "Pabitin", "Parlor games", "Videoke", "Potluck", "Sari-sari store", "Halo-halo", "Mano po"]
+    };
+
+    const IMPOSTER_HINT_BANK = {
+      "pizza": ["Cheese", "Slice", "Oven"],
+      "sushi": ["Rice", "Seaweed", "Wasabi"],
+      "adobo": ["Soy sauce", "Vinegar", "Stew"],
+      "tacos": ["Tortilla", "Salsa", "Shell"],
+      "ice cream": ["Sundae", "Cone", "Frozen"],
+      "pancakes": ["Syrup", "Breakfast", "Fluffy"],
+      "mango": ["Tropical", "Fruit", "Yellow"],
+      "spaghetti": ["Pasta", "Noodles", "Sauce"],
+      "donuts": ["Glaze", "Bakery", "Sprinkles"],
+      "ramen": ["Noodles", "Broth", "Bowl"],
+      "beach": ["Sand", "Ocean", "Waves"],
+      "airport": ["Plane", "Runway", "Terminal"],
+      "library": ["Books", "Quiet", "Shelves"],
+      "mall": ["Shops", "Food court", "Escalator"],
+      "theme park": ["Rides", "Tickets", "Roller coaster"],
+      "hospital": ["Doctor", "Nurse", "Patient"],
+      "baguio": ["Pines", "Cool weather", "Mountain"],
+      "church": ["Prayer", "Pews", "Worship"],
+      "cinema": ["Movie", "Popcorn", "Screen"],
+      "school": ["Classroom", "Teacher", "Homework"],
+      "umbrella": ["Rain", "Shade", "Canopy"],
+      "backpack": ["Bag", "Straps", "School"],
+      "microphone": ["Sing", "Voice", "Stage"],
+      "toothbrush": ["Teeth", "Bathroom", "Bristles"],
+      "headphones": ["Music", "Ears", "Audio"],
+      "mirror": ["Reflection", "Glass", "Bathroom"],
+      "keychain": ["Keys", "Ring", "Charm"],
+      "camera": ["Photo", "Lens", "Flash"],
+      "sneakers": ["Shoes", "Laces", "Running"],
+      "remote": ["TV", "Buttons", "Control"],
+      "titanic": ["Ship", "Iceberg", "Romance"],
+      "frozen": ["Ice", "Sisters", "Snow"],
+      "avengers": ["Heroes", "Marvel", "Team"],
+      "finding nemo": ["Fish", "Ocean", "Clownfish"],
+      "home alone": ["Christmas", "Traps", "Kevin"],
+      "moana": ["Ocean", "Island", "Voyage"],
+      "spider-man": ["Web", "Hero", "Mask"],
+      "toy story": ["Toys", "Cowboy", "Space ranger"],
+      "shrek": ["Swamp", "Ogre", "Donkey"],
+      "black panther": ["Wakanda", "Panther", "Vibranium"],
+      "noah's ark": ["Flood", "Boat", "Animals"],
+      "moses": ["Staff", "Exodus", "Tablets"],
+      "david and goliath": ["Sling", "Giant", "Stone"],
+      "bethlehem": ["Manger", "Star", "Birthplace"],
+      "the good samaritan": ["Neighbor", "Kindness", "Road"],
+      "daniel": ["Lions", "Faith", "Dreams"],
+      "jonah": ["Whale", "Nineveh", "Storm"],
+      "eden": ["Garden", "Apple", "Paradise"],
+      "jericho": ["Walls", "Trumpets", "City"],
+      "the last supper": ["Disciples", "Table", "Bread"],
+      "karaoke": ["Singing", "Microphone", "Lyrics"],
+      "lechon": ["Roast", "Pig", "Feast"],
+      "lumpia": ["Spring roll", "Crunchy", "Filling"],
+      "pabitin": ["Prizes", "Party", "Hanging"],
+      "parlor games": ["Party", "Contest", "Group"],
+      "videoke": ["Songs", "Screen", "Microphone"],
+      "potluck": ["Shared food", "Dishes", "Party"],
+      "sari-sari store": ["Snacks", "Neighborhood", "Shop"],
+      "halo-halo": ["Dessert", "Shaved ice", "Sweet"],
+      "mano po": ["Blessing", "Respect", "Hand"]
     };
 
     const SPYFALL_JOBS = [
@@ -2634,6 +2709,8 @@
     const categoryGrid = document.getElementById("categoryGrid");
     const customWordWrap = document.getElementById("customWordWrap");
     const customWordInput = document.getElementById("customWordInput");
+    const customHintWrap = document.getElementById("customHintWrap");
+    const customHintInput = document.getElementById("customHintInput");
     const hintSection = document.getElementById("hintSection");
     const hintSwitch = document.getElementById("hintSwitch");
     const threatSection = document.getElementById("threatSection");
@@ -3016,6 +3093,7 @@
       state.imposterIndexes = new Set();
       state.selectedVotes = new Set();
       state.imposterHints = false;
+      customHintInput.value = "";
       if (mode.hasSecret || mode.criteriaBanks) state.category = mode.defaultCategory;
       setError(playerError, "");
       setError(setupError, "");
@@ -3054,6 +3132,13 @@
       hintSwitch.querySelectorAll("[data-hints]").forEach((button) => {
         button.classList.toggle("active", (button.dataset.hints === "on") === state.imposterHints);
       });
+      syncCustomHintInput();
+    }
+
+    function syncCustomHintInput() {
+      const mode = currentMode();
+      const showCustomHint = mode.hasImposterHints && state.imposterHints && state.category === "Custom";
+      customHintWrap.classList.toggle("active", showCustomHint);
     }
 
     function renderCategoryButtons() {
@@ -3186,13 +3271,14 @@
 
     function makeImposterHint(secretWord) {
       if (!state.imposterHints || !secretWord) return "";
-      if (state.category !== "Custom") return `Category: ${state.category}`;
 
-      const lettersOnly = secretWord.replace(/[^a-z0-9]/gi, "");
-      const firstLetter = lettersOnly.charAt(0).toUpperCase();
-      const letterCount = lettersOnly.length;
-      if (!firstLetter || !letterCount) return "Custom word";
-      return `Starts with ${firstLetter}, ${letterCount} letters`;
+      if (state.category === "Custom") {
+        return customHintInput.value.trim().replace(/\s+/g, " ");
+      }
+
+      const key = secretWord.toLowerCase().replace(/\s+/g, " ").trim();
+      const hints = IMPOSTER_HINT_BANK[key];
+      return hints ? randomItem(hints) : "";
     }
 
     function chooseBombPrompt() {
@@ -3232,6 +3318,11 @@
 
       if (mode.hasSecret && !state.secretWord) {
         setError(setupError, mode.emptySecretError);
+        return;
+      }
+
+      if (mode.hasImposterHints && state.imposterHints && state.category === "Custom" && !makeImposterHint(state.secretWord)) {
+        setError(setupError, "Enter a similar hint word for the imposter.");
         return;
       }
 
@@ -3676,6 +3767,7 @@
 
       state.category = button.dataset.category;
       renderCategoryButtons();
+      syncCustomHintInput();
       setError(setupError, "");
       playSound("tap");
     });
