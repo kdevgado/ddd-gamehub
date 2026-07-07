@@ -114,36 +114,6 @@
       }
     }
 
-    .mute-button {
-      position: fixed;
-      z-index: 10;
-      top: max(14px, env(safe-area-inset-top));
-      right: max(14px, env(safe-area-inset-right));
-      width: 48px;
-      height: 48px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      font-size: 0.78rem;
-      font-weight: 950;
-      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
-    }
-
-    .mute-button:active {
-      transform: scale(0.94);
-    }
-
-    .mute-button:hover {
-      border-color: rgba(50, 246, 255, 0.7);
-      background: rgba(255, 255, 255, 0.14);
-    }
-
     main {
       width: min(100%, 660px);
       min-height: min(760px, calc(100svh - 36px));
@@ -875,6 +845,35 @@
       line-height: 1.45;
     }
 
+    .bomb-prompt {
+      width: 100%;
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.09);
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .bomb-prompt span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .bomb-prompt strong {
+      color: var(--warn);
+      font-size: clamp(3.2rem, 18vw, 6.5rem);
+      line-height: 0.95;
+      font-weight: 950;
+      text-shadow: 0 0 28px rgba(255, 204, 77, 0.36);
+      overflow-wrap: anywhere;
+    }
+
     .vote-list {
       display: grid;
       gap: 10px;
@@ -1345,8 +1344,7 @@
     .icon-btn,
     .option-btn,
     .vote-btn,
-    .small-link,
-    .mute-button {
+    .small-link {
       touch-action: manipulation;
     }
 
@@ -1728,6 +1726,271 @@
       animation: confettiFall var(--fall) cubic-bezier(0.18, 0.62, 0.28, 1) forwards;
     }
 
+    /* Cleaner visual pass */
+    :root {
+      --bg-1: #050711;
+      --bg-2: #0b1020;
+      --bg-3: #10182a;
+      --glass: rgba(9, 14, 27, 0.78);
+      --glass-strong: rgba(13, 20, 36, 0.92);
+      --line: rgba(226, 235, 255, 0.14);
+      --muted: #a7b1ca;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    }
+
+    .app {
+      background: #050711;
+      animation: none;
+    }
+
+    .app::before {
+      inset: -18% -10%;
+      background:
+        radial-gradient(ellipse at 50% 8%, rgba(49, 244, 255, 0.18), transparent 42%),
+        radial-gradient(ellipse at 78% 86%, rgba(140, 92, 255, 0.12), transparent 42%);
+      filter: blur(18px);
+      opacity: 0.86;
+      animation: cleanAurora 16s ease-in-out infinite alternate;
+    }
+
+    .app::after {
+      display: none;
+    }
+
+    @keyframes cleanAurora {
+      to {
+        transform: translate3d(0, -12px, 0) scale(1.03);
+      }
+    }
+
+    .particle-field {
+      opacity: 0.36;
+    }
+
+    .particle-field span {
+      width: 2px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.58);
+      box-shadow: 0 0 18px rgba(49, 244, 255, 0.34);
+    }
+
+    .card {
+      background: rgba(9, 14, 27, 0.78);
+      border-color: rgba(226, 235, 255, 0.14);
+      box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(24px);
+      animation: none;
+    }
+
+    .card::before {
+      background: rgba(255, 255, 255, 0.05);
+      mask: none;
+      opacity: 1;
+    }
+
+    .card::after {
+      display: none;
+    }
+
+    .title-glow {
+      color: #f8fbff;
+      background: none;
+      -webkit-background-clip: initial;
+      background-clip: initial;
+      text-shadow:
+        0 0 28px rgba(49, 244, 255, 0.34),
+        0 22px 48px rgba(0, 0, 0, 0.55);
+    }
+
+    .eyebrow {
+      border-color: rgba(49, 244, 255, 0.24);
+      background: rgba(49, 244, 255, 0.08);
+      box-shadow: none;
+    }
+
+    .badge,
+    .progress-pill,
+    .mode-summary,
+    .role-detail,
+    .word-reveal,
+    .btn.secondary,
+    .icon-btn,
+    .option-btn,
+    .vote-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(226, 235, 255, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .game-card {
+      background: rgba(12, 18, 33, 0.86);
+      border-color: rgba(226, 235, 255, 0.14);
+      grid-template-columns: 48px minmax(0, 1fr) 76px;
+      column-gap: 14px;
+      align-items: center;
+      align-content: center;
+      text-align: left;
+      box-shadow:
+        0 18px 54px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .game-card::before {
+      background: color-mix(in srgb, var(--game-a) 12%, transparent);
+      opacity: 1;
+      mask-image: none;
+    }
+
+    .game-card::after {
+      height: 2px;
+      background: var(--game-a);
+      box-shadow: 0 0 16px color-mix(in srgb, var(--game-a) 42%, transparent);
+    }
+
+    .game-card:hover {
+      border-color: color-mix(in srgb, var(--game-a) 34%, rgba(255, 255, 255, 0.22));
+      box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.44),
+        0 0 26px color-mix(in srgb, var(--game-a) 16%, transparent);
+    }
+
+    .game-card:hover .game-art img {
+      transform: scale(1.05);
+    }
+
+    .game-mark {
+      color: #f8fbff;
+      background: color-mix(in srgb, var(--game-a) 82%, #10182a);
+      box-shadow: 0 14px 30px color-mix(in srgb, var(--game-a) 18%, transparent);
+    }
+
+    .game-name {
+      text-shadow: none;
+      overflow-wrap: anywhere;
+    }
+
+    .game-copy {
+      min-width: 0;
+      display: block;
+      align-self: center;
+    }
+
+    .game-art {
+      width: 76px;
+      aspect-ratio: 1;
+      justify-self: end;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 0;
+      border-radius: 18px;
+      background: transparent;
+      box-shadow:
+        0 18px 32px rgba(0, 0, 0, 0.28),
+        0 0 22px color-mix(in srgb, var(--game-a) 12%, transparent);
+    }
+
+    .game-art img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      padding: 0;
+      filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.34));
+      transition: transform 220ms ease;
+    }
+
+    .game-card:nth-child(1) {
+      grid-template-columns: 52px minmax(0, 1fr) 94px;
+    }
+
+    .game-card:nth-child(1) .game-art {
+      width: 94px;
+    }
+
+    .btn {
+      color: #04111f;
+      background: #31f4ff;
+      box-shadow:
+        0 16px 34px rgba(49, 244, 255, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.38);
+    }
+
+    .btn::before {
+      display: none;
+    }
+
+    .btn.danger {
+      color: #fff;
+      background: #ff4d6d;
+      box-shadow: 0 16px 34px rgba(255, 77, 109, 0.22);
+    }
+
+    .option-btn.active {
+      background: #31f4ff;
+      box-shadow: 0 14px 30px rgba(49, 244, 255, 0.2);
+    }
+
+    .chip {
+      background: rgba(49, 244, 255, 0.1);
+    }
+
+    .chip button {
+      background: #f8fbff;
+    }
+
+    .shuffle-deck::before {
+      background: rgba(49, 244, 255, 0.18);
+    }
+
+    .shuffle-deck span,
+    .role-face,
+    .role-face.front,
+    .role-face.back {
+      background: rgba(12, 18, 33, 0.92);
+      border-color: rgba(226, 235, 255, 0.16);
+    }
+
+    .role-face.front {
+      background:
+        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 18px),
+        rgba(12, 18, 33, 0.92);
+    }
+
+    .role-symbol {
+      color: #04111f;
+      background: #31f4ff;
+      box-shadow: 0 18px 42px rgba(49, 244, 255, 0.2);
+    }
+
+    .timer-ring {
+      background: conic-gradient(#31f4ff var(--progress), rgba(255, 255, 255, 0.1) 0);
+      box-shadow:
+        0 0 42px rgba(49, 244, 255, 0.2),
+        inset 0 0 24px rgba(255, 255, 255, 0.08);
+    }
+
+    .timer-ring::before {
+      background: rgba(7, 11, 22, 0.94);
+    }
+
+    .vote-btn.selected {
+      background: rgba(199, 255, 90, 0.12);
+    }
+
+    .result-name {
+      background: rgba(255, 77, 109, 0.12);
+      box-shadow:
+        0 18px 46px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .word-reveal {
+      background: rgba(49, 244, 255, 0.09);
+    }
+
     @media (max-width: 420px) {
       .app {
         padding: 12px;
@@ -1761,7 +2024,14 @@
       .game-card,
       .game-card:nth-child(1) {
         grid-column: auto;
-        min-height: 144px;
+        grid-template-columns: 42px minmax(0, 1fr) 62px;
+        column-gap: 10px;
+        min-height: 156px;
+      }
+
+      .game-art,
+      .game-card:nth-child(1) .game-art {
+        width: 62px;
       }
 
       .role-title,
@@ -1810,7 +2080,6 @@
       <span style="--x:68%;--y:49%;--tilt:-8deg;--speed:6.1s;--delay:-1.7s;--drift:-16px;"></span>
     </div>
 
-    <button class="mute-button" id="muteButton" type="button" aria-label="Toggle sound" title="Toggle sound">SFX</button>
     <main>
       <!-- 1. Game hub -->
       <section class="screen active" data-screen="welcome">
@@ -1871,13 +2140,13 @@
             <div class="custom-word-wrap" id="customWordWrap">
               <input id="customWordInput" type="text" maxlength="32" autocomplete="off" placeholder="Enter custom location" />
             </div>
-            <div class="section-block">
+            <div class="section-block" id="threatSection">
               <h3 id="threatTitle">Hidden roles</h3>
               <div class="number-switch" style="--cols: 2;" id="imposterSwitch">
               </div>
             </div>
             <div class="section-block">
-              <h3>Discussion timer</h3>
+              <h3>Round timer</h3>
               <div class="timer-switch" style="--cols: 4;" id="timerSwitch">
                 <button class="option-btn active" type="button" data-minutes="1">1m</button>
                 <button class="option-btn" type="button" data-minutes="2">2m</button>
@@ -1967,6 +2236,33 @@
         </div>
       </section>
 
+      <!-- 10b. Word Bomb active round -->
+      <section class="screen" data-screen="bombRound">
+        <div class="card">
+          <div class="stack center">
+            <p class="eyebrow">Word Bomb</p>
+            <h2 id="bombTurn">Player</h2>
+            <div class="bomb-prompt" aria-live="polite">
+              <span id="bombPromptType">Contains</span>
+              <strong id="bombPromptText">AR</strong>
+            </div>
+            <div class="timer-shell">
+              <div class="timer-ring" id="bombTimerRing">
+                <div class="time-text" id="bombTimeText">01:00</div>
+              </div>
+              <p class="timer-label" id="bombStatus">Say a matching word before the timer runs out.</p>
+            </div>
+            <div class="split-row">
+              <button class="btn" id="bombStartPause" type="button">Start bomb</button>
+              <button class="btn secondary" id="bombReset" type="button">Reset</button>
+            </div>
+            <button class="btn danger" id="bombAcceptedButton" type="button">Word accepted</button>
+            <button class="btn secondary" id="bombNewPromptButton" type="button">New prompt</button>
+            <button class="small-link" id="bombEndButton" type="button">Back to setup</button>
+          </div>
+        </div>
+      </section>
+
       <!-- 11. Voting screen -->
       <section class="screen" data-screen="voting">
         <div class="card">
@@ -2045,10 +2341,48 @@
       "Performer"
     ];
 
+    const BOMB_CRITERIA_BANKS = {
+      Mixed: [
+        ["Contains", "AR"],
+        ["Contains", "OO"],
+        ["Contains", "ST"],
+        ["Contains", "CH"],
+        ["Starts with", "PA"],
+        ["Starts with", "BR"],
+        ["Starts with", "SH"],
+        ["Ends with", "ER"],
+        ["Ends with", "ING"],
+        ["Ends with", "Y"]
+      ],
+      Easy: [
+        ["Contains", "A"],
+        ["Contains", "E"],
+        ["Contains", "O"],
+        ["Starts with", "B"],
+        ["Starts with", "M"],
+        ["Starts with", "S"],
+        ["Ends with", "T"],
+        ["Ends with", "N"],
+        ["Ends with", "D"]
+      ],
+      Hard: [
+        ["Contains", "QU"],
+        ["Contains", "XZ"],
+        ["Contains", "PH"],
+        ["Starts with", "TH"],
+        ["Starts with", "CL"],
+        ["Starts with", "WR"],
+        ["Ends with", "TION"],
+        ["Ends with", "QUE"],
+        ["Ends with", "OUS"]
+      ]
+    };
+
     const GAME_MODES = {
       imposter: {
         name: "Imposter",
         mark: "IM",
+        image: "images/mask.gif",
         colorA: "#31f4ff",
         colorB: "#ff3ea5",
         minPlayers: 3,
@@ -2090,6 +2424,7 @@
       werewolf: {
         name: "Werewolf",
         mark: "WW",
+        image: "images/werewolf.gif",
         colorA: "#8c5cff",
         colorB: "#ff4d6d",
         minPlayers: 5,
@@ -2125,6 +2460,7 @@
       mafia: {
         name: "Mafia",
         mark: "MF",
+        image: "images/gun.gif",
         colorA: "#ff3ea5",
         colorB: "#ffd166",
         minPlayers: 5,
@@ -2160,41 +2496,44 @@
       bomb: {
         name: "Who's Got the Bomb",
         mark: "BG",
+        image: "images/bomb.gif",
         colorA: "#ff8a3d",
         colorB: "#c7ff5a",
-        minPlayers: 3,
-        defaultTimer: 2,
+        type: "wordBomb",
+        minPlayers: 2,
+        defaultTimer: 1,
         defaultThreats: 1,
-        threatOptions: [1, 2],
-        twoThreatMin: 6,
-        threatLabel: "Bomb holders",
-        threatSingular: "bomb holder",
-        threatPlural: "bomb holders",
-        cardText: "One player is secretly carrying the bomb. Everyone else has to flush them out.",
-        playerLead: "Add at least three players. The bomb holder must bluff through the discussion.",
-        setupTitle: "Set up the Bomb",
-        setupLead: "Choose how many players secretly have the bomb.",
-        summary: "Bomb holders deny everything. Safe players and the Defuser pressure the table into picking the right target.",
+        threatOptions: [1],
+        twoThreatMin: 2,
+        criteriaBanks: BOMB_CRITERIA_BANKS,
+        defaultCategory: "Mixed",
+        secretSectionTitle: "Letter criteria",
+        cardText: "Say a matching word before the ticking bomb catches you.",
+        playerLead: "Add at least two players. Pass the phone after each valid word.",
+        setupTitle: "Set up Word Bomb",
+        setupLead: "Choose a criteria pack and a countdown, then keep the word chain moving.",
+        summary: "A prompt shows letter criteria. The active player must say a valid word, tap accepted, and pass before the bomb runs out.",
         hasSecret: false,
-        shuffleTitle: "Passing the package",
-        shuffleLead: "The phone is deciding who secretly has the bomb.",
+        shuffleTitle: "Lighting the fuse",
+        shuffleLead: "A fresh letter prompt is being armed.",
         timerEyebrow: "Countdown",
-        timerTitle: "Who has the bomb?",
-        timerLead: "Ask quick questions, watch reactions, and pick the player who is sweating too much.",
-        voteTitle: "Who has the bomb?",
-        voteHintSingle: "Tap the suspected bomb holder, then reveal the truth.",
-        voteHintPlural: "Tap up to two suspected bomb holders, then reveal the truth.",
-        revealResultButton: "Reveal bomb holder",
-        resultTitle: "Bomb holder revealed",
-        noVoteSummary: "No bomb holder was selected before the reveal.",
-        correctSummary: "The group found every bomb holder in time.",
-        partialSummary: "The group found one bomb holder, but another package was still live.",
-        missedSummary: "The bomb holder slipped through the vote.",
+        timerTitle: "Say a word",
+        timerLead: "Match the prompt, tap accepted, and pass the bomb before time runs out.",
+        voteTitle: "",
+        voteHintSingle: "",
+        voteHintPlural: "",
+        revealResultButton: "End round",
+        resultTitle: "Bomb exploded",
+        noVoteSummary: "",
+        correctSummary: "",
+        partialSummary: "",
+        missedSummary: "",
         buildRoles: createBombRoles
       },
       spyfall: {
         name: "Spyfall",
         mark: "SP",
+        image: "images/spy.gif",
         colorA: "#31f4ff",
         colorB: "#8c5cff",
         minPlayers: 3,
@@ -2251,6 +2590,7 @@
       timerRemaining: 180,
       timerMinutes: 3,
       timerId: null,
+      bombPrompt: null,
       muted: false,
       audioContext: null
     };
@@ -2272,6 +2612,7 @@
     const categoryGrid = document.getElementById("categoryGrid");
     const customWordWrap = document.getElementById("customWordWrap");
     const customWordInput = document.getElementById("customWordInput");
+    const threatSection = document.getElementById("threatSection");
     const threatTitle = document.getElementById("threatTitle");
     const imposterSwitch = document.getElementById("imposterSwitch");
     const timerSwitch = document.getElementById("timerSwitch");
@@ -2293,6 +2634,17 @@
     const timerStatus = document.getElementById("timerStatus");
     const timerStartPause = document.getElementById("timerStartPause");
     const timerReset = document.getElementById("timerReset");
+    const bombTurn = document.getElementById("bombTurn");
+    const bombPromptType = document.getElementById("bombPromptType");
+    const bombPromptText = document.getElementById("bombPromptText");
+    const bombTimerRing = document.getElementById("bombTimerRing");
+    const bombTimeText = document.getElementById("bombTimeText");
+    const bombStatus = document.getElementById("bombStatus");
+    const bombStartPause = document.getElementById("bombStartPause");
+    const bombReset = document.getElementById("bombReset");
+    const bombAcceptedButton = document.getElementById("bombAcceptedButton");
+    const bombNewPromptButton = document.getElementById("bombNewPromptButton");
+    const bombEndButton = document.getElementById("bombEndButton");
     const voteTitle = document.getElementById("voteTitle");
     const voteList = document.getElementById("voteList");
     const voteHint = document.getElementById("voteHint");
@@ -2304,7 +2656,6 @@
     const resultWord = document.getElementById("resultWord");
     const guessSummary = document.getElementById("guessSummary");
     const confettiLayer = document.getElementById("confettiLayer");
-    const muteButton = document.getElementById("muteButton");
 
     function createRole(title, kind, symbol, hint, details = []) {
       return { title, kind, symbol, hint, details };
@@ -2604,6 +2955,7 @@
         mark.textContent = mode.mark;
 
         const copy = document.createElement("span");
+        copy.className = "game-copy";
         const name = document.createElement("span");
         name.className = "game-name";
         name.textContent = mode.name;
@@ -2612,8 +2964,19 @@
         desc.className = "game-desc";
         desc.textContent = mode.cardText;
 
+        const art = document.createElement("span");
+        art.className = "game-art";
+        art.setAttribute("aria-hidden", "true");
+
+        const image = document.createElement("img");
+        image.src = mode.image;
+        image.alt = "";
+        image.loading = "lazy";
+        image.decoding = "async";
+        art.appendChild(image);
+
         copy.append(name, desc);
-        button.append(mark, copy);
+        button.append(mark, copy, art);
         gameGrid.appendChild(button);
       });
     }
@@ -2627,7 +2990,7 @@
       state.roles = [];
       state.imposterIndexes = new Set();
       state.selectedVotes = new Set();
-      if (mode.hasSecret) state.category = mode.defaultCategory;
+      if (mode.hasSecret || mode.criteriaBanks) state.category = mode.defaultCategory;
       setError(playerError, "");
       setError(setupError, "");
       renderSetup();
@@ -2643,7 +3006,7 @@
       setupLead.textContent = mode.setupLead;
       modeSummary.textContent = mode.summary;
       threatTitle.textContent = mode.threatLabel;
-      assignButton.textContent = `Shuffle ${mode.name} roles`;
+      assignButton.textContent = mode.type === "wordBomb" ? "Start bomb" : `Shuffle ${mode.name} roles`;
       shuffleTitle.textContent = mode.shuffleTitle;
       shuffleLead.textContent = mode.shuffleLead;
       timerEyebrow.textContent = mode.timerEyebrow;
@@ -2653,7 +3016,8 @@
       revealResultButton.textContent = mode.revealResultButton;
       resultTitle.textContent = mode.resultTitle;
 
-      categorySection.classList.toggle("is-hidden", !mode.hasSecret);
+      categorySection.classList.toggle("is-hidden", !(mode.hasSecret || mode.criteriaBanks));
+      threatSection.classList.toggle("is-hidden", mode.type === "wordBomb");
       renderCategoryButtons();
       renderThreatOptions();
     }
@@ -2662,20 +3026,20 @@
       const mode = currentMode();
       categoryGrid.innerHTML = "";
 
-      if (!mode.hasSecret) {
+      const optionBanks = mode.wordBanks || mode.criteriaBanks;
+      if (!optionBanks) {
         customWordWrap.classList.remove("active");
         return;
       }
 
-      const wordBanks = mode.wordBanks;
-      if (!wordBanks[state.category] && state.category !== "Custom") {
+      if (!optionBanks[state.category] && state.category !== "Custom") {
         state.category = mode.defaultCategory;
       }
 
       categoryTitle.textContent = mode.secretSectionTitle;
-      customWordInput.placeholder = mode.customPlaceholder;
+      customWordInput.placeholder = mode.customPlaceholder || "";
 
-      Object.keys(wordBanks).forEach((category) => {
+      Object.keys(optionBanks).forEach((category) => {
         const button = document.createElement("button");
         button.className = "option-btn";
         button.type = "button";
@@ -2684,6 +3048,11 @@
         if (category === state.category) button.classList.add("active");
         categoryGrid.appendChild(button);
       });
+
+      if (!mode.hasSecret) {
+        customWordWrap.classList.remove("active");
+        return;
+      }
 
       const customButton = document.createElement("button");
       customButton.className = "option-btn";
@@ -2781,6 +3150,15 @@
       return randomItem(mode.wordBanks[state.category]);
     }
 
+    function chooseBombPrompt() {
+      const mode = currentMode();
+      const banks = mode.criteriaBanks || {};
+      const bank = banks[state.category] || banks[mode.defaultCategory] || [];
+      if (!bank.length) return { type: "Contains", letters: "AR" };
+      const [type, letters] = randomItem(bank);
+      return { type, letters };
+    }
+
     function minimumPlayersForThreatCount(mode) {
       if (state.imposters > 1) return mode.twoThreatMin;
       return mode.minPlayers;
@@ -2792,6 +3170,12 @@
 
       if (state.players.length < mode.minPlayers) {
         setError(setupError, `Add at least ${mode.minPlayers} players for ${mode.name}.`);
+        return;
+      }
+
+      if (mode.type === "wordBomb") {
+        setError(setupError, "");
+        startBombRound();
         return;
       }
 
@@ -2825,6 +3209,96 @@
         setupRevealScreen();
         showScreen("reveal");
       }, 1550);
+    }
+
+    function setBombPrompt() {
+      state.bombPrompt = chooseBombPrompt();
+      bombPromptType.textContent = state.bombPrompt.type;
+      bombPromptText.textContent = state.bombPrompt.letters;
+    }
+
+    function updateBombTurn() {
+      bombTurn.textContent = state.players[state.currentRevealIndex] || "Player";
+    }
+
+    function updateBombTimerDisplay() {
+      const percent = Math.max(0, (state.timerRemaining / state.timerTotal) * 100);
+      bombTimerRing.style.setProperty("--progress", `${percent}%`);
+      bombTimeText.textContent = formatTime(state.timerRemaining);
+    }
+
+    function resetBombTimer() {
+      clearInterval(state.timerId);
+      state.timerId = null;
+      state.timerTotal = state.timerMinutes * 60;
+      state.timerRemaining = state.timerTotal;
+      bombStartPause.textContent = "Start bomb";
+      bombStatus.textContent = "Say a matching word before the timer runs out.";
+      updateBombTimerDisplay();
+    }
+
+    function startBombRound() {
+      state.currentRevealIndex = 0;
+      state.selectedVotes = new Set();
+      setBombPrompt();
+      updateBombTurn();
+      resetBombTimer();
+      showScreen("bombRound");
+      playSound("success");
+    }
+
+    function startPauseBombTimer() {
+      if (state.timerId) {
+        clearInterval(state.timerId);
+        state.timerId = null;
+        bombStartPause.textContent = "Resume bomb";
+        bombStatus.textContent = "Paused. Keep the next word ready.";
+        playSound("tap");
+        return;
+      }
+
+      bombStartPause.textContent = "Pause bomb";
+      bombStatus.textContent = "Bomb ticking. Say a valid word now.";
+      playSound("timer");
+
+      state.timerId = window.setInterval(() => {
+        state.timerRemaining -= 1;
+        updateBombTimerDisplay();
+
+        if (state.timerRemaining <= 0) {
+          clearInterval(state.timerId);
+          state.timerId = null;
+          state.timerRemaining = 0;
+          updateBombTimerDisplay();
+          bombStartPause.textContent = "Start bomb";
+          bombStatus.textContent = `${state.players[state.currentRevealIndex]} got caught by the bomb.`;
+          playSound("success");
+          if ("vibrate" in navigator) navigator.vibrate([90, 40, 140]);
+        }
+      }, 1000);
+    }
+
+    function acceptBombWord() {
+      state.currentRevealIndex = (state.currentRevealIndex + 1) % state.players.length;
+      updateBombTurn();
+      setBombPrompt();
+      if (state.timerRemaining <= 0) resetBombTimer();
+      bombStatus.textContent = "Good word. Pass the phone fast.";
+      playSound("tap");
+    }
+
+    function resetBombRound() {
+      setBombPrompt();
+      updateBombTurn();
+      resetBombTimer();
+      playSound("tap");
+    }
+
+    function endBombRound() {
+      clearInterval(state.timerId);
+      state.timerId = null;
+      playSound("tap");
+      showScreen("setup");
     }
 
     function setupRevealScreen() {
@@ -3095,7 +3569,9 @@
       state.roles = [];
       state.imposterIndexes = new Set();
       state.selectedVotes = new Set();
+      state.bombPrompt = null;
       resetTimer();
+      resetBombTimer();
     }
 
     function playAgain() {
@@ -3188,6 +3664,15 @@
       resetTimer();
       playSound("tap");
     });
+    bombStartPause.addEventListener("click", startPauseBombTimer);
+    bombReset.addEventListener("click", resetBombRound);
+    bombAcceptedButton.addEventListener("click", acceptBombWord);
+    bombNewPromptButton.addEventListener("click", () => {
+      setBombPrompt();
+      bombStatus.textContent = "New criteria armed.";
+      playSound("tap");
+    });
+    bombEndButton.addEventListener("click", endBombRound);
     document.getElementById("goVoteButton").addEventListener("click", () => {
       clearInterval(state.timerId);
       state.timerId = null;
@@ -3199,13 +3684,6 @@
     document.getElementById("playAgainButton").addEventListener("click", playAgain);
     document.getElementById("changeGameButton").addEventListener("click", chooseAnotherGame);
     document.getElementById("newPlayersButton").addEventListener("click", startOver);
-
-    muteButton.addEventListener("click", () => {
-      state.muted = !state.muted;
-      muteButton.textContent = state.muted ? "OFF" : "SFX";
-      muteButton.setAttribute("aria-label", state.muted ? "Unmute sound" : "Mute sound");
-      if (!state.muted) playSound("tap");
-    });
 
     renderGameHub();
     selectGame(state.gameId);
