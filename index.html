@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pass the Phone Imposter</title>
+  <title>Pass the Phone Game Hub</title>
   <style>
     /* Beginner tip: most visual edits can be made in the color variables below. */
     :root {
@@ -61,7 +61,8 @@
       place-items: center;
       padding: 18px;
       isolation: isolate;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
       background:
         radial-gradient(circle at 15% 12%, rgba(50, 246, 255, 0.24), transparent 26%),
         radial-gradient(circle at 82% 18%, rgba(255, 61, 242, 0.24), transparent 30%),
@@ -144,7 +145,7 @@
     }
 
     main {
-      width: min(100%, 520px);
+      width: min(100%, 660px);
       min-height: min(760px, calc(100svh - 36px));
       display: grid;
       align-items: center;
@@ -277,6 +278,80 @@
       background: rgba(255, 255, 255, 0.08);
       font-size: 0.82rem;
       font-weight: 750;
+    }
+
+    .game-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .game-card {
+      min-height: 154px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 16px;
+      color: var(--text);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05)),
+        rgba(6, 11, 35, 0.42);
+      cursor: pointer;
+      display: grid;
+      align-content: space-between;
+      gap: 14px;
+      text-align: left;
+      transition: transform 150ms ease, border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(50, 246, 255, 0.58);
+      background:
+        linear-gradient(145deg, rgba(50, 246, 255, 0.17), rgba(255, 61, 242, 0.09)),
+        rgba(6, 11, 35, 0.5);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
+    }
+
+    .game-card:active {
+      transform: scale(0.98);
+    }
+
+    .game-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: #071124;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+      box-shadow: 0 12px 28px rgba(50, 246, 255, 0.2);
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .game-name {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.12rem;
+      font-weight: 950;
+      line-height: 1.1;
+    }
+
+    .game-desc {
+      display: block;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    .mode-summary {
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      padding: 14px 15px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      line-height: 1.45;
     }
 
     .button-row,
@@ -488,6 +563,10 @@
       animation: screenIn 220ms ease both;
     }
 
+    .is-hidden {
+      display: none !important;
+    }
+
     .shuffle-stage {
       display: grid;
       justify-items: center;
@@ -593,13 +672,13 @@
 
     .flip-wrap {
       perspective: 1000px;
-      min-height: 250px;
+      min-height: clamp(320px, 58svh, 390px);
     }
 
     .role-card {
       position: relative;
       width: 100%;
-      min-height: 250px;
+      min-height: clamp(320px, 58svh, 390px);
       transform-style: preserve-3d;
       transition: transform 560ms cubic-bezier(0.2, 0.82, 0.2, 1);
     }
@@ -626,6 +705,7 @@
 
     .role-face.back {
       transform: rotateY(180deg);
+      overflow-y: auto;
     }
 
     .role-face::after {
@@ -681,6 +761,37 @@
       color: var(--lime);
       font-size: clamp(1.55rem, 9vw, 3rem);
       font-weight: 950;
+      overflow-wrap: anywhere;
+    }
+
+    .role-detail-list {
+      width: 100%;
+      display: grid;
+      gap: 9px;
+    }
+
+    .role-detail {
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .role-detail small {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .role-detail strong {
+      display: block;
+      color: var(--lime);
+      font-size: clamp(1.25rem, 7vw, 2.2rem);
+      line-height: 1.05;
       overflow-wrap: anywhere;
     }
 
@@ -809,6 +920,16 @@
       overflow-wrap: anywhere;
     }
 
+    .result-role {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
     .word-reveal {
       border: 1px solid rgba(50, 246, 255, 0.48);
       border-radius: 20px;
@@ -817,7 +938,16 @@
       text-align: center;
     }
 
-    .word-reveal span {
+    #resultSecretLabel {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    #resultWord {
       display: block;
       margin-top: 4px;
       color: var(--lime);
@@ -879,6 +1009,7 @@
         grid-template-columns: 1fr;
       }
 
+      .game-grid,
       .option-grid {
         grid-template-columns: 1fr;
       }
@@ -911,19 +1042,19 @@
 
     <button class="mute-button" id="muteButton" type="button" aria-label="Toggle sound" title="Toggle sound">SFX</button>
     <main>
-      <!-- 1. Welcome screen -->
+      <!-- 1. Game hub -->
       <section class="screen active" data-screen="welcome">
         <div class="card">
           <div class="stack center">
             <p class="eyebrow">Pass the phone</p>
-            <h1><span class="title-glow">Imposter</span></h1>
-            <p class="lead">Everyone gets the secret word except the imposter. Ask questions, spot the fake, and try not to look suspicious.</p>
-            <div class="mini-badges" aria-label="Game highlights">
-              <span class="badge">3+ players</span>
+            <h1><span class="title-glow">Game Hub</span></h1>
+            <p class="lead">Pick a hidden-role game, pass the phone for private reveals, then argue your way to the truth.</p>
+            <div class="mini-badges" aria-label="Hub highlights">
+              <span class="badge">4 games</span>
               <span class="badge">No login</span>
               <span class="badge">One phone</span>
             </div>
-            <button class="btn" type="button" data-go="players">Start game</button>
+            <div class="game-grid" id="gameGrid" aria-label="Choose a game"></div>
           </div>
         </div>
       </section>
@@ -933,9 +1064,9 @@
         <div class="card">
           <div class="stack">
             <div class="stack center">
-              <p class="eyebrow">Step 1</p>
+              <p class="eyebrow" id="playersEyebrow">Step 1</p>
               <h2>Who is playing?</h2>
-              <p class="lead">Add at least three players. Keep the phone facing away from curious eyes.</p>
+              <p class="lead" id="playersLead">Add the players. Keep the phone facing away from curious eyes.</p>
             </div>
             <form class="input-row" id="playerForm">
               <input id="playerNameInput" type="text" maxlength="18" autocomplete="off" placeholder="Player name" />
@@ -953,27 +1084,26 @@
         </div>
       </section>
 
-      <!-- 3. Choose or enter secret word -->
+      <!-- 3. Configure the chosen game -->
       <section class="screen" data-screen="setup">
         <div class="card">
           <div class="stack">
             <div class="stack center">
               <p class="eyebrow">Step 2</p>
-              <h2>Choose the secret word</h2>
-              <p class="lead">Pick a category for a random word, or type your own custom word.</p>
+              <h2 id="setupTitle">Set up the game</h2>
+              <p class="lead" id="setupLead">Choose the role mix and timer for this round.</p>
             </div>
-            <div class="section-block">
-              <h3>Categories</h3>
+            <p class="mode-summary" id="modeSummary"></p>
+            <div class="section-block" id="categorySection">
+              <h3 id="categoryTitle">Locations</h3>
               <div class="option-grid" id="categoryGrid"></div>
             </div>
             <div class="custom-word-wrap" id="customWordWrap">
-              <input id="customWordInput" type="text" maxlength="32" autocomplete="off" placeholder="Enter custom secret word" />
+              <input id="customWordInput" type="text" maxlength="32" autocomplete="off" placeholder="Enter custom location" />
             </div>
             <div class="section-block">
-              <h3>Imposters</h3>
+              <h3 id="threatTitle">Hidden roles</h3>
               <div class="number-switch" style="--cols: 2;" id="imposterSwitch">
-                <button class="option-btn active" type="button" data-imposters="1">1 imposter</button>
-                <button class="option-btn" type="button" data-imposters="2">2 imposters</button>
               </div>
             </div>
             <div class="section-block">
@@ -1005,8 +1135,8 @@
             </div>
             <div class="stack center">
               <p class="eyebrow dots">Shuffling</p>
-              <h2>Assigning secret roles</h2>
-              <p class="lead">No peeking. The game is choosing who has to bluff.</p>
+              <h2 id="shuffleTitle">Assigning secret roles</h2>
+              <p class="lead" id="shuffleLead">No peeking. The game is choosing who has to bluff.</p>
             </div>
           </div>
         </div>
@@ -1049,9 +1179,9 @@
       <section class="screen" data-screen="timer">
         <div class="card">
           <div class="stack center">
-            <p class="eyebrow">Discussion</p>
-            <h2>Ask questions</h2>
-            <p class="lead">Talk in circles, compare answers, and watch who is bluffing too hard.</p>
+            <p class="eyebrow" id="timerEyebrow">Discussion</p>
+            <h2 id="timerTitle">Ask questions</h2>
+            <p class="lead" id="timerLead">Talk in circles, compare answers, and watch who is bluffing too hard.</p>
             <div class="timer-shell">
               <div class="timer-ring" id="timerRing">
                 <div class="time-text" id="timeText">01:00</div>
@@ -1073,12 +1203,12 @@
           <div class="stack">
             <div class="stack center">
               <p class="eyebrow">Vote</p>
-              <h2>Who was the imposter?</h2>
+              <h2 id="voteTitle">Who was hiding?</h2>
               <p class="lead" id="voteHint">Tap the person the group suspects, then reveal the truth.</p>
             </div>
             <div class="vote-list" id="voteList"></div>
             <div class="button-row">
-              <button class="btn danger" id="revealResultButton" type="button">Reveal imposter</button>
+              <button class="btn danger" id="revealResultButton" type="button">Reveal truth</button>
               <button class="btn secondary" type="button" data-go="timer">Back to timer</button>
             </div>
           </div>
@@ -1090,14 +1220,15 @@
         <div class="card">
           <div class="stack center">
             <p class="eyebrow">The truth</p>
-            <h2>Imposter revealed</h2>
+            <h2 id="resultTitle">Role revealed</h2>
             <div class="result-list" id="resultList"></div>
-            <div class="word-reveal">
-              Secret word
+            <div class="word-reveal" id="resultSecretWrap">
+              <span id="resultSecretLabel">Secret word</span>
               <span id="resultWord">Pizza</span>
             </div>
             <p class="hint" id="guessSummary"></p>
             <button class="btn" id="playAgainButton" type="button">Play again</button>
+            <button class="small-link" id="changeGameButton" type="button">Choose another game</button>
             <button class="small-link" id="newPlayersButton" type="button">Start over with new players</button>
           </div>
         </div>
@@ -1108,46 +1239,214 @@
 
   <script>
     /*
-      Pass the Phone Imposter
+      Pass the Phone Game Hub
       Everything is intentionally kept in this one script so beginners can edit it.
-      Change the word lists below to customize the game for your group.
+      Add games, roles, or location lists below to customize the hub for your group.
     */
 
-    const WORD_BANKS = {
-      Food: ["Pizza", "Sushi", "Adobo", "Tacos", "Ice cream", "Pancakes", "Mango", "Spaghetti", "Donuts", "Ramen"],
-      Places: ["Beach", "Airport", "Library", "Mall", "Theme park", "Hospital", "Baguio", "Church", "Cinema", "School"],
-      Objects: ["Umbrella", "Backpack", "Microphone", "Toothbrush", "Headphones", "Mirror", "Keychain", "Camera", "Sneakers", "Remote"],
-      Movies: ["Titanic", "Frozen", "Avengers", "Finding Nemo", "Home Alone", "Moana", "Spider-Man", "Toy Story", "Shrek", "Black Panther"],
-      Bible: ["Noah's Ark", "Moses", "David and Goliath", "Bethlehem", "The Good Samaritan", "Daniel", "Jonah", "Eden", "Jericho", "The Last Supper"],
-      "Filipino Party": ["Karaoke", "Lechon", "Lumpia", "Pabitin", "Parlor games", "Videoke", "Potluck", "Sari-sari store", "Halo-halo", "Mano po"]
+    const LOCATION_BANKS = {
+      Classic: ["Airport", "Bank", "Beach", "Casino", "Circus", "Hospital", "Hotel", "Movie studio", "Police station", "Restaurant", "School", "Space station"],
+      Everyday: ["Barbershop", "Bus station", "Church", "Coffee shop", "Grocery store", "Gym", "Library", "Mall", "Museum", "Office", "Park", "Wedding"],
+      Travel: ["Cruise ship", "Embassy", "Harbor", "Hostel", "Island resort", "Safari camp", "Ski lodge", "Subway", "Theme park", "Train station", "Zoo", "Airplane"],
+      Party: ["Arcade", "Bowling alley", "Concert", "Escape room", "Food court", "Karaoke room", "Pool party", "Prom", "Rooftop bar", "Sports arena", "Talent show", "Video game cafe"]
+    };
+
+    const SPYFALL_JOBS = [
+      "Manager",
+      "Security",
+      "Cleaner",
+      "Chef",
+      "Customer",
+      "Tourist",
+      "Driver",
+      "Photographer",
+      "Technician",
+      "Host",
+      "Doctor",
+      "Performer"
+    ];
+
+    const GAME_MODES = {
+      werewolf: {
+        name: "Werewolf",
+        mark: "WW",
+        minPlayers: 5,
+        defaultTimer: 3,
+        defaultThreats: 1,
+        threatOptions: [1, 2],
+        twoThreatMin: 7,
+        threatLabel: "Werewolves",
+        threatSingular: "werewolf",
+        threatPlural: "werewolves",
+        cardText: "A village hunts hidden werewolves before the vote turns ugly.",
+        playerLead: "Add at least five villagers. One phone handles the private role reveals.",
+        setupTitle: "Set up Werewolf",
+        setupLead: "Choose how many werewolves are hiding in the village.",
+        summary: "Werewolves bluff through the day. Villagers, the Seer, and the Doctor try to expose them before voting.",
+        hasSecret: false,
+        shuffleTitle: "The village is sleeping",
+        shuffleLead: "Werewolves and villagers are receiving their secret roles.",
+        timerEyebrow: "Day break",
+        timerTitle: "Find the werewolf",
+        timerLead: "Question alibis, listen for slips, and pick who the village will accuse.",
+        voteTitle: "Who is a werewolf?",
+        voteHintSingle: "Tap the suspected werewolf, then reveal the truth.",
+        voteHintPlural: "Tap up to two suspected werewolves, then reveal the truth.",
+        revealResultButton: "Reveal werewolves",
+        resultTitle: "Werewolves revealed",
+        noVoteSummary: "No one was accused before the reveal.",
+        correctSummary: "The village caught every werewolf.",
+        partialSummary: "The village caught one werewolf, but danger remains.",
+        missedSummary: "The werewolves survived the vote.",
+        buildRoles: createWerewolfRoles
+      },
+      mafia: {
+        name: "Mafia",
+        mark: "MF",
+        minPlayers: 5,
+        defaultTimer: 3,
+        defaultThreats: 1,
+        threatOptions: [1, 2],
+        twoThreatMin: 7,
+        threatLabel: "Mafia",
+        threatSingular: "mafia",
+        threatPlural: "mafia",
+        cardText: "The town interrogates quietly dangerous mafia members.",
+        playerLead: "Add at least five players. The app will deal mafia, town, and special roles.",
+        setupTitle: "Set up Mafia",
+        setupLead: "Choose how many mafia members are working together.",
+        summary: "Mafia players hide in plain sight. The Detective and Doctor help the town survive the accusation round.",
+        hasSecret: false,
+        shuffleTitle: "The city goes quiet",
+        shuffleLead: "Mafia, town, and special roles are being dealt.",
+        timerEyebrow: "Town meeting",
+        timerTitle: "Find the mafia",
+        timerLead: "Compare stories, push for contradictions, and decide who the town trusts least.",
+        voteTitle: "Who is mafia?",
+        voteHintSingle: "Tap the suspected mafia player, then reveal the truth.",
+        voteHintPlural: "Tap up to two suspected mafia players, then reveal the truth.",
+        revealResultButton: "Reveal mafia",
+        resultTitle: "Mafia revealed",
+        noVoteSummary: "No suspect was selected before the reveal.",
+        correctSummary: "The town identified every mafia member.",
+        partialSummary: "The town found one mafia member, but the case is not closed.",
+        missedSummary: "The mafia escaped suspicion this round.",
+        buildRoles: createMafiaRoles
+      },
+      bomb: {
+        name: "Who's Got the Bomb",
+        mark: "BG",
+        minPlayers: 3,
+        defaultTimer: 2,
+        defaultThreats: 1,
+        threatOptions: [1, 2],
+        twoThreatMin: 6,
+        threatLabel: "Bomb holders",
+        threatSingular: "bomb holder",
+        threatPlural: "bomb holders",
+        cardText: "One player is secretly carrying the bomb. Everyone else has to flush them out.",
+        playerLead: "Add at least three players. The bomb holder must bluff through the discussion.",
+        setupTitle: "Set up the Bomb",
+        setupLead: "Choose how many players secretly have the bomb.",
+        summary: "Bomb holders deny everything. Safe players and the Defuser pressure the table into picking the right target.",
+        hasSecret: false,
+        shuffleTitle: "Passing the package",
+        shuffleLead: "The phone is deciding who secretly has the bomb.",
+        timerEyebrow: "Countdown",
+        timerTitle: "Who has the bomb?",
+        timerLead: "Ask quick questions, watch reactions, and pick the player who is sweating too much.",
+        voteTitle: "Who has the bomb?",
+        voteHintSingle: "Tap the suspected bomb holder, then reveal the truth.",
+        voteHintPlural: "Tap up to two suspected bomb holders, then reveal the truth.",
+        revealResultButton: "Reveal bomb holder",
+        resultTitle: "Bomb holder revealed",
+        noVoteSummary: "No bomb holder was selected before the reveal.",
+        correctSummary: "The group found every bomb holder in time.",
+        partialSummary: "The group found one bomb holder, but another package was still live.",
+        missedSummary: "The bomb holder slipped through the vote.",
+        buildRoles: createBombRoles
+      },
+      spyfall: {
+        name: "Spyfall",
+        mark: "SP",
+        minPlayers: 3,
+        defaultTimer: 5,
+        defaultThreats: 1,
+        threatOptions: [1, 2],
+        twoThreatMin: 6,
+        threatLabel: "Spies",
+        threatSingular: "spy",
+        threatPlural: "spies",
+        cardText: "Everyone knows the location except the spy, who has to fake it.",
+        playerLead: "Add at least three players. Locals get a location and cover role; spies get neither.",
+        setupTitle: "Set up Spyfall",
+        setupLead: "Choose a location category or type a custom location.",
+        summary: "Locals protect the location with careful answers. Spies listen for clues and try to blend in.",
+        hasSecret: true,
+        wordBanks: LOCATION_BANKS,
+        defaultCategory: "Classic",
+        secretSectionTitle: "Locations",
+        customPlaceholder: "Enter custom location",
+        resultSecretLabel: "Location",
+        shuffleTitle: "Choosing the location",
+        shuffleLead: "Locals are getting the location. Spies are getting nothing but nerves.",
+        timerEyebrow: "Question time",
+        timerTitle: "Find the spy",
+        timerLead: "Ask location-aware questions without making the answer too easy for the spy.",
+        voteTitle: "Who is the spy?",
+        voteHintSingle: "Tap the suspected spy, then reveal the truth.",
+        voteHintPlural: "Tap up to two suspected spies, then reveal the truth.",
+        revealResultButton: "Reveal spy",
+        resultTitle: "Spy revealed",
+        noVoteSummary: "No spy was selected before the reveal.",
+        correctSummary: "The locals found every spy.",
+        partialSummary: "The locals found one spy, but another stayed hidden.",
+        missedSummary: "The spy escaped suspicion and kept the location covered.",
+        buildRoles: createSpyfallRoles
+      }
     };
 
     const state = {
       players: [],
-      category: "Food",
+      gameId: "werewolf",
+      category: "Classic",
       secretWord: "",
       imposters: 1,
-      timerMinutes: 1,
+      roles: [],
       imposterIndexes: new Set(),
       currentRevealIndex: 0,
       selectedVotes: new Set(),
-      timerTotal: 60,
-      timerRemaining: 60,
+      timerTotal: 180,
+      timerRemaining: 180,
+      timerMinutes: 3,
       timerId: null,
       muted: false,
       audioContext: null
     };
 
     const screens = document.querySelectorAll(".screen");
+    const gameGrid = document.getElementById("gameGrid");
+    const playersEyebrow = document.getElementById("playersEyebrow");
+    const playersLead = document.getElementById("playersLead");
     const playerForm = document.getElementById("playerForm");
     const playerNameInput = document.getElementById("playerNameInput");
     const playerChips = document.getElementById("playerChips");
     const playerError = document.getElementById("playerError");
+    const setupTitle = document.getElementById("setupTitle");
+    const setupLead = document.getElementById("setupLead");
     const setupError = document.getElementById("setupError");
+    const modeSummary = document.getElementById("modeSummary");
+    const categorySection = document.getElementById("categorySection");
+    const categoryTitle = document.getElementById("categoryTitle");
     const categoryGrid = document.getElementById("categoryGrid");
     const customWordWrap = document.getElementById("customWordWrap");
     const customWordInput = document.getElementById("customWordInput");
+    const threatTitle = document.getElementById("threatTitle");
+    const imposterSwitch = document.getElementById("imposterSwitch");
+    const timerSwitch = document.getElementById("timerSwitch");
     const assignButton = document.getElementById("assignButton");
+    const shuffleTitle = document.getElementById("shuffleTitle");
+    const shuffleLead = document.getElementById("shuffleLead");
     const currentPlayerName = document.getElementById("currentPlayerName");
     const revealProgress = document.getElementById("revealProgress");
     const roleCard = document.getElementById("roleCard");
@@ -1155,36 +1454,187 @@
     const revealRoleButton = document.getElementById("revealRoleButton");
     const hidePassButton = document.getElementById("hidePassButton");
     const revealCardShell = document.getElementById("revealCardShell");
+    const timerEyebrow = document.getElementById("timerEyebrow");
+    const timerTitle = document.getElementById("timerTitle");
+    const timerLead = document.getElementById("timerLead");
     const timerRing = document.getElementById("timerRing");
     const timeText = document.getElementById("timeText");
     const timerStatus = document.getElementById("timerStatus");
     const timerStartPause = document.getElementById("timerStartPause");
     const timerReset = document.getElementById("timerReset");
+    const voteTitle = document.getElementById("voteTitle");
     const voteList = document.getElementById("voteList");
     const voteHint = document.getElementById("voteHint");
+    const revealResultButton = document.getElementById("revealResultButton");
+    const resultTitle = document.getElementById("resultTitle");
     const resultList = document.getElementById("resultList");
+    const resultSecretWrap = document.getElementById("resultSecretWrap");
+    const resultSecretLabel = document.getElementById("resultSecretLabel");
     const resultWord = document.getElementById("resultWord");
     const guessSummary = document.getElementById("guessSummary");
     const confettiLayer = document.getElementById("confettiLayer");
     const muteButton = document.getElementById("muteButton");
 
-    // Make category buttons from the word bank object.
-    Object.keys(WORD_BANKS).forEach((category) => {
-      const button = document.createElement("button");
-      button.className = "option-btn";
-      button.type = "button";
-      button.textContent = category;
-      button.dataset.category = category;
-      if (category === state.category) button.classList.add("active");
-      categoryGrid.appendChild(button);
-    });
+    function createRole(title, kind, symbol, hint, details = []) {
+      return { title, kind, symbol, hint, details };
+    }
 
-    const customButton = document.createElement("button");
-    customButton.className = "option-btn";
-    customButton.type = "button";
-    customButton.textContent = "Custom";
-    customButton.dataset.category = "Custom";
-    categoryGrid.appendChild(customButton);
+    function roleDetail(label, value) {
+      return { label, value };
+    }
+
+    function shuffledIndexes(count) {
+      const indexes = Array.from({ length: count }, (_, index) => index);
+      for (let i = indexes.length - 1; i > 0; i -= 1) {
+        const swapIndex = Math.floor(Math.random() * (i + 1));
+        [indexes[i], indexes[swapIndex]] = [indexes[swapIndex], indexes[i]];
+      }
+      return indexes;
+    }
+
+    function createWerewolfRoles({ players, threatCount }) {
+      const indexes = shuffledIndexes(players.length);
+      const targets = indexes.slice(0, threatCount);
+      const remaining = indexes.slice(threatCount);
+      const roles = players.map(() => createRole(
+        "Villager",
+        "player",
+        "OK",
+        "You are a villager. Find the werewolves during the day vote."
+      ));
+
+      targets.forEach((index) => {
+        roles[index] = createRole(
+          "Werewolf",
+          "threat",
+          "WW",
+          "You are a werewolf. Hide your pack and push suspicion elsewhere."
+        );
+      });
+
+      if (remaining.length) {
+        roles[remaining.shift()] = createRole(
+          "Seer",
+          "player",
+          "SEE",
+          "At night, inspect one player to learn whether they are a werewolf."
+        );
+      }
+
+      if (players.length >= 6 && remaining.length) {
+        roles[remaining.shift()] = createRole(
+          "Doctor",
+          "player",
+          "DOC",
+          "At night, choose one player to protect from elimination."
+        );
+      }
+
+      return { roles, targetIndexes: targets };
+    }
+
+    function createMafiaRoles({ players, threatCount }) {
+      const indexes = shuffledIndexes(players.length);
+      const targets = indexes.slice(0, threatCount);
+      const remaining = indexes.slice(threatCount);
+      const roles = players.map(() => createRole(
+        "Citizen",
+        "player",
+        "OK",
+        "You are town. Find the mafia before they control the vote."
+      ));
+
+      targets.forEach((index) => {
+        roles[index] = createRole(
+          "Mafia",
+          "threat",
+          "MF",
+          "You are mafia. Protect your team and redirect suspicion."
+        );
+      });
+
+      if (remaining.length) {
+        roles[remaining.shift()] = createRole(
+          "Detective",
+          "player",
+          "DET",
+          "At night, investigate one player and use your read carefully."
+        );
+      }
+
+      if (players.length >= 6 && remaining.length) {
+        roles[remaining.shift()] = createRole(
+          "Doctor",
+          "player",
+          "DOC",
+          "At night, choose one player to protect from the mafia."
+        );
+      }
+
+      return { roles, targetIndexes: targets };
+    }
+
+    function createBombRoles({ players, threatCount }) {
+      const indexes = shuffledIndexes(players.length);
+      const targets = indexes.slice(0, threatCount);
+      const remaining = indexes.slice(threatCount);
+      const roles = players.map(() => createRole(
+        "Safe",
+        "player",
+        "OK",
+        "You do not have the bomb. Pressure the table and find who does."
+      ));
+
+      targets.forEach((index) => {
+        roles[index] = createRole(
+          "Bomb Holder",
+          "threat",
+          "BOMB",
+          "You have the bomb. Deflect suspicion before the group votes."
+        );
+      });
+
+      if (remaining.length) {
+        roles[remaining.shift()] = createRole(
+          "Defuser",
+          "player",
+          "DEF",
+          "You are safe. Lead the questioning and help the group pick correctly."
+        );
+      }
+
+      return { roles, targetIndexes: targets };
+    }
+
+    function createSpyfallRoles({ players, threatCount, secretWord }) {
+      const indexes = shuffledIndexes(players.length);
+      const targets = indexes.slice(0, threatCount);
+      const roles = players.map(() => createRole(
+        "Local",
+        "player",
+        "LOC",
+        "You know the location. Answer naturally without giving it away.",
+        [
+          roleDetail("Location", secretWord),
+          roleDetail("Cover", randomItem(SPYFALL_JOBS))
+        ]
+      ));
+
+      targets.forEach((index) => {
+        roles[index] = createRole(
+          "Spy",
+          "threat",
+          "SPY",
+          "You do not know the location. Listen for clues and fake confidence."
+        );
+      });
+
+      return { roles, targetIndexes: targets };
+    }
+
+    function currentMode() {
+      return GAME_MODES[state.gameId];
+    }
 
     function showScreen(name) {
       screens.forEach((screen) => {
@@ -1236,6 +1686,142 @@
       element.textContent = message;
     }
 
+    function formatThreatCount(count, mode) {
+      return count === 1 ? `1 ${mode.threatSingular}` : `${count} ${mode.threatPlural}`;
+    }
+
+    function renderGameHub() {
+      gameGrid.innerHTML = "";
+
+      Object.entries(GAME_MODES).forEach(([gameId, mode]) => {
+        const button = document.createElement("button");
+        button.className = "game-card";
+        button.type = "button";
+        button.dataset.game = gameId;
+        button.setAttribute("aria-label", `Play ${mode.name}`);
+
+        const mark = document.createElement("span");
+        mark.className = "game-mark";
+        mark.textContent = mode.mark;
+
+        const copy = document.createElement("span");
+        const name = document.createElement("span");
+        name.className = "game-name";
+        name.textContent = mode.name;
+
+        const desc = document.createElement("span");
+        desc.className = "game-desc";
+        desc.textContent = mode.cardText;
+
+        copy.append(name, desc);
+        button.append(mark, copy);
+        gameGrid.appendChild(button);
+      });
+    }
+
+    function selectGame(gameId) {
+      state.gameId = gameId;
+      const mode = currentMode();
+      state.imposters = mode.defaultThreats;
+      state.timerMinutes = mode.defaultTimer;
+      state.secretWord = "";
+      state.roles = [];
+      state.imposterIndexes = new Set();
+      state.selectedVotes = new Set();
+      if (mode.hasSecret) state.category = mode.defaultCategory;
+      setError(playerError, "");
+      setError(setupError, "");
+      renderSetup();
+      syncTimerButtons();
+      resetTimer();
+    }
+
+    function renderSetup() {
+      const mode = currentMode();
+      playersEyebrow.textContent = mode.name;
+      playersLead.textContent = mode.playerLead;
+      setupTitle.textContent = mode.setupTitle;
+      setupLead.textContent = mode.setupLead;
+      modeSummary.textContent = mode.summary;
+      threatTitle.textContent = mode.threatLabel;
+      assignButton.textContent = `Shuffle ${mode.name} roles`;
+      shuffleTitle.textContent = mode.shuffleTitle;
+      shuffleLead.textContent = mode.shuffleLead;
+      timerEyebrow.textContent = mode.timerEyebrow;
+      timerTitle.textContent = mode.timerTitle;
+      timerLead.textContent = mode.timerLead;
+      voteTitle.textContent = mode.voteTitle;
+      revealResultButton.textContent = mode.revealResultButton;
+      resultTitle.textContent = mode.resultTitle;
+
+      categorySection.classList.toggle("is-hidden", !mode.hasSecret);
+      renderCategoryButtons();
+      renderThreatOptions();
+    }
+
+    function renderCategoryButtons() {
+      const mode = currentMode();
+      categoryGrid.innerHTML = "";
+
+      if (!mode.hasSecret) {
+        customWordWrap.classList.remove("active");
+        return;
+      }
+
+      const wordBanks = mode.wordBanks;
+      if (!wordBanks[state.category] && state.category !== "Custom") {
+        state.category = mode.defaultCategory;
+      }
+
+      categoryTitle.textContent = mode.secretSectionTitle;
+      customWordInput.placeholder = mode.customPlaceholder;
+
+      Object.keys(wordBanks).forEach((category) => {
+        const button = document.createElement("button");
+        button.className = "option-btn";
+        button.type = "button";
+        button.textContent = category;
+        button.dataset.category = category;
+        if (category === state.category) button.classList.add("active");
+        categoryGrid.appendChild(button);
+      });
+
+      const customButton = document.createElement("button");
+      customButton.className = "option-btn";
+      customButton.type = "button";
+      customButton.textContent = "Custom";
+      customButton.dataset.category = "Custom";
+      if (state.category === "Custom") customButton.classList.add("active");
+      categoryGrid.appendChild(customButton);
+      customWordWrap.classList.toggle("active", state.category === "Custom");
+    }
+
+    function renderThreatOptions() {
+      const mode = currentMode();
+      imposterSwitch.innerHTML = "";
+      imposterSwitch.style.setProperty("--cols", mode.threatOptions.length);
+
+      if (!mode.threatOptions.includes(state.imposters)) {
+        state.imposters = mode.defaultThreats;
+      }
+
+      mode.threatOptions.forEach((count) => {
+        const button = document.createElement("button");
+        button.className = "option-btn";
+        button.type = "button";
+        button.dataset.imposters = count;
+        button.textContent = formatThreatCount(count, mode);
+        if (count === state.imposters) button.classList.add("active");
+        imposterSwitch.appendChild(button);
+      });
+    }
+
+    function syncTimerButtons() {
+      timerSwitch.querySelectorAll("[data-minutes]").forEach((button) => {
+        button.classList.toggle("active", Number(button.dataset.minutes) === state.timerMinutes);
+      });
+    }
+
     function renderPlayers() {
       playerChips.innerHTML = "";
 
@@ -1284,33 +1870,50 @@
     }
 
     function chooseSecretWord() {
+      const mode = currentMode();
+      if (!mode.hasSecret) return "";
+
       if (state.category === "Custom") {
         return customWordInput.value.trim().replace(/\s+/g, " ");
       }
 
-      return randomItem(WORD_BANKS[state.category]);
+      return randomItem(mode.wordBanks[state.category]);
+    }
+
+    function minimumPlayersForThreatCount(mode) {
+      if (state.imposters > 1) return mode.twoThreatMin;
+      return mode.minPlayers;
     }
 
     function assignRoles() {
+      const mode = currentMode();
       state.secretWord = chooseSecretWord();
 
-      if (!state.secretWord) {
-        setError(setupError, "Enter a custom word or choose a preset category.");
+      if (state.players.length < mode.minPlayers) {
+        setError(setupError, `Add at least ${mode.minPlayers} players for ${mode.name}.`);
         return;
       }
 
-      if (state.imposters === 2 && state.players.length < 4) {
-        setError(setupError, "Use at least four players when there are two imposters.");
+      const minimumPlayers = minimumPlayersForThreatCount(mode);
+      if (state.players.length < minimumPlayers) {
+        setError(setupError, `Use at least ${minimumPlayers} players with ${formatThreatCount(state.imposters, mode)}.`);
         return;
       }
+
+      if (mode.hasSecret && !state.secretWord) {
+        setError(setupError, "Enter a custom location or choose a preset category.");
+        return;
+      }
+
+      const assignment = mode.buildRoles({
+        players: state.players,
+        threatCount: state.imposters,
+        secretWord: state.secretWord
+      });
 
       setError(setupError, "");
-      state.imposterIndexes = new Set();
-
-      while (state.imposterIndexes.size < state.imposters) {
-        state.imposterIndexes.add(Math.floor(Math.random() * state.players.length));
-      }
-
+      state.roles = assignment.roles;
+      state.imposterIndexes = new Set(assignment.targetIndexes);
       state.currentRevealIndex = 0;
       state.selectedVotes = new Set();
       resetTimer();
@@ -1336,51 +1939,55 @@
     }
 
     function revealRole() {
-      const isImposter = state.imposterIndexes.has(state.currentRevealIndex);
+      const role = state.roles[state.currentRevealIndex];
+      if (!role) return;
+
       revealRoleButton.disabled = true;
       hidePassButton.disabled = false;
+      roleContent.innerHTML = "";
 
-      if (isImposter) {
-        roleContent.innerHTML = "";
+      const symbol = document.createElement("div");
+      symbol.className = "role-symbol";
+      symbol.textContent = role.symbol;
 
-        const symbol = document.createElement("div");
-        symbol.className = "role-symbol";
-        symbol.textContent = "!";
+      const title = document.createElement("div");
+      title.className = `role-title ${role.kind === "threat" ? "imposter" : "player"}`;
+      title.textContent = role.title;
 
-        const title = document.createElement("div");
-        title.className = "role-title imposter";
-        title.textContent = "Imposter";
+      const hint = document.createElement("p");
+      hint.className = "hint";
+      hint.textContent = role.hint;
 
-        const hint = document.createElement("p");
-        hint.className = "hint";
-        hint.textContent = "You do not know the secret word. Blend in and bluff carefully.";
+      roleContent.append(symbol, title, hint);
 
-        roleContent.append(symbol, title, hint);
+      if (role.details.length) {
+        const list = document.createElement("div");
+        list.className = "role-detail-list";
+
+        role.details.forEach((detail) => {
+          const item = document.createElement("div");
+          item.className = "role-detail";
+
+          const label = document.createElement("small");
+          label.textContent = detail.label;
+
+          const value = document.createElement("strong");
+          value.textContent = detail.value;
+
+          item.append(label, value);
+          list.appendChild(item);
+        });
+
+        roleContent.appendChild(list);
+      }
+
+      if (role.kind === "threat") {
         window.setTimeout(() => {
           revealCardShell.classList.add("shake");
           playSound("imposter");
           if ("vibrate" in navigator) navigator.vibrate([60, 40, 120]);
         }, 260);
       } else {
-        roleContent.innerHTML = "";
-
-        const symbol = document.createElement("div");
-        symbol.className = "role-symbol";
-        symbol.textContent = "OK";
-
-        const title = document.createElement("div");
-        title.className = "role-title player";
-        title.textContent = "You know it";
-
-        const hint = document.createElement("p");
-        hint.className = "hint";
-        hint.textContent = "The secret word is";
-
-        const word = document.createElement("div");
-        word.className = "secret-word";
-        word.textContent = state.secretWord;
-
-        roleContent.append(symbol, title, hint, word);
         playSound("reveal");
       }
 
@@ -1454,11 +2061,15 @@
       }, 1000);
     }
 
+    function targetVoteCount() {
+      return state.imposterIndexes.size || state.imposters;
+    }
+
     function buildVoteList() {
+      const mode = currentMode();
+      const voteCount = targetVoteCount();
       voteList.innerHTML = "";
-      voteHint.textContent = state.imposters === 1
-        ? "Tap the person the group suspects, then reveal the truth."
-        : "Tap up to two suspects, then reveal the truth.";
+      voteHint.textContent = voteCount === 1 ? mode.voteHintSingle : mode.voteHintPlural;
 
       state.players.forEach((player, index) => {
         const button = document.createElement("button");
@@ -1470,7 +2081,8 @@
         name.textContent = player;
 
         const status = document.createElement("span");
-        status.textContent = "Vote";
+        status.textContent = state.selectedVotes.has(index) ? "Picked" : "Pick";
+        if (state.selectedVotes.has(index)) button.classList.add("selected");
 
         button.append(name, status);
         button.addEventListener("click", () => toggleVote(index, button));
@@ -1484,17 +2096,17 @@
       if (state.selectedVotes.has(index)) {
         state.selectedVotes.delete(index);
         button.classList.remove("selected");
-        button.lastElementChild.textContent = "Vote";
+        button.lastElementChild.textContent = "Pick";
         return;
       }
 
-      if (state.selectedVotes.size >= state.imposters) {
+      if (state.selectedVotes.size >= targetVoteCount()) {
         const first = state.selectedVotes.values().next().value;
         state.selectedVotes.delete(first);
         const firstButton = voteList.querySelector(`[data-index="${first}"]`);
         if (firstButton) {
           firstButton.classList.remove("selected");
-          firstButton.lastElementChild.textContent = "Vote";
+          firstButton.lastElementChild.textContent = "Pick";
         }
       }
 
@@ -1504,18 +2116,33 @@
     }
 
     function revealResult() {
+      const mode = currentMode();
       clearInterval(state.timerId);
       state.timerId = null;
 
+      resultTitle.textContent = mode.resultTitle;
       resultList.innerHTML = "";
       [...state.imposterIndexes].forEach((index) => {
         const name = document.createElement("div");
         name.className = "result-name";
         name.textContent = state.players[index];
+
+        const role = document.createElement("span");
+        role.className = "result-role";
+        role.textContent = state.roles[index].title;
+
+        name.appendChild(role);
         resultList.appendChild(name);
       });
 
-      resultWord.textContent = state.secretWord;
+      if (mode.hasSecret) {
+        resultSecretWrap.classList.remove("is-hidden");
+        resultSecretLabel.textContent = mode.resultSecretLabel;
+        resultWord.textContent = state.secretWord;
+      } else {
+        resultSecretWrap.classList.add("is-hidden");
+      }
+
       guessSummary.textContent = makeGuessSummary();
       showScreen("result");
       playSound("success");
@@ -1523,20 +2150,23 @@
     }
 
     function makeGuessSummary() {
+      const mode = currentMode();
+      const targetCount = targetVoteCount();
+
       if (state.selectedVotes.size === 0) {
-        return "No suspect was selected before the reveal.";
+        return mode.noVoteSummary;
       }
 
       const correct = [...state.selectedVotes].filter((index) => state.imposterIndexes.has(index)).length;
-      if (correct === state.imposters && state.selectedVotes.size === state.imposters) {
-        return "The group caught every imposter.";
+      if (correct === targetCount && state.selectedVotes.size === targetCount) {
+        return mode.correctSummary;
       }
 
       if (correct > 0) {
-        return "The group caught at least one imposter, but not the whole crew.";
+        return mode.partialSummary;
       }
 
-      return "The imposter escaped suspicion this round.";
+      return mode.missedSummary;
     }
 
     function launchConfetti() {
@@ -1559,22 +2189,41 @@
       }, 4600);
     }
 
-    function playAgain() {
+    function clearRound() {
       state.currentRevealIndex = 0;
+      state.roles = [];
       state.imposterIndexes = new Set();
       state.selectedVotes = new Set();
       resetTimer();
+    }
+
+    function playAgain() {
+      clearRound();
+      renderSetup();
       showScreen("setup");
+    }
+
+    function chooseAnotherGame() {
+      clearRound();
+      showScreen("welcome");
     }
 
     function startOver() {
       state.players = [];
-      state.currentRevealIndex = 0;
-      state.selectedVotes = new Set();
-      resetTimer();
+      clearRound();
       renderPlayers();
       showScreen("welcome");
     }
+
+    gameGrid.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-game]");
+      if (!button) return;
+
+      selectGame(button.dataset.game);
+      renderPlayers();
+      playSound("tap");
+      showScreen("players");
+    });
 
     document.querySelectorAll("[data-go]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -1589,8 +2238,9 @@
     });
 
     document.getElementById("playersNextButton").addEventListener("click", () => {
-      if (state.players.length < 3) {
-        setError(playerError, "Add at least three players to start.");
+      const mode = currentMode();
+      if (state.players.length < mode.minPlayers) {
+        setError(playerError, `Add at least ${mode.minPlayers} players for ${mode.name}.`);
         return;
       }
 
@@ -1604,30 +2254,26 @@
       if (!button) return;
 
       state.category = button.dataset.category;
-      categoryGrid.querySelectorAll(".option-btn").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-      customWordWrap.classList.toggle("active", state.category === "Custom");
+      renderCategoryButtons();
       setError(setupError, "");
       playSound("tap");
     });
 
-    document.getElementById("imposterSwitch").addEventListener("click", (event) => {
+    imposterSwitch.addEventListener("click", (event) => {
       const button = event.target.closest("[data-imposters]");
       if (!button) return;
 
       state.imposters = Number(button.dataset.imposters);
-      event.currentTarget.querySelectorAll(".option-btn").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
+      renderThreatOptions();
       playSound("tap");
     });
 
-    document.getElementById("timerSwitch").addEventListener("click", (event) => {
+    timerSwitch.addEventListener("click", (event) => {
       const button = event.target.closest("[data-minutes]");
       if (!button) return;
 
       state.timerMinutes = Number(button.dataset.minutes);
-      event.currentTarget.querySelectorAll(".option-btn").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
+      syncTimerButtons();
       resetTimer();
       playSound("tap");
     });
@@ -1647,8 +2293,9 @@
       playSound("tap");
       showScreen("voting");
     });
-    document.getElementById("revealResultButton").addEventListener("click", revealResult);
+    revealResultButton.addEventListener("click", revealResult);
     document.getElementById("playAgainButton").addEventListener("click", playAgain);
+    document.getElementById("changeGameButton").addEventListener("click", chooseAnotherGame);
     document.getElementById("newPlayersButton").addEventListener("click", startOver);
 
     muteButton.addEventListener("click", () => {
@@ -1658,8 +2305,9 @@
       if (!state.muted) playSound("tap");
     });
 
+    renderGameHub();
+    selectGame(state.gameId);
     renderPlayers();
-    resetTimer();
   </script>
 </body>
 </html>
