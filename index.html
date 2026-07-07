@@ -1050,7 +1050,7 @@
             <h1><span class="title-glow">Game Hub</span></h1>
             <p class="lead">Pick a hidden-role game, pass the phone for private reveals, then argue your way to the truth.</p>
             <div class="mini-badges" aria-label="Hub highlights">
-              <span class="badge">4 games</span>
+              <span class="badge">5 games</span>
               <span class="badge">No login</span>
               <span class="badge">One phone</span>
             </div>
@@ -1251,6 +1251,15 @@
       Party: ["Arcade", "Bowling alley", "Concert", "Escape room", "Food court", "Karaoke room", "Pool party", "Prom", "Rooftop bar", "Sports arena", "Talent show", "Video game cafe"]
     };
 
+    const IMPOSTER_WORD_BANKS = {
+      Food: ["Pizza", "Sushi", "Adobo", "Tacos", "Ice cream", "Pancakes", "Mango", "Spaghetti", "Donuts", "Ramen"],
+      Places: ["Beach", "Airport", "Library", "Mall", "Theme park", "Hospital", "Baguio", "Church", "Cinema", "School"],
+      Objects: ["Umbrella", "Backpack", "Microphone", "Toothbrush", "Headphones", "Mirror", "Keychain", "Camera", "Sneakers", "Remote"],
+      Movies: ["Titanic", "Frozen", "Avengers", "Finding Nemo", "Home Alone", "Moana", "Spider-Man", "Toy Story", "Shrek", "Black Panther"],
+      Bible: ["Noah's Ark", "Moses", "David and Goliath", "Bethlehem", "The Good Samaritan", "Daniel", "Jonah", "Eden", "Jericho", "The Last Supper"],
+      "Filipino Party": ["Karaoke", "Lechon", "Lumpia", "Pabitin", "Parlor games", "Videoke", "Potluck", "Sari-sari store", "Halo-halo", "Mano po"]
+    };
+
     const SPYFALL_JOBS = [
       "Manager",
       "Security",
@@ -1267,6 +1276,45 @@
     ];
 
     const GAME_MODES = {
+      imposter: {
+        name: "Imposter",
+        mark: "IM",
+        minPlayers: 3,
+        defaultTimer: 1,
+        defaultThreats: 1,
+        threatOptions: [1, 2],
+        twoThreatMin: 4,
+        threatLabel: "Imposters",
+        threatSingular: "imposter",
+        threatPlural: "imposters",
+        cardText: "Everyone gets the secret word except the imposter.",
+        playerLead: "Add at least three players. Most players get the secret word; imposters have to bluff.",
+        setupTitle: "Set up Imposter",
+        setupLead: "Pick a word category or type your own custom word.",
+        summary: "Players who know the word give careful clues. Imposters listen, bluff, and try to avoid the vote.",
+        hasSecret: true,
+        wordBanks: IMPOSTER_WORD_BANKS,
+        defaultCategory: "Food",
+        secretSectionTitle: "Secret words",
+        customPlaceholder: "Enter custom secret word",
+        emptySecretError: "Enter a custom word or choose a preset category.",
+        resultSecretLabel: "Secret word",
+        shuffleTitle: "Choosing the word",
+        shuffleLead: "The secret word is being dealt to everyone except the imposter.",
+        timerEyebrow: "Discussion",
+        timerTitle: "Ask questions",
+        timerLead: "Compare clues, watch who sounds vague, and keep the secret word hidden.",
+        voteTitle: "Who was the imposter?",
+        voteHintSingle: "Tap the person the group suspects, then reveal the truth.",
+        voteHintPlural: "Tap up to two suspects, then reveal the truth.",
+        revealResultButton: "Reveal imposter",
+        resultTitle: "Imposter revealed",
+        noVoteSummary: "No suspect was selected before the reveal.",
+        correctSummary: "The group caught every imposter.",
+        partialSummary: "The group caught at least one imposter, but not the whole crew.",
+        missedSummary: "The imposter escaped suspicion this round.",
+        buildRoles: createImposterRoles
+      },
       werewolf: {
         name: "Werewolf",
         mark: "WW",
@@ -1387,6 +1435,7 @@
         defaultCategory: "Classic",
         secretSectionTitle: "Locations",
         customPlaceholder: "Enter custom location",
+        emptySecretError: "Enter a custom location or choose a preset category.",
         resultSecretLabel: "Location",
         shuffleTitle: "Choosing the location",
         shuffleLead: "Locals are getting the location. Spies are getting nothing but nerves.",
@@ -1490,6 +1539,31 @@
         [indexes[i], indexes[swapIndex]] = [indexes[swapIndex], indexes[i]];
       }
       return indexes;
+    }
+
+    function createImposterRoles({ players, threatCount, secretWord }) {
+      const indexes = shuffledIndexes(players.length);
+      const targets = indexes.slice(0, threatCount);
+      const roles = players.map(() => createRole(
+        "You know it",
+        "player",
+        "OK",
+        "You know the secret word. Give clues without making it too obvious.",
+        [
+          roleDetail("Secret word", secretWord)
+        ]
+      ));
+
+      targets.forEach((index) => {
+        roles[index] = createRole(
+          "Imposter",
+          "threat",
+          "IMP",
+          "You do not know the secret word. Blend in and bluff carefully."
+        );
+      });
+
+      return { roles, targetIndexes: targets };
     }
 
     function createWerewolfRoles({ players, threatCount }) {
@@ -1901,7 +1975,7 @@
       }
 
       if (mode.hasSecret && !state.secretWord) {
-        setError(setupError, "Enter a custom location or choose a preset category.");
+        setError(setupError, mode.emptySecretError);
         return;
       }
 
