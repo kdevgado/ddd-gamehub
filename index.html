@@ -2676,7 +2676,8 @@
       Objects: ["Umbrella", "Backpack", "Microphone", "Toothbrush", "Headphones", "Mirror", "Keychain", "Camera", "Sneakers", "Remote"],
       Movies: ["Titanic", "Frozen", "Avengers", "Finding Nemo", "Home Alone", "Moana", "Spider-Man", "Toy Story", "Shrek", "Black Panther"],
       Bible: ["Noah's Ark", "Moses", "David and Goliath", "Bethlehem", "The Good Samaritan", "Daniel", "Jonah", "Eden", "Jericho", "The Last Supper"],
-      "Filipino Party": ["Karaoke", "Lechon", "Lumpia", "Pabitin", "Parlor games", "Videoke", "Potluck", "Sari-sari store", "Halo-halo", "Mano po"]
+      "Filipino Party": ["Karaoke", "Lechon", "Lumpia", "Pabitin", "Parlor games", "Videoke", "Potluck", "Sari-sari store", "Halo-halo", "Mano po"],
+      SCJ: ["Revelation", "Seven seals", "Seven trumpets", "144,000", "New Heaven New Earth", "Mount Zion", "Tree of Life", "Open scroll", "Twelve tribes", "Harvest", "Firstfruits", "Promised pastor"]
     };
 
     const IMPOSTER_HINT_BANK = {
@@ -2739,7 +2740,19 @@
       "potluck": ["Shared food", "Dishes", "Party"],
       "sari-sari store": ["Snacks", "Neighborhood", "Shop"],
       "halo-halo": ["Dessert", "Shaved ice", "Sweet"],
-      "mano po": ["Blessing", "Respect", "Hand"]
+      "mano po": ["Blessing", "Respect", "Hand"],
+      "revelation": ["Prophecy", "Apocalypse", "Vision"],
+      "seven seals": ["Scroll", "Opened", "Mystery"],
+      "seven trumpets": ["Sound", "Angels", "Warning"],
+      "144,000": ["Sealed", "Tribes", "Number"],
+      "new heaven new earth": ["Renewal", "Promise", "Kingdom"],
+      "mount zion": ["Mountain", "Gathering", "Holy place"],
+      "tree of life": ["Fruit", "Healing", "Paradise"],
+      "open scroll": ["Book", "Revealed", "Scroll"],
+      "twelve tribes": ["Israel", "Names", "Gathering"],
+      "harvest": ["Field", "Gathering", "Ripe"],
+      "firstfruits": ["Offering", "Beginning", "Harvest"],
+      "promised pastor": ["Messenger", "Promise", "Shepherd"]
     };
 
     const SPYFALL_JOBS = [
@@ -3008,6 +3021,8 @@
       selectedVotes: new Set(),
       imposterHints: false,
       categoryFilter: "popular",
+      bibleTapCount: 0,
+      scjUnlocked: false,
       timerEnabled: true,
       timerTotal: 180,
       timerRemaining: 180,
@@ -3384,7 +3399,10 @@
       const banks = getCategoryBanks(mode);
       if (!banks) return [];
 
-      const categories = Object.keys(banks);
+      const categories = Object.keys(banks).filter((category) => {
+        if (category !== "SCJ") return true;
+        return mode.name === "Imposter" && state.scjUnlocked;
+      });
       if (mode.hasSecret) categories.push("Custom");
       return categories;
     }
@@ -3441,6 +3459,7 @@
         Objects: "Common things you can hold, use or spot nearby.",
         Movies: "Blockbusters, animated hits and big-screen clues.",
         Bible: "People, places and stories from the Bible.",
+        SCJ: "Bible and Revelation terms with a Shincheonji focus.",
         "Filipino Party": "Party food, games and Filipino gathering staples.",
         Classic: "The core locations for a balanced spy round.",
         Everyday: "Simple places from normal daily life.",
@@ -4269,6 +4288,21 @@
     });
 
     function selectCategory(category) {
+      if (currentMode().name === "Imposter" && category === "Bible" && !state.scjUnlocked) {
+        state.bibleTapCount += 1;
+        if (state.bibleTapCount >= 7) {
+          state.scjUnlocked = true;
+          state.categoryFilter = "general";
+          state.categories = [...selectedCategories().filter((item) => item !== "Custom"), "SCJ"];
+          syncPrimaryCategory();
+          renderCategoryButtons();
+          syncCustomHintInput();
+          setError(setupError, "");
+          playSound("success");
+          return;
+        }
+      }
+
       if (category === "Custom") {
         state.categories = ["Custom"];
       } else {
