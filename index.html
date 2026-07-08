@@ -202,7 +202,7 @@
         </div>
       </section>
 
-      <!-- 10. Werewolf game master script -->
+      <!-- 10. Game master script -->
       <section class="screen" data-screen="gameMaster">
         <div class="card">
           <div class="stack">
@@ -1329,7 +1329,7 @@
       timerEyebrow.textContent = mode.timerEyebrow;
       timerTitle.textContent = mode.timerTitle;
       timerLead.textContent = mode.timerLead;
-      gmNextNightButton.classList.toggle("is-hidden", state.gameId !== "werewolf");
+      gmNextNightButton.classList.toggle("is-hidden", !usesGameMasterRound());
       voteTitle.textContent = mode.voteTitle;
       revealResultButton.textContent = mode.revealResultButton;
       resultTitle.textContent = mode.resultTitle;
@@ -1496,6 +1496,10 @@
       return state.roles.some((role) => role.title === title);
     }
 
+    function usesGameMasterRound() {
+      return state.gameId === "werewolf" || state.gameId === "mafia";
+    }
+
     function werewolfScriptSteps() {
       const steps = [
         "Everyone closes their eyes. Say: the village is asleep.",
@@ -1530,16 +1534,43 @@
       return steps;
     }
 
+    function mafiaScriptSteps() {
+      const steps = [
+        "Everyone closes their eyes. Say: the city goes quiet.",
+        "Mafia open their eyes, silently choose one player to eliminate, then close their eyes."
+      ];
+
+      if (roleIsInGame("Detective")) {
+        steps.push("Detective opens their eyes, points to one player, and the game master silently confirms whether that player is mafia.");
+      }
+
+      if (roleIsInGame("Doctor")) {
+        steps.push("Doctor opens their eyes, points to one player to protect from the mafia, then closes their eyes.");
+      }
+
+      steps.push("Everyone wakes up. Announce who died overnight, or announce that no one was eliminated.");
+      return steps;
+    }
+
+    function gameMasterScriptSteps() {
+      if (state.gameId === "mafia") return mafiaScriptSteps();
+      return werewolfScriptSteps();
+    }
+
     function setupGameMasterRound() {
-      gmEyebrow.textContent = `Werewolf round ${state.gmRound}`;
-      gmTitle.textContent = state.gmRound === 1 ? "First night script" : "Night script";
-      gmLead.textContent = "Read each step, resolve actions, then mark the night result before discussion.";
-      gmDeathSummary.textContent = "Choose a player who died tonight, or tap no one died.";
+      const mode = currentMode();
+      const nightLabel = state.gmRound === 1 ? "First night script" : "Night script";
+      gmEyebrow.textContent = `${mode.name} round ${state.gmRound}`;
+      gmTitle.textContent = nightLabel;
+      gmLead.textContent = `Read each step, resolve actions, then mark the ${mode.name} night result before discussion.`;
+      gmDeathSummary.textContent = state.gameId === "mafia"
+        ? "Choose who the mafia eliminated, or tap no one was eliminated."
+        : "Choose a player who died tonight, or tap no one died.";
       state.gmDeathIndex = null;
       gmNoDeathButton.classList.remove("active");
 
       gmScriptList.innerHTML = "";
-      werewolfScriptSteps().forEach((step) => {
+      gameMasterScriptSteps().forEach((step) => {
         const item = document.createElement("li");
         item.textContent = step;
         gmScriptList.appendChild(item);
@@ -1576,18 +1607,21 @@
       gmNoDeathButton.classList.remove("active");
       const role = state.roles[index];
       const deathAction = role.title === "Hunter" ? " Let the Hunter choose one player to take down." : "";
-      gmDeathSummary.textContent = `${state.players[index]} died tonight. Reveal: ${role.title}. ${role.hint}${deathAction}`;
+      const resultVerb = state.gameId === "mafia" ? "was eliminated tonight" : "died tonight";
+      gmDeathSummary.textContent = `${state.players[index]} ${resultVerb}. Reveal: ${role.title}. ${role.hint}${deathAction}`;
       renderGameMasterDeathList();
     }
 
     function setNoGameMasterDeath() {
       state.gmDeathIndex = null;
       gmNoDeathButton.classList.add("active");
-      gmDeathSummary.textContent = "No one died tonight. Wake the village and start discussion.";
+      gmDeathSummary.textContent = state.gameId === "mafia"
+        ? "No one was eliminated tonight. Wake the city and start discussion."
+        : "No one died tonight. Wake the village and start discussion.";
       renderGameMasterDeathList();
     }
 
-    function startWerewolfDiscussion() {
+    function startGameMasterDiscussion() {
       if (state.gmDeathIndex !== null) {
         state.deadIndexes.add(state.gmDeathIndex);
         state.aliveIndexes.delete(state.gmDeathIndex);
@@ -1936,7 +1970,7 @@
       state.currentRevealIndex += 1;
 
       if (state.currentRevealIndex >= state.players.length) {
-        if (state.gameId === "werewolf") {
+        if (usesGameMasterRound()) {
           setupGameMasterRound();
           showScreen("gameMaster");
           return;
@@ -2015,7 +2049,7 @@
       voteHint.textContent = voteCount === 1 ? mode.voteHintSingle : mode.voteHintPlural;
 
       state.players.forEach((player, index) => {
-        if (state.gameId === "werewolf" && state.deadIndexes.has(index)) return;
+        if (usesGameMasterRound() && state.deadIndexes.has(index)) return;
 
         const button = document.createElement("button");
         button.className = "vote-btn";
@@ -2357,7 +2391,7 @@
       setNoGameMasterDeath();
       playSound("tap");
     });
-    gmStartDiscussionButton.addEventListener("click", startWerewolfDiscussion);
+    gmStartDiscussionButton.addEventListener("click", startGameMasterDiscussion);
     gmNextNightButton.addEventListener("click", () => {
       setupGameMasterRound();
       showScreen("gameMaster");
