@@ -122,7 +122,8 @@
                 <button class="option-btn active" type="button" data-timer-enabled="on">Timer on</button>
                 <button class="option-btn" type="button" data-timer-enabled="off">Timer off</button>
               </div>
-              <div class="timer-switch" style="--cols: 4;" id="timerSwitch">
+              <div class="timer-switch" style="--cols: 5;" id="timerSwitch">
+                <button class="option-btn" type="button" data-minutes="random">Random</button>
                 <button class="option-btn active" type="button" data-minutes="1">1m</button>
                 <button class="option-btn" type="button" data-minutes="2">2m</button>
                 <button class="option-btn" type="button" data-minutes="3">3m</button>
@@ -639,7 +640,7 @@
         colorB: "#c7ff5a",
         type: "wordBomb",
         minPlayers: 2,
-        defaultTimer: 1,
+        defaultTimer: "random",
         defaultThreats: 1,
         threatOptions: [1],
         twoThreatMin: 2,
@@ -1681,8 +1682,15 @@
     }
 
     function syncTimerButtons() {
+      const mode = currentMode();
+      if (mode.type !== "wordBomb" && state.timerMinutes === "random") {
+        state.timerMinutes = mode.defaultTimer;
+      }
+
+      timerSwitch.style.setProperty("--cols", mode.type === "wordBomb" ? 5 : 4);
       timerSwitch.querySelectorAll("[data-minutes]").forEach((button) => {
-        button.classList.toggle("active", Number(button.dataset.minutes) === state.timerMinutes);
+        button.classList.toggle("is-hidden", button.dataset.minutes === "random" && mode.type !== "wordBomb");
+        button.classList.toggle("active", button.dataset.minutes === String(state.timerMinutes));
       });
     }
 
@@ -1870,12 +1878,24 @@
       bombTimeText.textContent = state.timerRemaining <= 0 ? "BOOM" : "TICK";
     }
 
+    function resolveBombFuseSeconds() {
+      if (state.timerMinutes === "random") {
+        const minimum = 20;
+        const maximum = 120;
+        return minimum + Math.floor(Math.random() * (maximum - minimum + 1));
+      }
+
+      return Number(state.timerMinutes) * 60;
+    }
+
     function resetBombTimer() {
       clearInterval(state.timerId);
       state.timerId = null;
-      const maxFuse = state.timerMinutes * 60;
-      const minFuse = Math.max(8, Math.floor(maxFuse * 0.35));
-      state.timerTotal = minFuse + Math.floor(Math.random() * Math.max(1, maxFuse - minFuse + 1));
+      const fuseSeconds = resolveBombFuseSeconds();
+      const minFuse = state.timerMinutes === "random" ? fuseSeconds : Math.max(8, Math.floor(fuseSeconds * 0.35));
+      state.timerTotal = state.timerMinutes === "random"
+        ? fuseSeconds
+        : minFuse + Math.floor(Math.random() * Math.max(1, fuseSeconds - minFuse + 1));
       state.timerRemaining = state.timerTotal;
       state.bombLastSecond = Math.ceil(state.timerRemaining);
       bombCard.classList.remove("exploded");
@@ -2051,7 +2071,8 @@
     function resetTimer() {
       clearInterval(state.timerId);
       state.timerId = null;
-      state.timerTotal = state.timerMinutes * 60;
+      const timerMinutes = Number(state.timerMinutes) || 1;
+      state.timerTotal = timerMinutes * 60;
       state.timerRemaining = state.timerTotal;
       timerStartPause.textContent = "Start timer";
       timerStatus.textContent = "Ready when the group is ready.";
@@ -2428,9 +2449,15 @@
       const button = event.target.closest("[data-minutes]");
       if (!button) return;
 
-      state.timerMinutes = Number(button.dataset.minutes);
+      if (button.dataset.minutes === "random" && currentMode().type !== "wordBomb") return;
+
+      state.timerMinutes = button.dataset.minutes === "random" ? "random" : Number(button.dataset.minutes);
       syncTimerButtons();
-      resetTimer();
+      if (currentMode().type === "wordBomb") {
+        resetBombTimer();
+      } else {
+        resetTimer();
+      }
       playSound("tap");
     });
 
