@@ -2596,5 +2596,25 @@
     selectGame(state.gameId);
     renderPlayers();
   </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBCCSxn1eU_-rJTotU5BWBWNngOMKLNpRA",
+      authDomain: "ddd-gamehub.firebaseapp.com",
+      projectId: "ddd-gamehub",
+      storageBucket: "ddd-gamehub.firebasestorage.app",
+      messagingSenderId: "743737146474",
+      appId: "1:743737146474:web:e18efb897670079c3ade13",
+      measurementId: "G-T55VB1YCCP"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    isSupported().then((supported) => {
+      if (supported) getAnalytics(firebaseApp);
+    });
+  </script>
 </body>
 </html>
