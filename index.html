@@ -107,7 +107,7 @@
               </div>
             </div>
             <div class="section-block" id="timerSection">
-              <h3>Round timer</h3>
+              <h3 id="timerSectionTitle">Round timer</h3>
               <div class="number-switch" style="--cols: 2;" id="timerToggleSwitch">
                 <button class="option-btn active" type="button" data-timer-enabled="on">Timer on</button>
                 <button class="option-btn" type="button" data-timer-enabled="off">Timer off</button>
@@ -254,26 +254,24 @@
 
       <!-- 10b. Word Bomb active round -->
       <section class="screen" data-screen="bombRound">
-        <div class="card">
+        <div class="card bomb-card" id="bombCard">
           <div class="stack center">
-            <p class="eyebrow">Word Bomb</p>
-            <h2 id="bombTurn">Player</h2>
+            <p class="eyebrow">Live bomb</p>
+            <h2 id="bombTurn">Pass the phone</h2>
             <div class="bomb-prompt" aria-live="polite">
-              <span id="bombPromptType">Contains</span>
-              <strong id="bombPromptText">AR</strong>
+              <span id="bombPromptType">Name something in</span>
+              <strong id="bombPromptText">Animals</strong>
             </div>
             <div class="timer-shell" id="bombTimerShell">
               <div class="timer-ring" id="bombTimerRing">
-                <div class="time-text" id="bombTimeText">01:00</div>
+                <div class="time-text" id="bombTimeText">TICK</div>
               </div>
-              <p class="timer-label" id="bombStatus">Say a matching word before the timer runs out.</p>
+              <p class="timer-label" id="bombStatus">If the answer is accepted, pass the phone immediately.</p>
             </div>
-            <div class="split-row" id="bombTimerControls">
-              <button class="btn" id="bombStartPause" type="button">Start bomb</button>
-              <button class="btn secondary" id="bombReset" type="button">Reset</button>
+            <div class="split-row">
+              <button class="btn secondary" id="bombReset" type="button">New fuse</button>
+              <button class="btn secondary" id="bombNewPromptButton" type="button">New category</button>
             </div>
-            <button class="btn danger" id="bombAcceptedButton" type="button">Word accepted</button>
-            <button class="btn secondary" id="bombNewPromptButton" type="button">New prompt</button>
             <button class="small-link" id="bombEndButton" type="button">Back to setup</button>
           </div>
         </div>
@@ -433,40 +431,40 @@
       "Performer"
     ];
 
-    const BOMB_CRITERIA_BANKS = {
+    const BOMB_CATEGORY_BANKS = {
       Mixed: [
-        ["Contains", "AR"],
-        ["Contains", "OO"],
-        ["Contains", "ST"],
-        ["Contains", "CH"],
-        ["Starts with", "PA"],
-        ["Starts with", "BR"],
-        ["Starts with", "SH"],
-        ["Ends with", "ER"],
-        ["Ends with", "ING"],
-        ["Ends with", "Y"]
+        "Animals",
+        "Foods",
+        "Movies",
+        "Countries",
+        "Things at school",
+        "Things in a kitchen",
+        "Jobs",
+        "Sports",
+        "Things that are red",
+        "Things you can buy"
       ],
       Easy: [
-        ["Contains", "A"],
-        ["Contains", "E"],
-        ["Contains", "O"],
-        ["Starts with", "B"],
-        ["Starts with", "M"],
-        ["Starts with", "S"],
-        ["Ends with", "T"],
-        ["Ends with", "N"],
-        ["Ends with", "D"]
+        "Fruits",
+        "Colors",
+        "Pets",
+        "Cartoons",
+        "Drinks",
+        "Clothes",
+        "Toys",
+        "Fast food",
+        "Things in a bedroom"
       ],
       Hard: [
-        ["Contains", "QU"],
-        ["Contains", "XZ"],
-        ["Contains", "PH"],
-        ["Starts with", "TH"],
-        ["Starts with", "CL"],
-        ["Starts with", "WR"],
-        ["Ends with", "TION"],
-        ["Ends with", "QUE"],
-        ["Ends with", "OUS"]
+        "Mythical creatures",
+        "Historical figures",
+        "Board games",
+        "Musical instruments",
+        "Things at an airport",
+        "Things that float",
+        "Things with wheels",
+        "Words from science",
+        "Famous landmarks"
       ]
     };
 
@@ -635,20 +633,20 @@
         defaultThreats: 1,
         threatOptions: [1],
         twoThreatMin: 2,
-        criteriaBanks: BOMB_CRITERIA_BANKS,
+        criteriaBanks: BOMB_CATEGORY_BANKS,
         defaultCategory: "Mixed",
-        secretSectionTitle: "Letter criteria",
-        cardText: "Say a matching word before the ticking bomb catches you.",
-        playerLead: "Add at least two players. Pass the phone after each valid word.",
-        setupTitle: "Set up Word Bomb",
-        setupLead: "Choose a criteria pack and a countdown, then keep the word chain moving.",
-        summary: "A prompt shows letter criteria. The active player must say a valid word, tap accepted, and pass before the bomb runs out.",
+        secretSectionTitle: "Categories",
+        cardText: "Name something in the category and pass before the bomb explodes.",
+        playerLead: "Add at least two players. Players can only pass the phone after the group accepts their answer.",
+        setupTitle: "Set up Bomb",
+        setupLead: "Choose a category pack and a fuse length. The explosion time is random.",
+        summary: "A category appears. The phone holder names a valid answer, then immediately passes the ticking phone. No button needed.",
         hasSecret: false,
         shuffleTitle: "Lighting the fuse",
-        shuffleLead: "A fresh letter prompt is being armed.",
+        shuffleLead: "A fresh category is being armed.",
         timerEyebrow: "Countdown",
         timerTitle: "Say a word",
-        timerLead: "Match the prompt, tap accepted, and pass the bomb before time runs out.",
+        timerLead: "Name something from the category and pass the shaking phone before it explodes.",
         voteTitle: "",
         voteHintSingle: "",
         voteHintPlural: "",
@@ -732,6 +730,7 @@
       timerMinutes: 3,
       timerId: null,
       bombPrompt: null,
+      bombLastSecond: null,
       muted: false,
       audioContext: null
     };
@@ -770,6 +769,7 @@
     const imposterSwitch = document.getElementById("imposterSwitch");
     const extraRoleSection = document.getElementById("extraRoleSection");
     const extraRoleSwitch = document.getElementById("extraRoleSwitch");
+    const timerSectionTitle = document.getElementById("timerSectionTitle");
     const timerToggleSwitch = document.getElementById("timerToggleSwitch");
     const timerSwitch = document.getElementById("timerSwitch");
     const assignButton = document.getElementById("assignButton");
@@ -800,16 +800,14 @@
     const timerStartPause = document.getElementById("timerStartPause");
     const timerReset = document.getElementById("timerReset");
     const bombTurn = document.getElementById("bombTurn");
+    const bombCard = document.getElementById("bombCard");
     const bombPromptType = document.getElementById("bombPromptType");
     const bombPromptText = document.getElementById("bombPromptText");
     const bombTimerShell = document.getElementById("bombTimerShell");
-    const bombTimerControls = document.getElementById("bombTimerControls");
     const bombTimerRing = document.getElementById("bombTimerRing");
     const bombTimeText = document.getElementById("bombTimeText");
     const bombStatus = document.getElementById("bombStatus");
-    const bombStartPause = document.getElementById("bombStartPause");
     const bombReset = document.getElementById("bombReset");
-    const bombAcceptedButton = document.getElementById("bombAcceptedButton");
     const bombNewPromptButton = document.getElementById("bombNewPromptButton");
     const bombEndButton = document.getElementById("bombEndButton");
     const voteTitle = document.getElementById("voteTitle");
@@ -1038,13 +1036,16 @@
         reveal: [740, 0.08, 0.045],
         imposter: [120, 0.16, 0.08],
         success: [880, 0.12, 0.055],
-        timer: [330, 0.1, 0.045]
+        timer: [330, 0.1, 0.045],
+        tick: [210, 0.035, 0.032],
+        bomb: [70, 0.42, 0.11]
       };
       const [frequency, length, volume] = sounds[type] || sounds.tap;
 
-      oscillator.type = type === "imposter" ? "sawtooth" : "sine";
+      oscillator.type = type === "imposter" || type === "bomb" ? "sawtooth" : "sine";
       oscillator.frequency.setValueAtTime(frequency, now);
       if (type === "success") oscillator.frequency.exponentialRampToValueAtTime(1320, now + length);
+      if (type === "bomb") oscillator.frequency.exponentialRampToValueAtTime(32, now + length);
       gain.gain.setValueAtTime(volume, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + length);
       oscillator.connect(gain);
@@ -1176,9 +1177,9 @@
         Everyday: "Simple places from normal daily life.",
         Travel: "Trips, transport and vacation locations.",
         Party: "Loud places, games, events and group hangouts.",
-        Mixed: "A balanced mix of word-bomb letter prompts.",
-        Easy: "Shorter, friendlier letter prompts.",
-        Hard: "Tougher letter prompts for fast thinkers."
+        Mixed: "A broad mix of category prompts for quick answers.",
+        Easy: "Simple category prompts for fast casual rounds.",
+        Hard: "Trickier categories for players who think quickly."
       };
 
       return descriptions[category] || "A focused set of prompts for this game.";
@@ -1329,6 +1330,7 @@
       timerEyebrow.textContent = mode.timerEyebrow;
       timerTitle.textContent = mode.timerTitle;
       timerLead.textContent = mode.timerLead;
+      timerSectionTitle.textContent = mode.type === "wordBomb" ? "Fuse length" : "Round timer";
       gmNextNightButton.classList.toggle("is-hidden", !usesGameMasterRound());
       voteTitle.textContent = mode.voteTitle;
       revealResultButton.textContent = mode.revealResultButton;
@@ -1641,13 +1643,17 @@
     }
 
     function syncTimerControls() {
+      if (currentMode().type === "wordBomb") {
+        state.timerEnabled = true;
+      }
+
       timerToggleSwitch.querySelectorAll("[data-timer-enabled]").forEach((button) => {
         button.classList.toggle("active", (button.dataset.timerEnabled === "on") === state.timerEnabled);
       });
 
+      timerToggleSwitch.classList.toggle("is-hidden", currentMode().type === "wordBomb");
       timerSwitch.classList.toggle("is-hidden", !state.timerEnabled);
       bombTimerShell.classList.toggle("is-hidden", !state.timerEnabled);
-      bombTimerControls.classList.toggle("is-hidden", !state.timerEnabled);
 
       if (!state.timerEnabled) {
         clearInterval(state.timerId);
@@ -1736,9 +1742,10 @@
       const bank = selected.flatMap((category) => banks[category] || []);
       const fallbackBank = banks[mode.defaultCategory] || [];
       const prompts = bank.length ? bank : fallbackBank;
-      if (!prompts.length) return { type: "Contains", letters: "AR" };
-      const [type, letters] = randomItem(prompts);
-      return { type, letters };
+      return {
+        type: "Name something in",
+        category: randomItem(prompts.length ? prompts : ["Animals"])
+      };
     }
 
     function minimumPlayersForThreatCount(mode) {
@@ -1807,26 +1814,31 @@
     function setBombPrompt() {
       state.bombPrompt = chooseBombPrompt();
       bombPromptType.textContent = state.bombPrompt.type;
-      bombPromptText.textContent = state.bombPrompt.letters;
+      bombPromptText.textContent = state.bombPrompt.category;
     }
 
     function updateBombTurn() {
-      bombTurn.textContent = state.players[state.currentRevealIndex] || "Player";
+      bombTurn.textContent = "Pass the phone";
     }
 
     function updateBombTimerDisplay() {
-      const percent = Math.max(0, (state.timerRemaining / state.timerTotal) * 100);
-      bombTimerRing.style.setProperty("--progress", `${percent}%`);
-      bombTimeText.textContent = formatTime(state.timerRemaining);
+      bombTimerRing.style.setProperty("--progress", state.timerRemaining <= 0 ? "0%" : "100%");
+      bombTimeText.textContent = state.timerRemaining <= 0 ? "BOOM" : "TICK";
     }
 
     function resetBombTimer() {
       clearInterval(state.timerId);
       state.timerId = null;
-      state.timerTotal = state.timerMinutes * 60;
+      const maxFuse = state.timerMinutes * 60;
+      const minFuse = Math.max(8, Math.floor(maxFuse * 0.35));
+      state.timerTotal = minFuse + Math.floor(Math.random() * Math.max(1, maxFuse - minFuse + 1));
       state.timerRemaining = state.timerTotal;
-      bombStartPause.textContent = "Start bomb";
-      bombStatus.textContent = state.timerEnabled ? "Say a matching word before the timer runs out." : "No timer. Say a matching word, tap accepted, and pass.";
+      state.bombLastSecond = Math.ceil(state.timerRemaining);
+      bombCard.classList.remove("exploded");
+      bombCard.classList.toggle("ticking", state.timerEnabled);
+      bombStatus.textContent = state.timerEnabled
+        ? "Name something in the category. If the group accepts it, pass the phone immediately."
+        : "No timer. Name valid answers and pass the phone when the group accepts them.";
       updateBombTimerDisplay();
     }
 
@@ -1838,48 +1850,39 @@
       resetBombTimer();
       showScreen("bombRound");
       playSound("success");
+      startPauseBombTimer();
     }
 
     function startPauseBombTimer() {
       if (!state.timerEnabled) return;
+      if (state.timerId) return;
 
-      if (state.timerId) {
-        clearInterval(state.timerId);
-        state.timerId = null;
-        bombStartPause.textContent = "Resume bomb";
-        bombStatus.textContent = "Paused. Keep the next word ready.";
-        playSound("tap");
-        return;
-      }
-
-      bombStartPause.textContent = "Pause bomb";
-      bombStatus.textContent = "Bomb ticking. Say a valid word now.";
+      bombCard.classList.add("ticking");
+      bombStatus.textContent = "Bomb ticking. Correct answer means pass the phone. No tapping needed.";
       playSound("timer");
 
       state.timerId = window.setInterval(() => {
-        state.timerRemaining -= 1;
+        state.timerRemaining = Math.max(0, state.timerRemaining - 0.25);
         updateBombTimerDisplay();
+        const currentSecond = Math.ceil(state.timerRemaining);
+        if (currentSecond !== state.bombLastSecond && state.timerRemaining > 0) {
+          state.bombLastSecond = currentSecond;
+          playSound("tick");
+          if ("vibrate" in navigator) navigator.vibrate(18);
+        }
 
         if (state.timerRemaining <= 0) {
           clearInterval(state.timerId);
           state.timerId = null;
           state.timerRemaining = 0;
           updateBombTimerDisplay();
-          bombStartPause.textContent = "Start bomb";
-          bombStatus.textContent = `${state.players[state.currentRevealIndex]} got caught by the bomb.`;
-          playSound("success");
-          if ("vibrate" in navigator) navigator.vibrate([90, 40, 140]);
+          bombCard.classList.remove("ticking");
+          bombCard.classList.add("exploded");
+          bombStatus.textContent = "BOOM. Whoever is holding the phone is caught by the bomb.";
+          playSound("bomb");
+          if ("vibrate" in navigator) navigator.vibrate([160, 60, 220, 80, 260]);
         }
-      }, 1000);
-    }
-
-    function acceptBombWord() {
-      state.currentRevealIndex = (state.currentRevealIndex + 1) % state.players.length;
-      updateBombTurn();
-      setBombPrompt();
-      if (state.timerRemaining <= 0) resetBombTimer();
-      bombStatus.textContent = "Good word. Pass the phone fast.";
-      playSound("tap");
+      }, 250);
     }
 
     function resetBombRound() {
@@ -1887,11 +1890,13 @@
       updateBombTurn();
       resetBombTimer();
       playSound("tap");
+      startPauseBombTimer();
     }
 
     function endBombRound() {
       clearInterval(state.timerId);
       state.timerId = null;
+      bombCard.classList.remove("ticking", "exploded");
       playSound("tap");
       showScreen("setup");
     }
@@ -2402,12 +2407,10 @@
       resetTimer();
       playSound("tap");
     });
-    bombStartPause.addEventListener("click", startPauseBombTimer);
     bombReset.addEventListener("click", resetBombRound);
-    bombAcceptedButton.addEventListener("click", acceptBombWord);
     bombNewPromptButton.addEventListener("click", () => {
       setBombPrompt();
-      bombStatus.textContent = "New criteria armed.";
+      bombStatus.textContent = "New category armed. Keep passing after accepted answers.";
       playSound("tap");
     });
     bombEndButton.addEventListener("click", endBombRound);

@@ -1172,6 +1172,73 @@ input:focus {
   overflow-wrap: anywhere;
 }
 
+.bomb-card.ticking {
+  animation: bombShake 420ms linear infinite;
+  border-color: rgba(255, 204, 77, 0.42);
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.42),
+    0 0 34px rgba(255, 138, 61, 0.18);
+}
+
+.bomb-card.ticking .timer-ring {
+  background: conic-gradient(var(--warn) var(--progress), rgba(255, 255, 255, 0.12) 0);
+  box-shadow:
+    0 0 48px rgba(255, 204, 77, 0.28),
+    inset 0 0 22px rgba(255, 255, 255, 0.1);
+}
+
+.bomb-card.exploded {
+  animation: bombBlast 680ms ease both;
+  border-color: rgba(255, 84, 112, 0.78);
+}
+
+.bomb-card.exploded .timer-ring {
+  background: conic-gradient(var(--danger) 100%, rgba(255, 255, 255, 0.12) 0);
+  box-shadow:
+    0 0 70px rgba(255, 84, 112, 0.42),
+    inset 0 0 24px rgba(255, 255, 255, 0.12);
+}
+
+.bomb-card.exploded .time-text {
+  color: #fff;
+  font-size: clamp(2.9rem, 14vw, 4.7rem);
+  text-shadow: 0 0 32px rgba(255, 84, 112, 0.82);
+}
+
+@keyframes bombShake {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px) rotate(-0.35deg);
+  }
+  40% {
+    transform: translate(3px, -1px) rotate(0.35deg);
+  }
+  60% {
+    transform: translate(-3px, -2px) rotate(-0.25deg);
+  }
+  80% {
+    transform: translate(2px, 2px) rotate(0.25deg);
+  }
+}
+
+@keyframes bombBlast {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  38% {
+    transform: scale(1.035) rotate(-0.8deg);
+    filter: brightness(1.8);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
 .vote-list {
   display: grid;
   gap: 10px;
