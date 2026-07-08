@@ -1231,6 +1231,22 @@
       return icons[title] || "";
     }
 
+    function mafiaRoleIcon(title) {
+      const icons = {
+        Detective: "icons/mafia/detective.png",
+        Doctor: "icons/mafia/doctor.png",
+        Mafia: "icons/mafia/spy.png"
+      };
+
+      return icons[title] || "";
+    }
+
+    function roleStickerIcon(role) {
+      if (state.gameId === "werewolf") return werewolfRoleIcon(role.title);
+      if (state.gameId === "mafia") return mafiaRoleIcon(role.title);
+      return "";
+    }
+
     function fillCategoryIcon(icon, category, mode) {
       const iconSrc = mode.name === "Imposter" ? imposterCategoryIcon(category) : "";
       if (!iconSrc) {
@@ -2052,7 +2068,7 @@
 
       const symbol = document.createElement("div");
       symbol.className = "role-symbol";
-      const roleIconSrc = state.gameId === "werewolf" ? werewolfRoleIcon(role.title) : "";
+      const roleIconSrc = roleStickerIcon(role);
       if (roleIconSrc) {
         symbol.classList.add("sticker-role");
         const image = document.createElement("img");
