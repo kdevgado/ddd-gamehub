@@ -202,6 +202,33 @@
         </div>
       </section>
 
+      <!-- 10. Werewolf game master script -->
+      <section class="screen" data-screen="gameMaster">
+        <div class="card">
+          <div class="stack">
+            <div class="stack center">
+              <p class="eyebrow" id="gmEyebrow">Game master</p>
+              <h2 id="gmTitle">Night script</h2>
+              <p class="lead" id="gmLead">Read each step quietly, resolve night actions, then announce who died.</p>
+            </div>
+            <div class="gm-panel">
+              <h3>Script</h3>
+              <ol class="gm-script-list" id="gmScriptList"></ol>
+            </div>
+            <div class="gm-panel">
+              <h3>Who died?</h3>
+              <div class="vote-list" id="gmDeathList"></div>
+              <button class="btn secondary" id="gmNoDeathButton" type="button">No one died</button>
+              <p class="hint" id="gmDeathSummary" aria-live="polite"></p>
+            </div>
+            <div class="button-row">
+              <button class="btn" id="gmStartDiscussionButton" type="button">Start day discussion</button>
+              <button class="btn secondary" type="button" data-go="setup">Back to setup</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- 10. Discussion timer -->
       <section class="screen" data-screen="timer">
         <div class="card">
@@ -220,6 +247,7 @@
               <button class="btn secondary" id="timerReset" type="button">Reset</button>
             </div>
             <button class="btn danger" id="goVoteButton" type="button">Go to voting</button>
+            <button class="btn secondary is-hidden" id="gmNextNightButton" type="button">Run next night</button>
           </div>
         </div>
       </section>
@@ -688,6 +716,10 @@
       roles: [],
       imposterIndexes: new Set(),
       werewolfExtraRoles: ["seer", "doctor"],
+      aliveIndexes: new Set(),
+      deadIndexes: new Set(),
+      gmRound: 1,
+      gmDeathIndex: null,
       currentRevealIndex: 0,
       selectedVotes: new Set(),
       imposterHints: false,
@@ -750,6 +782,15 @@
     const revealRoleButton = document.getElementById("revealRoleButton");
     const hidePassButton = document.getElementById("hidePassButton");
     const revealCardShell = document.getElementById("revealCardShell");
+    const gmEyebrow = document.getElementById("gmEyebrow");
+    const gmTitle = document.getElementById("gmTitle");
+    const gmLead = document.getElementById("gmLead");
+    const gmScriptList = document.getElementById("gmScriptList");
+    const gmDeathList = document.getElementById("gmDeathList");
+    const gmNoDeathButton = document.getElementById("gmNoDeathButton");
+    const gmDeathSummary = document.getElementById("gmDeathSummary");
+    const gmStartDiscussionButton = document.getElementById("gmStartDiscussionButton");
+    const gmNextNightButton = document.getElementById("gmNextNightButton");
     const timerEyebrow = document.getElementById("timerEyebrow");
     const timerTitle = document.getElementById("timerTitle");
     const timerLead = document.getElementById("timerLead");
@@ -1288,6 +1329,7 @@
       timerEyebrow.textContent = mode.timerEyebrow;
       timerTitle.textContent = mode.timerTitle;
       timerLead.textContent = mode.timerLead;
+      gmNextNightButton.classList.toggle("is-hidden", state.gameId !== "werewolf");
       voteTitle.textContent = mode.voteTitle;
       revealResultButton.textContent = mode.revealResultButton;
       resultTitle.textContent = mode.resultTitle;
@@ -1450,6 +1492,114 @@
       });
     }
 
+    function roleIsInGame(title) {
+      return state.roles.some((role) => role.title === title);
+    }
+
+    function werewolfScriptSteps() {
+      const steps = [
+        "Everyone closes their eyes. Say: the village is asleep.",
+        "Werewolves open their eyes, silently choose one player to attack, then close their eyes."
+      ];
+
+      if (roleIsInGame("Seer")) {
+        steps.push("Seer opens their eyes, points to one player, and the game master silently confirms whether that player is a werewolf.");
+      }
+
+      if (roleIsInGame("Doctor")) {
+        steps.push("Doctor opens their eyes, points to one player to protect tonight, then closes their eyes.");
+      }
+
+      if (roleIsInGame("Bodyguard")) {
+        steps.push("Bodyguard opens their eyes and chooses one player to publicly defend during the next day.");
+      }
+
+      if (roleIsInGame("Cupid") && state.gmRound === 1) {
+        steps.push("Cupid opens their eyes and silently links two players before the first day begins.");
+      }
+
+      if (roleIsInGame("Cursed Villager")) {
+        steps.push("If the Cursed Villager was attacked, quietly treat them as joining the werewolf side instead of dying.");
+      }
+
+      if (roleIsInGame("Hunter")) {
+        steps.push("If the Hunter dies, pause and let them choose one player to take down with them.");
+      }
+
+      steps.push("Everyone wakes up. Announce who died, or announce that the village survived the night.");
+      return steps;
+    }
+
+    function setupGameMasterRound() {
+      gmEyebrow.textContent = `Werewolf round ${state.gmRound}`;
+      gmTitle.textContent = state.gmRound === 1 ? "First night script" : "Night script";
+      gmLead.textContent = "Read each step, resolve actions, then mark the night result before discussion.";
+      gmDeathSummary.textContent = "Choose a player who died tonight, or tap no one died.";
+      state.gmDeathIndex = null;
+      gmNoDeathButton.classList.remove("active");
+
+      gmScriptList.innerHTML = "";
+      werewolfScriptSteps().forEach((step) => {
+        const item = document.createElement("li");
+        item.textContent = step;
+        gmScriptList.appendChild(item);
+      });
+
+      renderGameMasterDeathList();
+    }
+
+    function renderGameMasterDeathList() {
+      gmDeathList.innerHTML = "";
+      state.players.forEach((player, index) => {
+        const role = state.roles[index];
+        const isDead = state.deadIndexes.has(index);
+        const button = document.createElement("button");
+        button.className = "vote-btn";
+        button.type = "button";
+        button.dataset.deathIndex = index;
+        button.disabled = isDead;
+        if (state.gmDeathIndex === index) button.classList.add("selected");
+
+        const name = document.createElement("span");
+        name.textContent = player;
+
+        const status = document.createElement("span");
+        status.textContent = isDead ? "Out" : role.title;
+
+        button.append(name, status);
+        gmDeathList.appendChild(button);
+      });
+    }
+
+    function setGameMasterDeath(index) {
+      state.gmDeathIndex = index;
+      gmNoDeathButton.classList.remove("active");
+      const role = state.roles[index];
+      const deathAction = role.title === "Hunter" ? " Let the Hunter choose one player to take down." : "";
+      gmDeathSummary.textContent = `${state.players[index]} died tonight. Reveal: ${role.title}. ${role.hint}${deathAction}`;
+      renderGameMasterDeathList();
+    }
+
+    function setNoGameMasterDeath() {
+      state.gmDeathIndex = null;
+      gmNoDeathButton.classList.add("active");
+      gmDeathSummary.textContent = "No one died tonight. Wake the village and start discussion.";
+      renderGameMasterDeathList();
+    }
+
+    function startWerewolfDiscussion() {
+      if (state.gmDeathIndex !== null) {
+        state.deadIndexes.add(state.gmDeathIndex);
+        state.aliveIndexes.delete(state.gmDeathIndex);
+      }
+
+      state.gmRound += 1;
+      resetTimer();
+      if (!state.timerEnabled) buildVoteList();
+      showScreen(state.timerEnabled ? "timer" : "voting");
+      playSound("success");
+    }
+
     function syncTimerButtons() {
       timerSwitch.querySelectorAll("[data-minutes]").forEach((button) => {
         button.classList.toggle("active", Number(button.dataset.minutes) === state.timerMinutes);
@@ -1604,6 +1754,10 @@
       setError(setupError, "");
       state.roles = assignment.roles;
       state.imposterIndexes = new Set(assignment.targetIndexes);
+      state.aliveIndexes = new Set(state.players.map((_, index) => index));
+      state.deadIndexes = new Set();
+      state.gmRound = 1;
+      state.gmDeathIndex = null;
       state.currentRevealIndex = 0;
       state.selectedVotes = new Set();
       resetTimer();
@@ -1782,6 +1936,12 @@
       state.currentRevealIndex += 1;
 
       if (state.currentRevealIndex >= state.players.length) {
+        if (state.gameId === "werewolf") {
+          setupGameMasterRound();
+          showScreen("gameMaster");
+          return;
+        }
+
         buildVoteList();
         resetTimer();
         showScreen(state.timerEnabled ? "timer" : "voting");
@@ -1855,6 +2015,8 @@
       voteHint.textContent = voteCount === 1 ? mode.voteHintSingle : mode.voteHintPlural;
 
       state.players.forEach((player, index) => {
+        if (state.gameId === "werewolf" && state.deadIndexes.has(index)) return;
+
         const button = document.createElement("button");
         button.className = "vote-btn";
         button.type = "button";
@@ -1976,6 +2138,10 @@
       state.currentRevealIndex = 0;
       state.roles = [];
       state.imposterIndexes = new Set();
+      state.aliveIndexes = new Set();
+      state.deadIndexes = new Set();
+      state.gmRound = 1;
+      state.gmDeathIndex = null;
       state.selectedVotes = new Set();
       state.bombPrompt = null;
       resetTimer();
@@ -2180,6 +2346,23 @@
     assignButton.addEventListener("click", assignRoles);
     revealRoleButton.addEventListener("click", revealRole);
     hidePassButton.addEventListener("click", hideAndPass);
+    gmDeathList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-death-index]");
+      if (!button || button.disabled) return;
+
+      setGameMasterDeath(Number(button.dataset.deathIndex));
+      playSound("tap");
+    });
+    gmNoDeathButton.addEventListener("click", () => {
+      setNoGameMasterDeath();
+      playSound("tap");
+    });
+    gmStartDiscussionButton.addEventListener("click", startWerewolfDiscussion);
+    gmNextNightButton.addEventListener("click", () => {
+      setupGameMasterRound();
+      showScreen("gameMaster");
+      playSound("tap");
+    });
     timerStartPause.addEventListener("click", startPauseTimer);
     timerReset.addEventListener("click", () => {
       resetTimer();

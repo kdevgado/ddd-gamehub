@@ -1196,9 +1196,38 @@ input:focus {
   transform: scale(0.98);
 }
 
+.vote-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+  transform: none;
+}
+
 .vote-btn.selected {
   border-color: rgba(168, 255, 95, 0.8);
   background: rgba(168, 255, 95, 0.15);
+}
+
+.gm-panel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gm-script-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.gm-script-list li::marker {
+  color: var(--cyan);
+  font-weight: 950;
 }
 
 .result-list {
