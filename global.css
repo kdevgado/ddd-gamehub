@@ -340,6 +340,16 @@ h3 {
   animation: livePulse 1.4s ease-in-out infinite alternate;
 }
 
+.live-indicator.offline {
+  color: var(--danger);
+}
+
+.live-indicator.offline i {
+  background: var(--danger);
+  box-shadow: 0 0 12px rgba(255, 84, 112, 0.72);
+  animation: none;
+}
+
 @keyframes livePulse {
   to {
     opacity: 0.42;

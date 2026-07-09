@@ -65,6 +65,7 @@ function formatClock(milliseconds) {
 }
 
 export default function TriviaRoom({ onBack }) {
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
   const [playerId, setPlayerId] = useState("");
   const [authReady, setAuthReady] = useState(false);
   const [playerName, setPlayerName] = useState("");
@@ -92,13 +93,36 @@ export default function TriviaRoom({ onBack }) {
   }, []);
 
   useEffect(() => {
+    const updateConnectionStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", updateConnectionStatus);
+    window.addEventListener("offline", updateConnectionStatus);
+    return () => {
+      window.removeEventListener("online", updateConnectionStatus);
+      window.removeEventListener("offline", updateConnectionStatus);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOnline) {
+      setAuthReady(false);
+      return undefined;
+    }
+
+    let active = true;
     ensureAnonymousUser()
       .then((user) => {
+        if (!active) return;
         setPlayerId(user.uid);
         setAuthReady(true);
       })
-      .catch(() => setError("Enable Anonymous sign-in in Firebase Authentication."));
-  }, []);
+      .catch(() => {
+        if (active) setError("Enable Anonymous sign-in in Firebase Authentication.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isOnline]);
 
   useEffect(() => {
     if (!roomCode) return undefined;
@@ -145,6 +169,7 @@ export default function TriviaRoom({ onBack }) {
 
   async function createRoom() {
     const name = cleanName(playerName);
+    if (!isOnline) return setError("You are offline. Reconnect to create a room.");
     if (!authReady || !playerId) return setError("Connecting to Firebase. Try again in a moment.");
     if (!name) return setError("Enter your player name first.");
 
@@ -187,6 +212,7 @@ export default function TriviaRoom({ onBack }) {
   async function joinRoom() {
     const name = cleanName(playerName);
     const code = joinCode.trim().toUpperCase();
+    if (!isOnline) return setError("You are offline. Reconnect to join a room.");
     if (!authReady || !playerId) return setError("Connecting to Firebase. Try again in a moment.");
     if (!name) return setError("Enter your player name first.");
     if (!/^[A-Z]{4}$/.test(code)) return setError("Enter a 4-letter room code.");
@@ -324,7 +350,10 @@ export default function TriviaRoom({ onBack }) {
             <span className="back-arrow" aria-hidden="true" />
             Game modes
           </button>
-          <span className="live-indicator"><i aria-hidden="true" />Online</span>
+          <span className={`live-indicator ${isOnline ? "" : "offline"}`} role="status">
+            <i aria-hidden="true" />
+            {isOnline ? "Online" : "Offline"}
+          </span>
         </div>
 
         <div className="trivia-avatar">
@@ -385,13 +414,17 @@ export default function TriviaRoom({ onBack }) {
               </label>
             )}
 
-            <button className="primary-btn room-submit-btn" type="submit" disabled={busy || !authReady}>
-              {busy ? "Connecting..." : entryMode === "create" ? "Create room code" : "Join room"}
+            <button className="primary-btn room-submit-btn" type="submit" disabled={busy || !authReady || !isOnline}>
+              {!isOnline ? "Offline" : busy ? "Connecting..." : entryMode === "create" ? "Create room code" : "Join room"}
             </button>
           </form>
 
           <span className="entry-note">
-            {entryMode === "create" ? "A new four-letter code will be generated." : "Enter the code shown on the host's screen."}
+            {!isOnline
+              ? "Reconnect to the internet to create or join an online room."
+              : entryMode === "create"
+                ? "A new four-letter code will be generated."
+                : "Enter the code shown on the host's screen."}
           </span>
         </div>
         {error && <p className="alert">{error}</p>}

@@ -1090,6 +1090,10 @@
       fullscreenButtonLabel.textContent = isFullscreen ? "Exit fullscreen" : "Open fullscreen";
       fullscreenButton.classList.toggle("active", isFullscreen);
       fullscreenStatus.textContent = "";
+      if (isFullscreen) {
+        app.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }
     }
 
     async function toggleFullscreen() {
