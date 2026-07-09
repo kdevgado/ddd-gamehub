@@ -1,0 +1,18 @@
+{
+  "name": "DDD Game Hub",
+  "short_name": "Game Hub",
+  "description": "Pass-the-phone party games and online Trivia Party rooms.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#050712",
+  "theme_color": "#050712",
+  "icons": [
+    {
+      "src": "/icons/imposter/custom.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#090a1f" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <title>Pass the Phone Game Hub</title>
   <link rel="stylesheet" href="/pass-the-phone.css" />
 </head>
@@ -2624,23 +2626,44 @@
   </script>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    async function clearDevelopmentOfflineCache() {
+      const hadController = Boolean(navigator.serviceWorker.controller);
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames
+          .filter((cacheName) => cacheName.startsWith("ddd-game-hub-"))
+          .map((cacheName) => caches.delete(cacheName))
+      );
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBCCSxn1eU_-rJTotU5BWBWNngOMKLNpRA",
-      authDomain: "ddd-gamehub.firebaseapp.com",
-      projectId: "ddd-gamehub",
-      storageBucket: "ddd-gamehub.firebasestorage.app",
-      messagingSenderId: "743737146474",
-      appId: "1:743737146474:web:e18efb897670079c3ade13",
-      measurementId: "G-T55VB1YCCP"
-    };
+      if (hadController && !sessionStorage.getItem("ddd-dev-cache-cleared")) {
+        sessionStorage.setItem("ddd-dev-cache-cleared", "true");
+        window.location.reload();
+      }
+    }
 
-    const firebaseApp = initializeApp(firebaseConfig);
-    isSupported().then((supported) => {
-      if (supported) getAnalytics(firebaseApp);
-    });
+    function registerOfflineWorker() {
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/sw.js", { updateViaCache: "none" })
+          .then((registration) => registration.update())
+          .catch(() => {});
+      });
+    }
+
+    if ("serviceWorker" in navigator) {
+      if (import.meta.env.PROD) registerOfflineWorker();
+      else clearDevelopmentOfflineCache().catch(() => {});
+    }
   </script>
+
 </body>
 </html>
