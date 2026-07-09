@@ -356,6 +356,8 @@
       SCJ: ["Revelation", "Seven seals", "Seven trumpets", "144,000", "New Heaven New Earth", "Mount Zion", "Tree of Life", "Open scroll", "Twelve tribes", "Harvest", "Firstfruits", "Promised pastor"]
     };
 
+    const ALL_CATEGORIES = "All categories";
+
     const IMPOSTER_HINT_BANK = {
       "pizza": ["Cheese", "Slice", "Oven"],
       "sushi": ["Rice", "Seaweed", "Wasabi"],
@@ -541,7 +543,7 @@
         defaultImposterHints: true,
         defaultTimerEnabled: false,
         wordBanks: IMPOSTER_WORD_BANKS,
-        defaultCategory: "Food",
+        defaultCategory: ALL_CATEGORIES,
         secretSectionTitle: "Secret words",
         customPlaceholder: "Enter custom secret word",
         emptySecretError: "Enter a custom word or choose a preset category.",
@@ -1167,6 +1169,7 @@
         if (category !== "SCJ") return true;
         return mode.name === "Imposter" && state.scjUnlocked;
       });
+      if (mode.name === "Imposter") categories.unshift(ALL_CATEGORIES);
       if (mode.hasSecret) categories.push("Custom");
       return categories;
     }
@@ -1179,6 +1182,12 @@
       if (selected.length) return selected;
       if (mode.defaultCategory) return [mode.defaultCategory];
       return [];
+    }
+
+    function expandedSelectedCategories(mode = currentMode()) {
+      const selected = selectedCategories(mode);
+      if (!selected.includes(ALL_CATEGORIES)) return selected;
+      return getCategoryOptions(mode).filter((category) => category !== ALL_CATEGORIES && category !== "Custom");
     }
 
     function syncPrimaryCategory(mode = currentMode()) {
@@ -1199,6 +1208,7 @@
     }
 
     function categoryInitials(category) {
+      if (category === ALL_CATEGORIES) return "ALL";
       if (category === "Custom") return "CU";
       return category
         .split(/\s+/)
@@ -1272,12 +1282,14 @@
     }
 
     function categoryColor(category, index) {
+      if (category === ALL_CATEGORIES) return "#31f4ff";
       const colors = ["#3478f6", "#9b4de0", "#f4ad3d", "#e94c48", "#38a169", "#4a9aa8", "#c45588", "#6c63ff"];
       if (category === "Custom") return "#343437";
       return colors[index % colors.length];
     }
 
     function describeCategory(category, mode) {
+      if (category === ALL_CATEGORIES) return "Randomly choose from every preset category.";
       if (category === "Custom") return mode.hasSecret ? "Type your own secret word for this round." : "Create a custom round.";
 
       const descriptions = {
@@ -1492,8 +1504,9 @@
       selectedCategoryName.textContent = selectedCategoryLabel(mode);
       customWordInput.placeholder = mode.customPlaceholder || "";
       const categories = getCategoryOptions(mode);
-      const countLabel = categories.length === 1 ? "1 Category" : `${categories.length} Categories`;
-      const selectedCount = selectedCategories(mode).length;
+      const categoryTotal = categories.filter((category) => category !== ALL_CATEGORIES).length;
+      const countLabel = categoryTotal === 1 ? "1 Category" : `${categoryTotal} Categories`;
+      const selectedCount = expandedSelectedCategories(mode).length;
       categoryCount.textContent = `${countLabel} - ${selectedCount} selected`;
 
       const hasCustom = categories.includes("Custom");
@@ -1849,13 +1862,14 @@
       const mode = currentMode();
       if (!mode.hasSecret) return "";
 
-      const selected = selectedCategories(mode);
+      const selected = expandedSelectedCategories(mode);
       if (selected.includes("Custom")) {
         return customWordInput.value.trim().replace(/\s+/g, " ");
       }
 
       const words = selected.flatMap((category) => mode.wordBanks[category] || []);
-      return randomItem(words.length ? words : mode.wordBanks[mode.defaultCategory]);
+      const fallbackBank = Object.values(mode.wordBanks)[0] || [];
+      return randomItem(words.length ? words : fallbackBank);
     }
 
     function makeImposterHint(secretWord) {
@@ -2429,10 +2443,12 @@
         }
       }
 
-      if (category === "Custom") {
+      if (category === ALL_CATEGORIES) {
+        state.categories = [ALL_CATEGORIES];
+      } else if (category === "Custom") {
         state.categories = ["Custom"];
       } else {
-        const selected = selectedCategories().filter((item) => item !== "Custom");
+        const selected = selectedCategories().filter((item) => item !== "Custom" && item !== ALL_CATEGORIES);
         if (selected.includes(category)) {
           const next = selected.filter((item) => item !== category);
           state.categories = next.length ? next : [category];
