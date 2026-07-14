@@ -1,5 +1,6 @@
 import { useState } from "react";
 import TriviaRoom from "./TriviaRoom.jsx";
+import unoIcon from "../icons/Uno.png";
 
 export default function App() {
   const [mode, setMode] = useState(null);
@@ -121,7 +122,7 @@ export default function App() {
           >
             <span className="mode-art online-visual" aria-hidden="true">
               <span className="mode-number">02</span>
-              <span className="demo-card uno-demo"><b>+4</b><small>Wild</small></span>
+              <span className="demo-card uno-demo"><img src={unoIcon} alt="" /></span>
               <span className="demo-card trivia-demo"><b>?</b><small>Trivia</small></span>
               <span className="room-signal"><i /><i /><i /></span>
               <span className="visual-caption">Any screen / one room</span>

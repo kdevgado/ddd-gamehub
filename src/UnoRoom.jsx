@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase.js";
+import unoIcon from "../icons/Uno.png";
 import {
   UNO_COLORS,
   UNO_COLOR_LABELS,
@@ -315,7 +316,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
       <section className="mission-panel final-panel uno-final">
         <div className="burst" />
         <p className="eyebrow">UNO champion</p>
-        <div className="uno-logo" aria-hidden="true">UNO</div>
+        <img className="uno-logo" src={unoIcon} alt="" />
         <h2>{playerName(room, room.uno?.winnerId)}</h2>
         <p className="winner-copy">Played every card first and wins the room.</p>
         {isHost
@@ -364,7 +365,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
 
       <div className="uno-center">
         <button className="uno-deck" type="button" disabled={!isMyTurn || Boolean(uno.drawnCardId) || busy} onClick={drawOne}>
-          <span>UNO</span>
+          <img className="uno-deck-logo" src={unoIcon} alt="" />
           <small>{uno.drawPile.length} left</small>
         </button>
         <div className={`uno-discard ${discardIsLanding ? "is-landing" : ""}`} ref={discardRef}>
@@ -449,7 +450,7 @@ function UnoLobby({ players, isHost, busy, error, onStart }) {
   return (
     <section className="mission-panel uno-lobby">
       <p className="eyebrow">UNO lobby</p>
-      <div className="uno-logo" aria-hidden="true">UNO</div>
+      <img className="uno-logo" src={unoIcon} alt="" />
       <h2>Players connected</h2>
       <div className="agent-list">
         {players.map((player, index) => (

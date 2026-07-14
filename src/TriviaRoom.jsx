@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db, ensureAnonymousUser } from "./firebase.js";
 import UnoRoom from "./UnoRoom.jsx";
+import unoIcon from "../icons/Uno.png";
 
 const ROOM_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 
@@ -432,7 +433,7 @@ export default function TriviaRoom({ onBack }) {
 
         <div className={`trivia-avatar ${selectedGame === "uno" ? "uno-avatar" : ""}`}>
           {selectedGame === "uno"
-            ? <span className="uno-logo" aria-hidden="true">UNO</span>
+            ? <img className="uno-logo" src={unoIcon} alt="" />
             : <img src="/icons/mafia/detective.png" alt="" />}
         </div>
         <p className="eyebrow">Online room code</p>
@@ -479,7 +480,9 @@ export default function TriviaRoom({ onBack }) {
                         setError("");
                       }}
                     >
-                      <span className={`game-choice-mark ${gameId}`} aria-hidden="true">{gameId === "uno" ? "UNO" : "?"}</span>
+                      <span className={`game-choice-mark ${gameId}`} aria-hidden="true">
+                        {gameId === "uno" ? <img src={unoIcon} alt="" /> : "?"}
+                      </span>
                       <span>
                         <strong>{game.title}</strong>
                         <small>{game.label}</small>
