@@ -2725,22 +2725,18 @@ button.uno-card.is-playing {
   }
 }
 
-/* Vibrant palette pass */
+/* Vibrant, simple palette pass */
 :root {
   --panel: rgba(0, 95, 115, 0.38);
   --line: rgba(148, 210, 189, 0.38);
 }
 
 .classified-bg {
-  background:
-    radial-gradient(circle at 7% 12%, rgba(10, 147, 150, 0.38), transparent 30%),
-    radial-gradient(circle at 94% 8%, rgba(238, 155, 0, 0.25), transparent 28%),
-    radial-gradient(circle at 54% 108%, rgba(155, 34, 38, 0.3), transparent 38%),
-    linear-gradient(145deg, #001219 0%, #001219 48%, #005f73 132%);
+  background: #001219;
 }
 
 .classified-bg::before {
-  opacity: 0.55;
+  opacity: 0.22;
 }
 
 .classified-bg::after {
@@ -2755,12 +2751,9 @@ button.uno-card.is-playing {
 .mission-panel,
 .role-reveal {
   border-color: rgba(148, 210, 189, 0.42);
-  background:
-    linear-gradient(135deg, rgba(10, 147, 150, 0.28), rgba(202, 103, 2, 0.08) 58%, rgba(155, 34, 38, 0.12)),
-    rgba(0, 18, 25, 0.86);
+  background: rgba(0, 95, 115, 0.32);
   box-shadow:
     0 26px 80px rgba(0, 18, 25, 0.58),
-    0 0 48px rgba(10, 147, 150, 0.16),
     inset 0 1px rgba(233, 216, 166, 0.18);
 }
 
@@ -2772,9 +2765,7 @@ button.uno-card.is-playing {
 }
 
 h1 {
-  text-shadow:
-    0 0 30px rgba(148, 210, 189, 0.68),
-    0 0 60px rgba(238, 155, 0, 0.34);
+  text-shadow: 0 0 30px rgba(148, 210, 189, 0.38);
 }
 
 .hub-kicker {
@@ -2793,12 +2784,10 @@ h1 {
 }
 
 .hub-heading h1 strong {
-  color: #e9d8a6;
-  background: linear-gradient(100deg, #94d2bd 0%, #e9d8a6 48%, #ee9b00 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 18px rgba(238, 155, 0, 0.2));
+  color: #ee9b00;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  filter: none;
 }
 
 .hub-meta strong {
@@ -2807,8 +2796,8 @@ h1 {
 }
 
 .hub-orbit::before {
-  background: radial-gradient(circle, rgba(238, 155, 0, 0.34), rgba(10, 147, 150, 0.14) 48%, transparent 72%);
-  filter: blur(1px);
+  background: rgba(238, 155, 0, 0.18);
+  filter: blur(24px);
 }
 
 .hub-orbit-ring {
@@ -2822,17 +2811,15 @@ h1 {
 
 .mode-card {
   border-color: color-mix(in srgb, var(--mode-accent) 38%, rgba(148, 210, 189, 0.32));
-  background:
-    linear-gradient(135deg, rgba(0, 95, 115, 0.34), rgba(0, 18, 25, 0.88) 56%, color-mix(in srgb, var(--mode-accent) 18%, #001219));
+  background: rgba(0, 95, 115, 0.3);
   box-shadow:
     0 22px 60px rgba(0, 18, 25, 0.38),
-    0 0 30px color-mix(in srgb, var(--mode-accent) 14%, transparent),
     inset 0 1px rgba(233, 216, 166, 0.14);
 }
 
 .mode-card::before {
-  opacity: 0.6;
-  background: linear-gradient(125deg, color-mix(in srgb, var(--mode-accent) 26%, transparent), transparent 62%);
+  opacity: 0;
+  background: none;
 }
 
 .mode-card::after {
@@ -2844,30 +2831,18 @@ h1 {
 .mode-card:hover,
 .mode-card:focus-visible {
   border-color: color-mix(in srgb, var(--mode-accent) 76%, #e9d8a6);
-  background:
-    linear-gradient(135deg, rgba(10, 147, 150, 0.4), rgba(0, 18, 25, 0.84) 52%, color-mix(in srgb, var(--mode-accent) 27%, #001219));
+  background: rgba(10, 147, 150, 0.4);
   box-shadow:
     0 30px 74px rgba(0, 18, 25, 0.46),
-    0 0 54px color-mix(in srgb, var(--mode-accent) 28%, transparent);
+    0 0 28px color-mix(in srgb, var(--mode-accent) 20%, transparent);
 }
 
 .mode-art {
-  background:
-    radial-gradient(circle at 45% 58%, rgba(10, 147, 150, 0.28), transparent 58%),
-    linear-gradient(rgba(148, 210, 189, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 210, 189, 0.08) 1px, transparent 1px),
-    #001219;
-  background-size: auto, 28px 28px, 28px 28px, auto;
+  background: #001219;
 }
 
 .online-visual {
-  background:
-    radial-gradient(circle at 48% 46%, rgba(238, 155, 0, 0.3), transparent 48%),
-    radial-gradient(circle at 25% 82%, rgba(174, 32, 18, 0.24), transparent 48%),
-    linear-gradient(rgba(148, 210, 189, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 210, 189, 0.08) 1px, transparent 1px),
-    #001219;
-  background-size: auto, auto, 28px 28px, 28px 28px, auto;
+  background: #001219;
 }
 
 .character-stack img {
@@ -2875,11 +2850,21 @@ h1 {
 }
 
 .primary-btn {
-  background: linear-gradient(135deg, #94d2bd 0%, #e9d8a6 48%, #ee9b00 100%);
+  background: #ee9b00;
   box-shadow:
-    0 18px 36px rgba(238, 155, 0, 0.28),
-    0 0 28px rgba(10, 147, 150, 0.24),
+    0 18px 36px rgba(238, 155, 0, 0.24),
     inset 0 1px rgba(233, 216, 166, 0.72);
+}
+
+.entry-switch button.active,
+.agent-card span,
+.vote-card span,
+.role-orb {
+  background: #94d2bd;
+}
+
+.role-reveal.danger .role-orb {
+  background: #ae2012;
 }
 
 .secondary-btn,
