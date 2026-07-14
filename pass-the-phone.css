@@ -3022,3 +3022,172 @@ input:focus {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Vibrant palette pass */
+:root {
+  --glass: rgba(0, 95, 115, 0.34);
+  --line: rgba(148, 210, 189, 0.38);
+}
+
+.app {
+  background:
+    radial-gradient(circle at 12% 6%, rgba(10, 147, 150, 0.38), transparent 35%),
+    radial-gradient(circle at 92% 18%, rgba(238, 155, 0, 0.24), transparent 34%),
+    radial-gradient(circle at 68% 105%, rgba(155, 34, 38, 0.34), transparent 42%),
+    #001219;
+}
+
+.app::before {
+  background:
+    radial-gradient(ellipse at 36% 2%, rgba(10, 147, 150, 0.38), transparent 42%),
+    radial-gradient(ellipse at 82% 82%, rgba(238, 155, 0, 0.2), transparent 38%),
+    radial-gradient(ellipse at 8% 88%, rgba(174, 32, 18, 0.24), transparent 42%);
+  filter: blur(12px) saturate(1.35);
+  opacity: 1;
+}
+
+.particle-field {
+  opacity: 0.58;
+}
+
+.particle-field span {
+  background: rgba(233, 216, 166, 0.82);
+  box-shadow:
+    0 0 18px rgba(148, 210, 189, 0.65),
+    0 0 34px rgba(238, 155, 0, 0.24);
+}
+
+.card {
+  border-color: rgba(148, 210, 189, 0.42);
+  background:
+    linear-gradient(135deg, rgba(10, 147, 150, 0.34), rgba(202, 103, 2, 0.1) 58%, rgba(155, 34, 38, 0.14)),
+    rgba(0, 18, 25, 0.9);
+  box-shadow:
+    0 24px 80px rgba(0, 18, 25, 0.58),
+    0 0 46px rgba(10, 147, 150, 0.18),
+    inset 0 1px rgba(233, 216, 166, 0.2);
+}
+
+.card::before {
+  background: linear-gradient(120deg, rgba(148, 210, 189, 0.12), transparent 38%, rgba(238, 155, 0, 0.08));
+}
+
+.title-glow {
+  color: #e9d8a6;
+  background: linear-gradient(100deg, #94d2bd 0%, #e9d8a6 48%, #ee9b00 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(10, 147, 150, 0.3));
+  text-shadow: none;
+}
+
+.eyebrow {
+  border-color: rgba(148, 210, 189, 0.58);
+  color: #e9d8a6;
+  background: rgba(10, 147, 150, 0.26);
+  box-shadow: 0 0 24px rgba(10, 147, 150, 0.2);
+}
+
+.badge,
+.progress-pill,
+.mode-summary,
+.role-detail,
+.word-reveal,
+.btn.secondary,
+.icon-btn,
+.option-btn,
+.vote-btn {
+  background: rgba(0, 95, 115, 0.3);
+  border-color: rgba(148, 210, 189, 0.4);
+  box-shadow:
+    inset 0 1px rgba(233, 216, 166, 0.14),
+    0 0 20px rgba(10, 147, 150, 0.08);
+}
+
+.game-card {
+  border-color: color-mix(in srgb, var(--game-a) 52%, rgba(148, 210, 189, 0.32));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--game-a) 32%, #001219), rgba(0, 18, 25, 0.92) 58%, color-mix(in srgb, var(--game-b) 24%, #001219));
+  box-shadow:
+    0 18px 54px rgba(0, 18, 25, 0.46),
+    0 0 32px color-mix(in srgb, var(--game-a) 22%, transparent),
+    inset 0 1px rgba(233, 216, 166, 0.16);
+}
+
+.game-card::before {
+  background: linear-gradient(120deg, color-mix(in srgb, var(--game-a) 32%, transparent), transparent 58%, color-mix(in srgb, var(--game-b) 20%, transparent));
+}
+
+.game-card::after {
+  height: 3px;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--game-a) 72%, transparent);
+}
+
+.game-card:hover {
+  border-color: color-mix(in srgb, var(--game-a) 82%, #e9d8a6);
+  box-shadow:
+    0 24px 64px rgba(0, 18, 25, 0.5),
+    0 0 42px color-mix(in srgb, var(--game-a) 34%, transparent);
+}
+
+.game-name {
+  color: #e9d8a6;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--game-a) 42%, transparent);
+}
+
+.game-art {
+  box-shadow:
+    0 18px 32px rgba(0, 18, 25, 0.34),
+    0 0 30px color-mix(in srgb, var(--game-a) 32%, transparent);
+}
+
+.game-art img {
+  filter: saturate(1.18) brightness(1.06) drop-shadow(0 12px 18px rgba(0, 18, 25, 0.4));
+}
+
+.btn {
+  background: linear-gradient(135deg, #94d2bd 0%, #e9d8a6 48%, #ee9b00 100%);
+  box-shadow:
+    0 16px 36px rgba(238, 155, 0, 0.32),
+    0 0 28px rgba(10, 147, 150, 0.24),
+    inset 0 1px rgba(233, 216, 166, 0.72);
+}
+
+.btn.danger {
+  background: linear-gradient(135deg, #ca6702 0%, #ae2012 52%, #9b2226 100%);
+  box-shadow:
+    0 16px 36px rgba(174, 32, 18, 0.38),
+    0 0 28px rgba(202, 103, 2, 0.24);
+}
+
+.option-btn.active {
+  background: linear-gradient(135deg, #94d2bd, #0a9396);
+  box-shadow:
+    0 14px 32px rgba(10, 147, 150, 0.34),
+    0 0 22px rgba(148, 210, 189, 0.24);
+}
+
+.chip,
+.word-reveal {
+  background: rgba(10, 147, 150, 0.24);
+  border-color: rgba(148, 210, 189, 0.42);
+}
+
+.shuffle-deck span,
+.role-face,
+.role-face.front,
+.role-face.back {
+  border-color: rgba(148, 210, 189, 0.38);
+  background:
+    linear-gradient(145deg, rgba(0, 95, 115, 0.42), rgba(0, 18, 25, 0.92)),
+    #001219;
+  box-shadow: 0 0 36px rgba(10, 147, 150, 0.16);
+}
+
+.timer-ring {
+  box-shadow:
+    0 0 46px rgba(10, 147, 150, 0.34),
+    0 0 72px rgba(238, 155, 0, 0.16),
+    inset 0 0 24px rgba(233, 216, 166, 0.12);
+}
