@@ -67,7 +67,7 @@ function createWindow() {
     minHeight: 640,
     show: false,
     autoHideMenuBar: true,
-    backgroundColor: "#070a09",
+    backgroundColor: "#001219",
     icon: path.join(DIST_DIRECTORY, "icons", "imposter", "custom.png"),
     webPreferences: {
       contextIsolation: true,

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#090a1f" />
+  <meta name="theme-color" content="#001219" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <title>Pass the Phone Game Hub</title>
   <link rel="stylesheet" href="/pass-the-phone.css" />
@@ -525,8 +525,8 @@
         name: "Imposter",
         mark: "IM",
         image: "images/mask-transparent.gif",
-        colorA: "#31f4ff",
-        colorB: "#ff3ea5",
+        colorA: "#0a9396",
+        colorB: "#ee9b00",
         minPlayers: 3,
         defaultTimer: 1,
         defaultThreats: 1,
@@ -570,8 +570,8 @@
         name: "Werewolf",
         mark: "WW",
         image: "images/werewolf-transparent.gif",
-        colorA: "#8c5cff",
-        colorB: "#ff4d6d",
+        colorA: "#e9d8a6",
+        colorB: "#ae2012",
         minPlayers: 5,
         defaultTimer: 3,
         defaultThreats: 1,
@@ -608,8 +608,8 @@
         name: "Mafia",
         mark: "MF",
         image: "images/gun-transparent.gif",
-        colorA: "#ff3ea5",
-        colorB: "#ffd166",
+        colorA: "#bb3e03",
+        colorB: "#9b2226",
         minPlayers: 5,
         defaultTimer: 3,
         defaultThreats: 1,
@@ -644,8 +644,8 @@
         name: "Who's Got the Bomb",
         mark: "BG",
         image: "images/bomb-transparent.gif",
-        colorA: "#ff8a3d",
-        colorB: "#c7ff5a",
+        colorA: "#ee9b00",
+        colorB: "#ca6702",
         type: "wordBomb",
         minPlayers: 2,
         defaultTimer: "random",
@@ -681,8 +681,8 @@
         name: "Spyfall",
         mark: "SP",
         image: "images/spy-transparent.gif",
-        colorA: "#31f4ff",
-        colorB: "#8c5cff",
+        colorA: "#005f73",
+        colorB: "#94d2bd",
         minPlayers: 3,
         defaultTimer: 5,
         defaultThreats: 1,
@@ -1288,9 +1288,9 @@
     }
 
     function categoryColor(category, index) {
-      if (category === ALL_CATEGORIES) return "#31f4ff";
-      const colors = ["#3478f6", "#9b4de0", "#f4ad3d", "#e94c48", "#38a169", "#4a9aa8", "#c45588", "#6c63ff"];
-      if (category === "Custom") return "#343437";
+      if (category === ALL_CATEGORIES) return "#94d2bd";
+      const colors = ["#005f73", "#0a9396", "#94d2bd", "#ee9b00", "#ca6702", "#bb3e03", "#ae2012", "#9b2226"];
+      if (category === "Custom") return "#e9d8a6";
       return colors[index % colors.length];
     }
 
@@ -2339,7 +2339,7 @@
 
     function launchConfetti() {
       confettiLayer.innerHTML = "";
-      const colors = ["#32f6ff", "#ff3df2", "#a8ff5f", "#ffcc4d", "#ffffff", "#ff5470"];
+      const colors = ["#005f73", "#0a9396", "#94d2bd", "#ee9b00", "#ca6702", "#ae2012"];
 
       for (let i = 0; i < 90; i += 1) {
         const piece = document.createElement("span");

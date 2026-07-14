@@ -2,7 +2,7 @@
   "appId": "com.ddd.gamehub",
   "appName": "DDD Game Hub",
   "webDir": "dist",
-  "backgroundColor": "#070a09",
+  "backgroundColor": "#001219",
   "plugins": {
     "SystemBars": {
       "style": "DARK"
