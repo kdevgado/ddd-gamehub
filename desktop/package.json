@@ -1,0 +1,8 @@
+{
+  "name": "ddd-gamehub-desktop",
+  "version": "1.0.0",
+  "description": "Pass-the-phone party games and live online game rooms.",
+  "author": "DDD Game Hub",
+  "private": true,
+  "main": "main.cjs"
+}

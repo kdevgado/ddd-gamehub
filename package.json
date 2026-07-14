@@ -1,19 +1,71 @@
 {
   "name": "ddd-gamehub",
   "version": "1.0.0",
+  "description": "Pass-the-phone party games and live online game rooms.",
+  "author": "DDD Game Hub",
   "private": true,
   "type": "module",
+  "main": "desktop/main.cjs",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "android:sync": "npm run build && cap sync android",
+    "android:open": "npm run android:sync && cap open android",
+    "android:apk": "npm run android:sync && node scripts/build-android.cjs",
+    "desktop:run": "npm run build && electron .",
+    "desktop:installer": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.2",
+    "firebase": "^10.12.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "firebase": "^10.12.5"
+    "vite": "^5.4.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@capacitor/cli": "^8.4.1",
+    "electron": "^43.1.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.ddd.gamehub",
+    "productName": "DDD Game Hub",
+    "asar": true,
+    "directories": {
+      "app": "desktop",
+      "output": "release/windows"
+    },
+    "files": [
+      "main.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "dist",
+        "to": "dist"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/icons/imposter/custom.png",
+      "artifactName": "DDD-Game-Hub-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DDD Game Hub"
+    }
+  }
 }
