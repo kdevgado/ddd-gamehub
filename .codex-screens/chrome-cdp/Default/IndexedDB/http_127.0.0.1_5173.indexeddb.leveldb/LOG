@@ -1,0 +1,7 @@
+2026/07/10-17:35:01.840 4248 Reusing MANIFEST C:\Users\kairus.delgado\Documents\imposter-game\.codex-screens\chrome-cdp\Default\IndexedDB\http_127.0.0.1_5173.indexeddb.leveldb/MANIFEST-000001
+2026/07/10-17:35:01.841 4248 Recovering log #4
+2026/07/10-17:35:01.849 4248 Reusing old log C:\Users\kairus.delgado\Documents\imposter-game\.codex-screens\chrome-cdp\Default\IndexedDB\http_127.0.0.1_5173.indexeddb.leveldb/000004.log 
+2026/07/10-17:35:01.879 5298 Level-0 table #8: started
+2026/07/10-17:35:01.886 5298 Level-0 table #8: 1898 bytes OK
+2026/07/10-17:35:01.892 5298 Delete type=0 #4
+2026/07/10-17:35:01.893 5298 Manual compaction at level-0 from '\x00\x04\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x05\x00\x00\x00' @ 0 : 0; will stop at (end)
