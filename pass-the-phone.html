@@ -588,12 +588,6 @@
         camp: "neutral",
         hint: "Give out two Easter eggs per night. Win while alive when every other living player has an egg."
       },
-      wolfdog: {
-        title: "Wolfdog",
-        symbol: "DOG",
-        camp: "neutral",
-        hint: "Choose your camp during the first game round."
-      },
       ripper: {
         title: "Ripper",
         symbol: "RIP",
@@ -637,7 +631,7 @@
         id: "neutrals",
         title: "Others & Neutrals",
         summary: "These roles can win alone when their own victory conditions are met.",
-        roleIds: ["angel", "easterBunny", "wolfdog", "ripper", "survivor", "pyromaniac", "thief"]
+        roleIds: ["angel", "easterBunny", "ripper", "survivor", "pyromaniac", "thief"]
       }
     ];
 
@@ -703,7 +697,7 @@
         threatOptions: [1, 2],
         twoThreatMin: 7,
         defaultExtraRoles: ["seer", "guardian"],
-        extraRoleOptions: ["seer", "cupid", "littleGirl", "guardian", "blackCat", "hunter", "wise", "blackWerewolf", "angel", "easterBunny", "wolfdog", "ripper", "survivor", "pyromaniac", "thief"],
+        extraRoleOptions: ["seer", "cupid", "littleGirl", "guardian", "blackCat", "hunter", "wise", "blackWerewolf", "angel", "easterBunny", "ripper", "survivor", "pyromaniac", "thief"],
         threatLabel: "Werewolves",
         threatSingular: "werewolf",
         threatPlural: "werewolves",
@@ -1924,10 +1918,6 @@
 
       if (state.gmRound === 1 && roleIsInGame("Cupid")) {
         steps.push("Cupid opens their eyes and chooses two players to fall in love, then closes their eyes. Secretly show the lovers each other.");
-      }
-
-      if (state.gmRound === 1 && roleIsInGame("Wolfdog")) {
-        steps.push("Wolfdog opens their eyes and silently chooses whether to join the villagers or the werewolves for this game.");
       }
 
       if (state.gmRound === 1 && roleIsInGame("Thief")) {
