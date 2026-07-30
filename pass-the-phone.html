@@ -118,9 +118,14 @@
               </div>
             </div>
             <div class="section-block is-hidden" id="extraRoleSection">
-              <h3>Extra roles</h3>
-              <div class="option-grid" id="extraRoleSwitch">
-              </div>
+              <h3>Role roster</h3>
+              <button class="category-open-btn" id="openRolesButton" type="button">
+                <span>
+                  <small>Selected</small>
+                  <strong id="selectedRoleSummary">2 special roles</strong>
+                </span>
+                <span>Check roles</span>
+              </button>
             </div>
             <div class="section-block" id="timerSection">
               <h3 id="timerSectionTitle">Round timer</h3>
@@ -164,6 +169,27 @@
               <button class="category-pill" type="button" data-filter="general">General</button>
             </div>
             <div class="category-list" id="categoryGrid" aria-label="Choose category"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Werewolf role picker -->
+      <section class="screen" data-screen="roles">
+        <div class="card category-window role-window">
+          <div class="category-shell role-shell">
+            <div class="category-topbar">
+              <div class="category-title-row">
+                <button class="category-back" id="rolesBackButton" type="button" aria-label="Back to setup">&lt;</button>
+                <h2>Roles</h2>
+              </div>
+              <button class="category-done" id="rolesDoneButton" type="button">Done</button>
+            </div>
+            <div class="role-window-summary">
+              <div class="category-count" id="roleSelectionCount">2 selected</div>
+              <p id="roleSelectionHint">Choose the special roles to deal this game.</p>
+            </div>
+            <div class="werewolf-role-groups" id="werewolfRoleGroups" aria-label="Werewolf role groups"></div>
+            <p class="error" id="rolesError" aria-live="polite"></p>
           </div>
         </div>
       </section>
@@ -487,38 +513,133 @@
       ]
     };
 
-    const WEREWOLF_EXTRA_ROLES = {
+    const WEREWOLF_ROLES = {
+      simpleVillager: {
+        title: "Simple Villager",
+        symbol: "VIL",
+        camp: "villager",
+        fixed: true,
+        hint: "You are the heart of the village, but you do not have any special power."
+      },
       seer: {
         title: "Seer",
         symbol: "SEE",
-        hint: "At night, inspect one player to learn whether they are a werewolf."
-      },
-      doctor: {
-        title: "Doctor",
-        symbol: "DOC",
-        hint: "At night, choose one player to protect from elimination."
-      },
-      hunter: {
-        title: "Hunter",
-        symbol: "HUNT",
-        hint: "If the village eliminates you, reveal your role and take one player down with you."
-      },
-      bodyguard: {
-        title: "Bodyguard",
-        symbol: "GUARD",
-        hint: "Pick one player to defend during discussion. Push suspicion away from them."
+        camp: "villager",
+        hint: "Once per night, check the role of another player."
       },
       cupid: {
         title: "Cupid",
         symbol: "LOVE",
-        hint: "Secretly link two players before discussion. If one falls, the pair shares the drama."
+        camp: "villager",
+        hint: "Choose two players to fall in love. When one dies, the other dies immediately. The lovers win with their camp, or by becoming the last players alive."
       },
-      cursed: {
-        title: "Cursed Villager",
-        symbol: "CUR",
-        hint: "You look like a villager, but if werewolves target you, you join their side."
+      littleGirl: {
+        title: "Little Girl",
+        symbol: "GIRL",
+        camp: "villager",
+        hint: "You may open your eyes while the werewolves are voting, but getting caught is dangerous."
+      },
+      guardian: {
+        title: "Guardian",
+        symbol: "GRD",
+        camp: "villager",
+        hint: "Once per night, protect one player from being killed. You cannot protect the same player two nights in a row."
+      },
+      blackCat: {
+        title: "Black Cat",
+        symbol: "CAT",
+        camp: "villager",
+        hint: "Before every village vote, choose one player who begins the vote with two votes against them."
+      },
+      hunter: {
+        title: "Hunter",
+        symbol: "HUNT",
+        camp: "villager",
+        hint: "If the village votes you out or a werewolf kills you, shoot any player you choose before dying."
+      },
+      wise: {
+        title: "Wise",
+        symbol: "WISE",
+        camp: "villager",
+        hint: "Survive one werewolf attack. If the village burns you at the stake, all villagers lose their powers; werewolves and neutral roles keep theirs."
+      },
+      werewolf: {
+        title: "Werewolf",
+        symbol: "WW",
+        camp: "werewolf",
+        fixed: true,
+        hint: "Turn into a werewolf at night. Each night, vote with the pack for a villager to eat."
+      },
+      blackWerewolf: {
+        title: "Black Werewolf",
+        symbol: "BWW",
+        camp: "werewolf",
+        hint: "Once per game, infect another player. That player immediately becomes a Werewolf."
+      },
+      angel: {
+        title: "Angel",
+        symbol: "ANG",
+        camp: "neutral",
+        hint: "Win by being burnt at the stake during the first game round. Otherwise, become a Simple Villager."
+      },
+      easterBunny: {
+        title: "Easter Bunny",
+        symbol: "EGG",
+        camp: "neutral",
+        hint: "Give out two Easter eggs per night. Win while alive when every other living player has an egg."
+      },
+      wolfdog: {
+        title: "Wolfdog",
+        symbol: "DOG",
+        camp: "neutral",
+        hint: "Choose your camp during the first game round."
+      },
+      ripper: {
+        title: "Ripper",
+        symbol: "RIP",
+        camp: "neutral",
+        hint: "Kill one player every night. Win by becoming the last remaining player."
+      },
+      survivor: {
+        title: "Survivor",
+        symbol: "SUR",
+        camp: "neutral",
+        hint: "Protect yourself from dying twice during the game. Win by becoming the last remaining player."
+      },
+      pyromaniac: {
+        title: "Pyromaniac",
+        symbol: "FIRE",
+        camp: "neutral",
+        hint: "Each night, either oil two players or burn every previously oiled player. Oiled players are not told. Win by becoming the last remaining player."
+      },
+      thief: {
+        title: "Thief",
+        symbol: "THF",
+        camp: "neutral",
+        hint: "During the first game round, steal any player's role. That player becomes a Simple Villager."
       }
     };
+
+    const WEREWOLF_ROLE_GROUPS = [
+      {
+        id: "villagers",
+        title: "Villagers",
+        summary: "The village works together to identify and eliminate every werewolf.",
+        roleIds: ["simpleVillager", "seer", "cupid", "littleGirl", "guardian", "blackCat", "hunter", "wise"]
+      },
+      {
+        id: "werewolves",
+        title: "Werewolves",
+        summary: "The werewolves must eliminate every player outside their camp.",
+        roleIds: ["werewolf", "blackWerewolf"]
+      },
+      {
+        id: "neutrals",
+        title: "Others & Neutrals",
+        summary: "These roles can win alone when their own victory conditions are met.",
+        roleIds: ["angel", "easterBunny", "wolfdog", "ripper", "survivor", "pyromaniac", "thief"]
+      }
+    ];
 
     const GAME_MODES = {
       imposter: {
@@ -577,8 +698,8 @@
         defaultThreats: 1,
         threatOptions: [1, 2],
         twoThreatMin: 7,
-        defaultExtraRoles: ["seer", "doctor"],
-        extraRoleOptions: ["seer", "doctor", "hunter", "bodyguard", "cupid", "cursed"],
+        defaultExtraRoles: ["seer", "guardian"],
+        extraRoleOptions: ["seer", "cupid", "littleGirl", "guardian", "blackCat", "hunter", "wise", "blackWerewolf", "angel", "easterBunny", "wolfdog", "ripper", "survivor", "pyromaniac", "thief"],
         threatLabel: "Werewolves",
         threatSingular: "werewolf",
         threatPlural: "werewolves",
@@ -586,7 +707,7 @@
         playerLead: "Add at least five villagers. One phone handles the private role reveals.",
         setupTitle: "Set up Werewolf",
         setupLead: "Choose how many werewolves are hiding in the village.",
-        summary: "Werewolves bluff through the day. Villagers, the Seer, and the Doctor try to expose them before voting.",
+        summary: "Build a village from three camps, deal every role privately, and use the game-master script to run each night.",
         hasSecret: false,
         shuffleTitle: "The village is sleeping",
         shuffleLead: "Werewolves and villagers are receiving their secret roles.",
@@ -732,7 +853,7 @@
       imposters: 1,
       roles: [],
       imposterIndexes: new Set(),
-      werewolfExtraRoles: ["seer", "doctor"],
+      werewolfExtraRoles: ["seer", "guardian"],
       aliveIndexes: new Set(),
       deadIndexes: new Set(),
       gmRound: 1,
@@ -791,7 +912,14 @@
     const threatTitle = document.getElementById("threatTitle");
     const imposterSwitch = document.getElementById("imposterSwitch");
     const extraRoleSection = document.getElementById("extraRoleSection");
-    const extraRoleSwitch = document.getElementById("extraRoleSwitch");
+    const openRolesButton = document.getElementById("openRolesButton");
+    const selectedRoleSummary = document.getElementById("selectedRoleSummary");
+    const rolesBackButton = document.getElementById("rolesBackButton");
+    const rolesDoneButton = document.getElementById("rolesDoneButton");
+    const roleSelectionCount = document.getElementById("roleSelectionCount");
+    const roleSelectionHint = document.getElementById("roleSelectionHint");
+    const werewolfRoleGroups = document.getElementById("werewolfRoleGroups");
+    const rolesError = document.getElementById("rolesError");
     const timerSectionTitle = document.getElementById("timerSectionTitle");
     const timerToggleSwitch = document.getElementById("timerToggleSwitch");
     const timerSwitch = document.getElementById("timerSwitch");
@@ -893,30 +1021,35 @@
       const indexes = shuffledIndexes(players.length);
       const targets = indexes.slice(0, threatCount);
       const remaining = indexes.slice(threatCount);
+      const simpleVillager = WEREWOLF_ROLES.simpleVillager;
+      const werewolf = WEREWOLF_ROLES.werewolf;
       const roles = players.map(() => createRole(
-        "Villager",
+        simpleVillager.title,
         "player",
-        "OK",
-        "You are a villager. Find the werewolves during the day vote."
+        simpleVillager.symbol,
+        simpleVillager.hint
       ));
 
-      targets.forEach((index) => {
+      targets.forEach((index, targetIndex) => {
+        const role = targetIndex === 0 && extraRoles.includes("blackWerewolf")
+          ? WEREWOLF_ROLES.blackWerewolf
+          : werewolf;
         roles[index] = createRole(
-          "Werewolf",
+          role.title,
           "threat",
-          "WW",
-          "You are a werewolf. Hide your pack and push suspicion elsewhere."
+          role.symbol,
+          role.hint
         );
       });
 
-      extraRoles.forEach((roleId) => {
+      extraRoles.filter((roleId) => roleId !== "blackWerewolf").forEach((roleId) => {
         if (!remaining.length) return;
-        const extraRole = WEREWOLF_EXTRA_ROLES[roleId];
+        const extraRole = WEREWOLF_ROLES[roleId];
         if (!extraRole) return;
 
         roles[remaining.shift()] = createRole(
           extraRole.title,
-          "player",
+          extraRole.camp === "neutral" ? "neutral" : "player",
           extraRole.symbol,
           extraRole.hint
         );
@@ -1241,13 +1374,11 @@
 
     function werewolfRoleIcon(title) {
       const icons = {
-        Bodyguard: "icons/werewolf/bodygaurd.png",
-        "Cursed Villager": "icons/werewolf/cursed.png",
+        "Black Werewolf": "icons/werewolf/werewolf.png",
         Cupid: "icons/werewolf/cupid.png",
-        Doctor: "icons/werewolf/doctor.png",
         Hunter: "icons/werewolf/hunter.png",
         Seer: "icons/werewolf/seer.png",
-        Villager: "icons/werewolf/villager.png",
+        "Simple Villager": "icons/werewolf/villager.png",
         Werewolf: "icons/werewolf/werewolf.png"
       };
 
@@ -1607,37 +1738,126 @@
     function renderExtraRoleOptions() {
       const mode = currentMode();
       const roleOptions = mode.extraRoleOptions || [];
-      extraRoleSwitch.innerHTML = "";
       extraRoleSection.classList.toggle("is-hidden", state.gameId !== "werewolf" || !roleOptions.length);
 
       if (state.gameId !== "werewolf" || !roleOptions.length) return;
 
-      state.werewolfExtraRoles = state.werewolfExtraRoles.filter((roleId) => roleOptions.includes(roleId));
+      trimWerewolfRolesToCapacity(roleOptions);
+      const selectedCount = state.werewolfExtraRoles.length;
+      selectedRoleSummary.textContent = `${selectedCount} special ${selectedCount === 1 ? "role" : "roles"}`;
+      renderWerewolfRolePicker();
+    }
 
-      roleOptions.forEach((roleId) => {
-        const extraRole = WEREWOLF_EXTRA_ROLES[roleId];
-        if (!extraRole) return;
+    function roleUsesVillagerSeat(roleId) {
+      return roleId !== "blackWerewolf";
+    }
 
-        const button = document.createElement("button");
-        button.className = "option-btn";
-        button.type = "button";
-        button.dataset.extraRole = roleId;
-        button.classList.add("extra-role-btn");
-        const iconSrc = werewolfRoleIcon(extraRole.title);
-        if (iconSrc) {
-          const image = document.createElement("img");
-          image.src = iconSrc;
-          image.alt = "";
-          image.loading = "lazy";
-          image.decoding = "async";
-          button.appendChild(image);
-        }
+    function selectedVillagerRoleCount() {
+      return state.werewolfExtraRoles.filter(roleUsesVillagerSeat).length;
+    }
 
-        const label = document.createElement("span");
-        label.textContent = extraRole.title;
-        button.appendChild(label);
-        if (state.werewolfExtraRoles.includes(roleId)) button.classList.add("active");
-        extraRoleSwitch.appendChild(button);
+    function availableVillagerRoleSlots() {
+      const playerCount = Math.max(state.players.length, currentMode().minPlayers);
+      return Math.max(0, playerCount - state.imposters);
+    }
+
+    function trimWerewolfRolesToCapacity(roleOptions = currentMode().extraRoleOptions || []) {
+      let seatsRemaining = availableVillagerRoleSlots();
+      state.werewolfExtraRoles = state.werewolfExtraRoles
+        .filter((roleId) => roleOptions.includes(roleId))
+        .filter((roleId) => {
+          if (!roleUsesVillagerSeat(roleId)) return true;
+          if (seatsRemaining <= 0) return false;
+          seatsRemaining -= 1;
+          return true;
+        });
+    }
+
+    function renderWerewolfRolePicker() {
+      if (state.gameId !== "werewolf") return;
+
+      const selectedCount = state.werewolfExtraRoles.length;
+      const villagerRoleCount = selectedVillagerRoleCount();
+      const availableSlots = availableVillagerRoleSlots();
+      roleSelectionCount.textContent = `${selectedCount} special ${selectedCount === 1 ? "role" : "roles"} selected`;
+      roleSelectionHint.textContent = `${villagerRoleCount} of ${availableSlots} villager seats use special roles. Black Werewolf uses one of the ${state.imposters} configured werewolf ${state.imposters === 1 ? "seat" : "seats"}.`;
+      werewolfRoleGroups.innerHTML = "";
+
+      WEREWOLF_ROLE_GROUPS.forEach((group) => {
+        const section = document.createElement("section");
+        section.className = "werewolf-role-group";
+        section.dataset.roleGroup = group.id;
+
+        const header = document.createElement("div");
+        header.className = "werewolf-role-group-header";
+
+        const title = document.createElement("h3");
+        title.textContent = group.title;
+
+        const summary = document.createElement("p");
+        summary.textContent = group.summary;
+        header.append(title, summary);
+
+        const list = document.createElement("div");
+        list.className = "werewolf-role-list";
+
+        group.roleIds.forEach((roleId) => {
+          const role = WEREWOLF_ROLES[roleId];
+          if (!role) return;
+
+          const isSelected = role.fixed || state.werewolfExtraRoles.includes(roleId);
+          const isAtCapacity = !isSelected && roleUsesVillagerSeat(roleId) && villagerRoleCount >= availableSlots;
+          const button = document.createElement("button");
+          button.className = "werewolf-role-option";
+          button.type = "button";
+          button.disabled = role.fixed || isAtCapacity;
+          button.dataset.roleCamp = role.camp;
+          if (!role.fixed) button.dataset.extraRole = roleId;
+          if (isSelected) button.classList.add("active");
+          if (role.fixed) button.classList.add("fixed");
+          button.setAttribute("aria-pressed", String(isSelected));
+
+          const icon = document.createElement("span");
+          icon.className = "werewolf-role-option-icon";
+          const iconSrc = werewolfRoleIcon(role.title);
+          if (iconSrc) {
+            icon.classList.add("sticker-icon");
+            const image = document.createElement("img");
+            image.src = iconSrc;
+            image.alt = "";
+            image.loading = "lazy";
+            image.decoding = "async";
+            icon.appendChild(image);
+          } else {
+            icon.textContent = role.symbol;
+          }
+
+          const copy = document.createElement("span");
+          copy.className = "werewolf-role-option-copy";
+          const name = document.createElement("strong");
+          name.textContent = role.title;
+          const description = document.createElement("span");
+          description.textContent = role.hint;
+          copy.append(name, description);
+
+          const status = document.createElement("span");
+          status.className = "werewolf-role-option-status";
+          status.textContent = roleId === "simpleVillager"
+            ? "Default"
+            : roleId === "werewolf"
+              ? `${state.imposters} dealt`
+              : isSelected
+                ? "Added"
+                : isAtCapacity
+                  ? "Full"
+                  : "Add";
+
+          button.append(icon, copy, status);
+          list.appendChild(button);
+        });
+
+        section.append(header, list);
+        werewolfRoleGroups.appendChild(section);
       });
     }
 
@@ -1650,33 +1870,72 @@
     }
 
     function werewolfScriptSteps() {
-      const steps = [
-        "Everyone closes their eyes. Say: the village is asleep.",
-        "Werewolves open their eyes, silently choose one player to attack, then close their eyes."
-      ];
+      const steps = ["Everyone closes their eyes. Say: the village is asleep."];
+
+      if (state.gmRound === 1 && roleIsInGame("Cupid")) {
+        steps.push("Cupid opens their eyes and chooses two players to fall in love, then closes their eyes. Secretly show the lovers each other.");
+      }
+
+      if (state.gmRound === 1 && roleIsInGame("Wolfdog")) {
+        steps.push("Wolfdog opens their eyes and silently chooses whether to join the villagers or the werewolves for this game.");
+      }
+
+      if (state.gmRound === 1 && roleIsInGame("Thief")) {
+        steps.push("Thief opens their eyes and chooses one player whose role to steal. That player becomes a Simple Villager.");
+      }
+
+      if (roleIsInGame("Little Girl")) {
+        steps.push("The Little Girl may secretly peek while the werewolves choose, but must not let the werewolves catch her.");
+      }
+
+      steps.push("Werewolves open their eyes, silently choose one player to attack, then close their eyes.");
+
+      if (roleIsInGame("Black Werewolf")) {
+        steps.push("Ask the Black Werewolf whether they will use their one infection this game. If yes, their chosen player becomes a Werewolf instead of dying.");
+      }
 
       if (roleIsInGame("Seer")) {
-        steps.push("Seer opens their eyes, points to one player, and the game master silently confirms whether that player is a werewolf.");
+        steps.push("Seer opens their eyes, points to one player, and the game master silently confirms that player's role.");
       }
 
-      if (roleIsInGame("Doctor")) {
-        steps.push("Doctor opens their eyes, points to one player to protect tonight, then closes their eyes.");
+      if (roleIsInGame("Guardian")) {
+        steps.push("Guardian opens their eyes and protects one player from being killed, then closes their eyes. They cannot protect the same player two nights in a row.");
       }
 
-      if (roleIsInGame("Bodyguard")) {
-        steps.push("Bodyguard opens their eyes and chooses one player to publicly defend during the next day.");
+      if (roleIsInGame("Easter Bunny")) {
+        steps.push("Easter Bunny opens their eyes and gives Easter eggs to two players who do not already have one.");
       }
 
-      if (roleIsInGame("Cupid") && state.gmRound === 1) {
-        steps.push("Cupid opens their eyes and silently links two players before the first day begins.");
+      if (roleIsInGame("Ripper")) {
+        steps.push("Ripper opens their eyes and chooses one player to kill, then closes their eyes.");
       }
 
-      if (roleIsInGame("Cursed Villager")) {
-        steps.push("If the Cursed Villager was attacked, quietly treat them as joining the werewolf side instead of dying.");
+      if (roleIsInGame("Pyromaniac")) {
+        steps.push("Pyromaniac opens their eyes and either oils two players or burns every previously oiled player. Do not tell players when they are oiled.");
+      }
+
+      if (roleIsInGame("Black Cat")) {
+        steps.push("Before the village vote, Black Cat chooses one player who will begin with two votes against them.");
+      }
+
+      if (roleIsInGame("Wise")) {
+        steps.push("Remember that Wise survives one werewolf attack. If the village votes Wise out, every surviving villager loses their power.");
+      }
+
+      if (roleIsInGame("Survivor")) {
+        steps.push("Remember that Survivor may prevent their own death twice during the game.");
       }
 
       if (roleIsInGame("Hunter")) {
-        steps.push("If the Hunter dies, pause and let them choose one player to take down with them.");
+        steps.push("If Hunter is voted out or killed by a werewolf, pause and let them shoot one player before dying.");
+      }
+
+      if (roleIsInGame("Cupid")) {
+        steps.push("If either lover dies, the other dies immediately. Lovers win with their camp, or together as the last players alive.");
+      }
+
+      if (state.gmRound === 1 && roleIsInGame("Angel")) {
+        steps.push("During the first village vote, Angel wins if they are voted out. After that first round, Angel becomes a Simple Villager.");
       }
 
       steps.push("Everyone wakes up. Announce who died, or announce that the village survived the night.");
@@ -2487,6 +2746,26 @@
       showScreen("setup");
     });
 
+    openRolesButton.addEventListener("click", () => {
+      if (state.gameId !== "werewolf") return;
+      setError(rolesError, "");
+      renderWerewolfRolePicker();
+      playSound("tap");
+      showScreen("roles");
+    });
+
+    rolesBackButton.addEventListener("click", () => {
+      renderExtraRoleOptions();
+      playSound("tap");
+      showScreen("setup");
+    });
+
+    rolesDoneButton.addEventListener("click", () => {
+      renderExtraRoleOptions();
+      playSound("tap");
+      showScreen("setup");
+    });
+
     categoryFilter.addEventListener("click", (event) => {
       const button = event.target.closest("[data-filter]");
       if (!button) return;
@@ -2520,7 +2799,7 @@
       playSound("tap");
     });
 
-    extraRoleSwitch.addEventListener("click", (event) => {
+    werewolfRoleGroups.addEventListener("click", (event) => {
       const button = event.target.closest("[data-extra-role]");
       if (!button || state.gameId !== "werewolf") return;
 
@@ -2528,9 +2807,9 @@
       if (state.werewolfExtraRoles.includes(roleId)) {
         state.werewolfExtraRoles = state.werewolfExtraRoles.filter((selectedRole) => selectedRole !== roleId);
       } else {
-        const availableSlots = Math.max(0, state.players.length - state.imposters);
-        if (state.werewolfExtraRoles.length >= availableSlots) {
-          setError(setupError, "Add more players or remove an extra role first.");
+        const needsVillagerSeat = roleUsesVillagerSeat(roleId);
+        if (needsVillagerSeat && selectedVillagerRoleCount() >= availableVillagerRoleSlots()) {
+          setError(rolesError, "Every villager seat already has a special role. Remove one before adding another.");
           playSound("tap");
           return;
         }
@@ -2538,8 +2817,8 @@
         state.werewolfExtraRoles = [...state.werewolfExtraRoles, roleId];
       }
 
-      setError(setupError, "");
-      renderExtraRoleOptions();
+      setError(rolesError, "");
+      renderWerewolfRolePicker();
       playSound("tap");
     });
 

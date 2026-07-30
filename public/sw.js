@@ -1,4 +1,4 @@
-const CACHE_NAME = "ddd-game-hub-v4";
+const CACHE_NAME = "ddd-game-hub-v5";
 
 const APP_SHELL = [
   "/manifest.webmanifest",
@@ -20,10 +20,7 @@ const APP_SHELL = [
   "/icons/mafia/detective.png",
   "/icons/mafia/doctor.png",
   "/icons/mafia/spy.png",
-  "/icons/werewolf/bodygaurd.png",
   "/icons/werewolf/cupid.png",
-  "/icons/werewolf/cursed.png",
-  "/icons/werewolf/doctor.png",
   "/icons/werewolf/hunter.png",
   "/icons/werewolf/seer.png",
   "/icons/werewolf/villager.png",

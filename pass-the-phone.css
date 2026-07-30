@@ -1007,6 +1007,208 @@ input:focus {
   opacity: 1;
 }
 
+.role-window {
+  background: #001219;
+}
+
+.role-shell {
+  gap: 18px;
+}
+
+.role-window-summary {
+  display: grid;
+  gap: 6px;
+}
+
+.role-window-summary p {
+  color: #94d2bd;
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+.werewolf-role-groups {
+  display: grid;
+  gap: 22px;
+}
+
+.werewolf-role-group {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(148, 210, 189, 0.24);
+  border-radius: 28px;
+  padding: clamp(14px, 4vw, 20px);
+  background: rgba(0, 95, 115, 0.18);
+}
+
+.werewolf-role-group[data-role-group="werewolves"] {
+  border-color: rgba(174, 32, 18, 0.5);
+  background: rgba(174, 32, 18, 0.13);
+}
+
+.werewolf-role-group[data-role-group="neutrals"] {
+  border-color: rgba(238, 155, 0, 0.42);
+  background: rgba(238, 155, 0, 0.1);
+}
+
+.werewolf-role-group-header {
+  display: grid;
+  gap: 7px;
+}
+
+.werewolf-role-group-header h3 {
+  color: #e9d8a6;
+  font-size: 1.16rem;
+  letter-spacing: 0.08em;
+}
+
+.werewolf-role-group-header p {
+  color: #94d2bd;
+  font-size: 0.92rem;
+  line-height: 1.42;
+}
+
+.werewolf-role-list {
+  display: grid;
+  gap: 10px;
+}
+
+.werewolf-role-option {
+  width: 100%;
+  min-height: 112px;
+  border: 1px solid rgba(148, 210, 189, 0.25);
+  border-radius: 22px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  color: #e9d8a6;
+  background: rgba(0, 18, 25, 0.62);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(233, 216, 166, 0.08);
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+
+.werewolf-role-option:not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: rgba(148, 210, 189, 0.58);
+}
+
+.werewolf-role-option.active {
+  border-color: #94d2bd;
+  background: rgba(10, 147, 150, 0.24);
+  box-shadow: inset 0 1px 0 rgba(233, 216, 166, 0.14), 0 0 26px rgba(10, 147, 150, 0.12);
+}
+
+.werewolf-role-option[data-role-camp="werewolf"].active {
+  border-color: #ae2012;
+  background: rgba(174, 32, 18, 0.24);
+}
+
+.werewolf-role-option[data-role-camp="neutral"].active {
+  border-color: #ee9b00;
+  background: rgba(238, 155, 0, 0.2);
+}
+
+.werewolf-role-option:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.werewolf-role-option.fixed {
+  opacity: 1;
+}
+
+.werewolf-role-option-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 19px;
+  display: grid;
+  place-items: center;
+  color: #001219;
+  background: #94d2bd;
+  font-size: 0.9rem;
+  font-weight: 950;
+  overflow: hidden;
+}
+
+.werewolf-role-option[data-role-camp="werewolf"] .werewolf-role-option-icon {
+  color: #e9d8a6;
+  background: #ae2012;
+}
+
+.werewolf-role-option[data-role-camp="neutral"] .werewolf-role-option-icon {
+  background: #ee9b00;
+}
+
+.werewolf-role-option-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  padding: 6px;
+  filter: drop-shadow(0 8px 12px rgba(0, 18, 25, 0.34));
+}
+
+.werewolf-role-option-copy {
+  min-width: 0;
+}
+
+.werewolf-role-option-copy strong,
+.werewolf-role-option-copy > span {
+  display: block;
+}
+
+.werewolf-role-option-copy strong {
+  margin-bottom: 5px;
+  font-size: 1.16rem;
+  line-height: 1.08;
+}
+
+.werewolf-role-option-copy > span {
+  color: #94d2bd;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.werewolf-role-option-status {
+  min-width: 58px;
+  border-radius: 999px;
+  padding: 8px 10px;
+  color: #001219;
+  background: #e9d8a6;
+  font-size: 0.74rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.werewolf-role-option:not(.active) .werewolf-role-option-status {
+  color: #94d2bd;
+  background: rgba(148, 210, 189, 0.12);
+}
+
+@media (max-width: 560px) {
+  .werewolf-role-option {
+    grid-template-columns: 54px minmax(0, 1fr);
+    min-height: 104px;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .werewolf-role-option-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 17px;
+  }
+
+  .werewolf-role-option-status {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: -2px;
+  }
+}
+
 .custom-word-wrap {
   display: none;
 }
