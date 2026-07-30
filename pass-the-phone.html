@@ -750,12 +750,12 @@
         timerEyebrow: "Town meeting",
         timerTitle: "Find the mafia",
         timerLead: "Compare stories, push for contradictions, and decide who the town trusts least.",
-        voteTitle: "Who is mafia?",
-        voteHintSingle: "Tap the suspected mafia player, then reveal the truth.",
-        voteHintPlural: "Tap up to two suspected mafia players, then reveal the truth.",
-        revealResultButton: "Reveal mafia",
-        resultTitle: "Mafia revealed",
-        noVoteSummary: "No suspect was selected before the reveal.",
+        voteTitle: "Who leaves the town?",
+        voteHintSingle: "Choose one living player to eliminate from the town.",
+        voteHintPlural: "Choose one living player to eliminate from the town.",
+        revealResultButton: "Eliminate player",
+        resultTitle: "Town verdict",
+        noVoteSummary: "No one was accused before the verdict.",
         correctSummary: "The town identified every mafia member.",
         partialSummary: "The town found one mafia member, but the case is not closed.",
         missedSummary: "The mafia escaped suspicion this round.",
@@ -865,6 +865,12 @@
       villageVoteRound: 0,
       werewolfGameOver: false,
       werewolfResultDestination: "nextNight",
+      mafiaGameOver: false,
+      mafiaResultDestination: "nextNight",
+      mafiaNightAttackIndex: null,
+      mafiaDoctorProtectedIndex: null,
+      mafiaDoctorActedRound: 0,
+      mafiaDetectiveActedRound: 0,
       wiseProtectionUsedIndexes: new Set(),
       loverIndexes: new Set(),
       blackCatTargetIndex: null,
@@ -1982,18 +1988,19 @@
     function mafiaScriptSteps() {
       const steps = [
         "Everyone closes their eyes. Say: the city goes quiet.",
-        "Mafia open their eyes, silently choose one player to eliminate, then close their eyes."
+        "Mafia open their eyes, silently choose one town player to attack, then close their eyes.",
+        "Keep everyone asleep and mark the Mafia's target below."
       ];
 
       if (roleIsInGame("Detective")) {
-        steps.push("Detective opens their eyes, points to one player, and the game master silently confirms whether that player is mafia.");
+        steps.push("After the target is marked, the app will prompt the Detective to investigate one living player.");
       }
 
       if (roleIsInGame("Doctor")) {
-        steps.push("Doctor opens their eyes, points to one player to protect from the mafia, then closes their eyes.");
+        steps.push("The app will then prompt the Doctor to protect one living player before the attack resolves.");
       }
 
-      steps.push("Everyone wakes up. Announce who died overnight, or announce that no one was eliminated.");
+      steps.push("Resolve the night result, then wake the city and announce whether anyone was eliminated.");
       return steps;
     }
 
@@ -2050,12 +2057,15 @@
       gmEyebrow.textContent = `${mode.name} round ${state.gmRound}`;
       gmTitle.textContent = nightLabel;
       gmLead.textContent = `Read each step, resolve actions, then mark the ${mode.name} night result before discussion.`;
-      gmDeathTitle.textContent = state.gameId === "werewolf" ? "Who was attacked?" : "Who died?";
-      gmStartDiscussionButton.textContent = state.gameId === "werewolf"
-        ? "Resolve night result"
-        : "Start day discussion";
+      gmDeathTitle.textContent = state.gameId === "werewolf"
+        ? "Who was attacked?"
+        : "Who did the Mafia target?";
+      gmStartDiscussionButton.textContent = "Resolve night result";
+      gmNoDeathButton.textContent = state.gameId === "mafia"
+        ? "No one was attacked"
+        : "No one died";
       gmDeathSummary.textContent = state.gameId === "mafia"
-        ? "Choose who the mafia eliminated, or tap no one was eliminated."
+        ? "Choose the living town player targeted by the Mafia, or tap no one was attacked."
         : "Choose who the werewolves attacked, or tap no one died.";
       state.gmDeathIndex = null;
       gmNoDeathButton.classList.remove("active");
@@ -2075,18 +2085,23 @@
       state.players.forEach((player, index) => {
         const role = state.roles[index];
         const isDead = state.deadIndexes.has(index);
+        const isMafiaTeammate = state.gameId === "mafia" && role.kind === "threat";
         const button = document.createElement("button");
         button.className = "vote-btn";
         button.type = "button";
         button.dataset.deathIndex = index;
-        button.disabled = isDead;
+        button.disabled = isDead || isMafiaTeammate;
         if (state.gmDeathIndex === index) button.classList.add("selected");
 
         const name = document.createElement("span");
         name.textContent = player;
 
         const status = document.createElement("span");
-        status.textContent = isDead ? "Out" : role.title;
+        status.textContent = isDead
+          ? "Out"
+          : isMafiaTeammate
+            ? "Mafia"
+            : role.title;
 
         button.append(name, status);
         gmDeathList.appendChild(button);
@@ -2114,8 +2129,11 @@
         const deathAction = role.title === "Hunter"
           ? " The Hunter's final shot will trigger before daytime."
           : "";
-        const resultVerb = state.gameId === "mafia" ? "was eliminated tonight" : "was attacked and will die";
-        gmDeathSummary.textContent = `${state.players[index]} ${resultVerb}. Reveal: ${role.title}. ${role.hint}${deathAction}`;
+        if (state.gameId === "mafia") {
+          gmDeathSummary.textContent = `${state.players[index]} is the Mafia's target. The Detective and Doctor act before the attack is resolved.`;
+        } else {
+          gmDeathSummary.textContent = `${state.players[index]} was attacked and will die. Reveal: ${role.title}. ${role.hint}${deathAction}`;
+        }
       }
       renderGameMasterDeathList();
     }
@@ -2124,7 +2142,7 @@
       state.gmDeathIndex = null;
       gmNoDeathButton.classList.add("active");
       gmDeathSummary.textContent = state.gameId === "mafia"
-        ? "No one was eliminated tonight. Wake the city and start discussion."
+        ? "The Mafia did not attack anyone. Continue so living special roles can act."
         : "No one died tonight. Wake the village and start discussion.";
       renderGameMasterDeathList();
     }
@@ -2149,9 +2167,11 @@
         return;
       }
 
-      if (state.gmDeathIndex !== null) {
-        state.deadIndexes.add(state.gmDeathIndex);
-        state.aliveIndexes.delete(state.gmDeathIndex);
+      if (state.gameId === "mafia") {
+        state.mafiaNightAttackIndex = state.gmDeathIndex;
+        state.mafiaDoctorProtectedIndex = null;
+        startNextMafiaNightAbility();
+        return;
       }
 
       advanceToGameMasterDiscussion();
@@ -2332,6 +2352,12 @@
       state.villageVoteRound = 0;
       state.werewolfGameOver = false;
       state.werewolfResultDestination = "nextNight";
+      state.mafiaGameOver = false;
+      state.mafiaResultDestination = "nextNight";
+      state.mafiaNightAttackIndex = null;
+      state.mafiaDoctorProtectedIndex = null;
+      state.mafiaDoctorActedRound = 0;
+      state.mafiaDetectiveActedRound = 0;
       state.wiseProtectionUsedIndexes = new Set();
       state.loverIndexes = new Set();
       state.blackCatTargetIndex = null;
@@ -2531,7 +2557,7 @@
       }
 
       if (role.kind === "threat") {
-        if (state.gameId !== "werewolf") playSound("imposter");
+        if (!["werewolf", "mafia"].includes(state.gameId)) playSound("imposter");
         const quietRevealGames = ["imposter", "werewolf", "mafia"];
         if (!quietRevealGames.includes(state.gameId) && "vibrate" in navigator) {
           navigator.vibrate([60, 40, 120]);
@@ -2617,11 +2643,12 @@
     }
 
     function targetVoteCount() {
-      if (state.gameId === "werewolf") return 1;
+      if (usesGameMasterRound()) return 1;
       return state.imposterIndexes.size || state.imposters;
     }
 
     function availableVoteLabel(index) {
+      if (state.gameId === "mafia") return "In town";
       if (state.gameId !== "werewolf") return "Pick";
       return state.blackCatTargetIndex === index ? "Starts with 2 votes" : "In village";
     }
@@ -2709,6 +2736,13 @@
       return eliminatedIndexes;
     }
 
+    function eliminateMafiaPlayer(index) {
+      if (!state.aliveIndexes.has(index)) return false;
+      state.aliveIndexes.delete(index);
+      state.deadIndexes.add(index);
+      return true;
+    }
+
     function useSurvivorProtection(index) {
       if (
         !state.aliveIndexes.has(index)
@@ -2753,6 +2787,29 @@
       finishWerewolfGame(
         "The Werewolves win",
         `${victoryCopy} The Werewolves take over the village.`
+      );
+      return true;
+    }
+
+    function livingMafiaIndexes() {
+      return [...state.aliveIndexes].filter((index) => state.roles[index]?.kind === "threat");
+    }
+
+    function livingTownIndexes() {
+      return [...state.aliveIndexes].filter((index) => state.roles[index]?.kind === "player");
+    }
+
+    function finishMafiaWinIfAtMostOneTownPlayerRemains() {
+      const mafia = livingMafiaIndexes();
+      const town = livingTownIndexes();
+      if (mafia.length === 0 || town.length > 1) return false;
+
+      const victoryCopy = town.length === 1
+        ? `${state.players[town[0]]} is the only town player left alive.`
+        : "No town players remain alive.";
+      finishMafiaGame(
+        "The Mafia wins",
+        `${victoryCopy} The Mafia takes control of the city.`
       );
       return true;
     }
@@ -2816,13 +2873,15 @@
       if (state.pendingWerewolfAbility === "thief") return "Steal";
       if (state.pendingWerewolfAbility === "ripper") return "Targeted";
       if (state.pendingWerewolfAbility === "pyromaniac") return "Oiled";
+      if (state.pendingWerewolfAbility === "mafiaDoctor") return "Protected";
+      if (state.pendingWerewolfAbility === "mafiaDetective") return "Investigated";
       return "Marked";
     }
 
     function pendingAbilityEligibleIndexes() {
       return [...state.aliveIndexes].filter((index) => {
         if (
-          ["thief", "ripper", "pyromaniac"].includes(state.pendingWerewolfAbility)
+          ["thief", "ripper", "pyromaniac", "mafiaDetective"].includes(state.pendingWerewolfAbility)
           && index === state.pendingAbilityActorIndex
         ) return false;
         if (
@@ -3124,6 +3183,17 @@
       launchConfetti();
     }
 
+    function finishMafiaGame(title, summary) {
+      state.mafiaGameOver = true;
+      resultEyebrow.textContent = "Game over";
+      resultTitle.textContent = title;
+      guessSummary.textContent = summary;
+      playAgainButton.textContent = "Play again";
+      playAgainButton.disabled = false;
+      resetWerewolfAbilityPanel();
+      launchConfetti();
+    }
+
     function prepareWerewolfResult(eyebrow, title, buttonLabel) {
       state.werewolfGameOver = false;
       resultEyebrow.textContent = eyebrow;
@@ -3133,6 +3203,11 @@
       resetWerewolfAbilityPanel();
       playAgainButton.textContent = buttonLabel;
       playAgainButton.disabled = false;
+    }
+
+    function prepareMafiaResult(eyebrow, title, buttonLabel) {
+      prepareWerewolfResult(eyebrow, title, buttonLabel);
+      state.mafiaGameOver = false;
     }
 
     function setWerewolfNightResultDestination() {
@@ -3324,6 +3399,217 @@
         && eliminatedRole.title !== "Hunter"
       ) {
         finishWerewolfWinIfAtMostOneVillagerRemains();
+      }
+
+      showScreen("result");
+      playSound("success");
+    }
+
+    function startMafiaDetectivePhase(detectiveIndex = livingRoleIndex("Detective")) {
+      if (
+        detectiveIndex === undefined
+        || state.mafiaDetectiveActedRound >= state.gmRound
+      ) {
+        startNextMafiaNightAbility();
+        return;
+      }
+
+      const validTargets = [...state.aliveIndexes].filter((index) => index !== detectiveIndex);
+      if (validTargets.length === 0) {
+        state.mafiaDetectiveActedRound = state.gmRound;
+        startNextMafiaNightAbility();
+        return;
+      }
+
+      state.mafiaResultDestination = "nightAbilities";
+      prepareMafiaResult("Night ability", "The Detective investigates", "Continue night");
+      guessSummary.textContent = "Choose one living player and privately reveal whether they belong to the Mafia.";
+      showWerewolfAbility(
+        "Detective investigation",
+        `${state.players[detectiveIndex]} investigates one other living player before the Mafia attack is resolved.`
+      );
+      beginTargetedWerewolfAbility(
+        "mafiaDetective",
+        "Investigate selected player",
+        detectiveIndex
+      );
+      showScreen("result");
+    }
+
+    function startMafiaDoctorPhase(doctorIndex = livingRoleIndex("Doctor")) {
+      if (
+        doctorIndex === undefined
+        || state.mafiaDoctorActedRound >= state.gmRound
+      ) {
+        startNextMafiaNightAbility();
+        return;
+      }
+
+      state.mafiaResultDestination = "nightAbilities";
+      prepareMafiaResult("Night ability", "The Doctor protects", "Resolve night attack");
+      guessSummary.textContent = "Choose one living player. If the Mafia targeted them, they survive tonight.";
+      showWerewolfAbility(
+        "Doctor protection",
+        `${state.players[doctorIndex]} may protect any living player, including themselves, from this night's Mafia attack.`
+      );
+      beginTargetedWerewolfAbility(
+        "mafiaDoctor",
+        "Protect selected player",
+        doctorIndex
+      );
+      showScreen("result");
+    }
+
+    function startNextMafiaNightAbility() {
+      const detectiveIndex = livingRoleIndex("Detective");
+      if (
+        detectiveIndex !== undefined
+        && state.mafiaDetectiveActedRound < state.gmRound
+      ) {
+        startMafiaDetectivePhase(detectiveIndex);
+        return;
+      }
+
+      const doctorIndex = livingRoleIndex("Doctor");
+      if (
+        doctorIndex !== undefined
+        && state.mafiaDoctorActedRound < state.gmRound
+      ) {
+        startMafiaDoctorPhase(doctorIndex);
+        return;
+      }
+
+      resolveMafiaNightAttack(state.mafiaNightAttackIndex);
+    }
+
+    function resolveMafiaDetectiveAbility() {
+      const targetIndex = state.pendingAbilityTargets.values().next().value;
+      if (targetIndex === undefined || !state.aliveIndexes.has(targetIndex)) return;
+
+      const isMafia = state.roles[targetIndex].kind === "threat";
+      state.mafiaDetectiveActedRound = state.gmRound;
+      state.mafiaResultDestination = "nightAbilities";
+      werewolfAbilityTitle.textContent = "Investigation complete";
+      werewolfAbilityCopy.textContent = isMafia
+        ? `${state.players[targetIndex]} belongs to the Mafia.`
+        : `${state.players[targetIndex]} does not belong to the Mafia.`;
+      werewolfAbilityTargets.innerHTML = "";
+      resolveWerewolfAbilityButton.classList.add("is-hidden");
+      guessSummary.textContent = "Keep the result private. The Detective may use it during the next town discussion.";
+      playAgainButton.textContent = livingRoleIndex("Doctor") !== undefined
+        && state.mafiaDoctorActedRound < state.gmRound
+        ? "Continue to Doctor"
+        : "Resolve night attack";
+      playAgainButton.disabled = false;
+      state.pendingWerewolfAbility = null;
+      state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = null;
+      playSound("success");
+    }
+
+    function resolveMafiaDoctorAbility() {
+      const targetIndex = state.pendingAbilityTargets.values().next().value;
+      if (targetIndex === undefined || !state.aliveIndexes.has(targetIndex)) return;
+
+      state.mafiaDoctorProtectedIndex = targetIndex;
+      state.mafiaDoctorActedRound = state.gmRound;
+      state.mafiaResultDestination = "nightAbilities";
+      werewolfAbilityTitle.textContent = "Protection placed";
+      werewolfAbilityCopy.textContent = `${state.players[targetIndex]} is protected from the Mafia for this night.`;
+      werewolfAbilityTargets.innerHTML = "";
+      resolveWerewolfAbilityButton.classList.add("is-hidden");
+      guessSummary.textContent = "Keep the protected player secret until the night result is resolved.";
+      playAgainButton.textContent = "Resolve night attack";
+      playAgainButton.disabled = false;
+      state.pendingWerewolfAbility = null;
+      state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = null;
+      playSound("success");
+    }
+
+    function resolveMafiaNightAttack(attackedIndex) {
+      state.mafiaNightAttackIndex = null;
+      state.mafiaResultDestination = "discussion";
+      prepareMafiaResult(
+        "Night result",
+        attackedIndex === null ? "No one was attacked" : `${state.players[attackedIndex]} was attacked`,
+        "Start day discussion"
+      );
+
+      if (
+        attackedIndex === null
+        || attackedIndex === undefined
+        || !state.aliveIndexes.has(attackedIndex)
+      ) {
+        resultTitle.textContent = "The city wakes safely";
+        guessSummary.textContent = "No one was eliminated by the Mafia tonight.";
+      } else if (state.mafiaDoctorProtectedIndex === attackedIndex) {
+        addEliminationResult(attackedIndex);
+        resultTitle.textContent = `${state.players[attackedIndex]} survives`;
+        guessSummary.textContent = `The Doctor protected ${state.players[attackedIndex]} from the Mafia attack. They remain in the game.`;
+        showWerewolfAbility(
+          "Doctor protection activated",
+          "The attack was blocked for this night. The Doctor may choose a new protection target next night."
+        );
+      } else {
+        const attackedRole = state.roles[attackedIndex];
+        eliminateMafiaPlayer(attackedIndex);
+        addEliminationResult(attackedIndex);
+        resultTitle.textContent = `${state.players[attackedIndex]} is out`;
+        if (attackedRole.title === "Detective" || attackedRole.title === "Doctor") {
+          guessSummary.textContent = `${state.players[attackedIndex]} was the ${attackedRole.title} and is removed from all future night and voting lists.`;
+          showWerewolfAbility(
+            `${attackedRole.title} ability ended`,
+            `The ${attackedRole.title} completed any action from this night, but cannot act in future rounds.`
+          );
+        } else {
+          guessSummary.textContent = `${state.players[attackedIndex]} was a ${attackedRole.title} and is removed from the game.`;
+        }
+      }
+
+      finishMafiaWinIfAtMostOneTownPlayerRemains();
+      showScreen("result");
+      playSound("success");
+    }
+
+    function resolveMafiaVote() {
+      if (state.selectedVotes.size !== 1) {
+        voteHint.textContent = "Choose one living player before confirming the town vote.";
+        return;
+      }
+
+      const eliminatedIndex = state.selectedVotes.values().next().value;
+      const eliminatedRole = state.roles[eliminatedIndex];
+      const eliminatedName = state.players[eliminatedIndex];
+      state.villageVoteRound += 1;
+      state.mafiaGameOver = false;
+      state.mafiaResultDestination = "nextNight";
+
+      prepareMafiaResult("Town verdict", `${eliminatedName} is out`, "Continue to next night");
+      eliminateMafiaPlayer(eliminatedIndex);
+      addEliminationResult(eliminatedIndex);
+
+      if (eliminatedRole.kind === "threat") {
+        if (livingMafiaIndexes().length === 0) {
+          finishMafiaGame(
+            "The town wins",
+            `${eliminatedName} was the final Mafia member. Every surviving town player wins.`
+          );
+        } else {
+          guessSummary.textContent = `${eliminatedName} was Mafia and is removed from the town, but another Mafia member is still alive.`;
+        }
+      } else if (eliminatedRole.title === "Detective" || eliminatedRole.title === "Doctor") {
+        guessSummary.textContent = `${eliminatedName} was the ${eliminatedRole.title} and is removed from all future night and voting lists.`;
+        showWerewolfAbility(
+          `${eliminatedRole.title} ability ended`,
+          `The ${eliminatedRole.title} does not act after being voted out. Their previous information or protection remains resolved.`
+        );
+      } else {
+        guessSummary.textContent = `${eliminatedName} was a Citizen and is removed from all future night and voting lists.`;
+      }
+
+      if (!state.mafiaGameOver) {
+        finishMafiaWinIfAtMostOneTownPlayerRemains();
       }
 
       showScreen("result");
@@ -3607,6 +3893,10 @@
         resolvePyromaniacAbility();
       } else if (state.pendingWerewolfAbility === "blackCat") {
         resolveBlackCatAbility();
+      } else if (state.pendingWerewolfAbility === "mafiaDetective") {
+        resolveMafiaDetectiveAbility();
+      } else if (state.pendingWerewolfAbility === "mafiaDoctor") {
+        resolveMafiaDoctorAbility();
       }
     }
 
@@ -3617,6 +3907,11 @@
 
       if (state.gameId === "werewolf") {
         resolveWerewolfVote();
+        return;
+      }
+
+      if (state.gameId === "mafia") {
+        resolveMafiaVote();
         return;
       }
 
@@ -3704,6 +3999,12 @@
       state.villageVoteRound = 0;
       state.werewolfGameOver = false;
       state.werewolfResultDestination = "nextNight";
+      state.mafiaGameOver = false;
+      state.mafiaResultDestination = "nextNight";
+      state.mafiaNightAttackIndex = null;
+      state.mafiaDoctorProtectedIndex = null;
+      state.mafiaDoctorActedRound = 0;
+      state.mafiaDetectiveActedRound = 0;
       state.wiseProtectionUsedIndexes = new Set();
       state.loverIndexes = new Set();
       state.blackCatTargetIndex = null;
@@ -3763,9 +4064,31 @@
       playSound("tap");
     }
 
+    function continueMafiaGame() {
+      state.selectedVotes = new Set();
+      resetWerewolfAbilityPanel();
+      if (state.mafiaResultDestination === "nightAbilities") {
+        startNextMafiaNightAbility();
+        playSound("tap");
+        return;
+      }
+      if (state.mafiaResultDestination === "discussion") {
+        state.mafiaResultDestination = "nextNight";
+        advanceToGameMasterDiscussion();
+        return;
+      }
+      setupGameMasterRound();
+      showScreen("gameMaster");
+      playSound("tap");
+    }
+
     function handleResultPrimaryAction() {
       if (state.gameId === "werewolf" && state.roles.length && !state.werewolfGameOver) {
         continueWerewolfGame();
+        return;
+      }
+      if (state.gameId === "mafia" && state.roles.length && !state.mafiaGameOver) {
+        continueMafiaGame();
         return;
       }
       playAgain();
