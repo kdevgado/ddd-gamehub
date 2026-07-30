@@ -335,12 +335,19 @@
       <section class="screen" data-screen="result">
         <div class="card">
           <div class="stack center">
-            <p class="eyebrow">The truth</p>
+            <p class="eyebrow" id="resultEyebrow">The truth</p>
             <h2 id="resultTitle">Role revealed</h2>
             <div class="result-list" id="resultList"></div>
             <div class="word-reveal" id="resultSecretWrap">
               <span id="resultSecretLabel">Secret word</span>
               <span id="resultWord">Pizza</span>
+            </div>
+            <div class="werewolf-ability-panel is-hidden" id="werewolfAbilityPanel">
+              <span class="ability-kicker">Special role triggered</span>
+              <h3 id="werewolfAbilityTitle">Resolve ability</h3>
+              <p id="werewolfAbilityCopy"></p>
+              <div class="ability-target-list" id="werewolfAbilityTargets"></div>
+              <button class="btn danger is-hidden" id="resolveWerewolfAbilityButton" type="button" disabled>Resolve ability</button>
             </div>
             <p class="hint" id="guessSummary"></p>
             <button class="btn" id="playAgainButton" type="button">Play again</button>
@@ -711,11 +718,11 @@
         timerEyebrow: "Day break",
         timerTitle: "Find the werewolf",
         timerLead: "Question alibis, listen for slips, and pick who the village will accuse.",
-        voteTitle: "Who is a werewolf?",
-        voteHintSingle: "Tap the suspected werewolf, then reveal the truth.",
-        voteHintPlural: "Tap up to two suspected werewolves, then reveal the truth.",
-        revealResultButton: "Reveal werewolves",
-        resultTitle: "Werewolves revealed",
+        voteTitle: "Who leaves the village?",
+        voteHintSingle: "Choose one living player to eliminate from the village.",
+        voteHintPlural: "Choose one living player to eliminate from the village.",
+        revealResultButton: "Eliminate player",
+        resultTitle: "Village verdict",
         noVoteSummary: "No one was accused before the reveal.",
         correctSummary: "The village caught every werewolf.",
         partialSummary: "The village caught one werewolf, but danger remains.",
@@ -861,6 +868,9 @@
       deadIndexes: new Set(),
       gmRound: 1,
       gmDeathIndex: null,
+      villageVoteRound: 0,
+      werewolfGameOver: false,
+      pendingHunterTarget: null,
       currentRevealIndex: 0,
       selectedVotes: new Set(),
       imposterHints: false,
@@ -970,12 +980,19 @@
     const voteList = document.getElementById("voteList");
     const voteHint = document.getElementById("voteHint");
     const revealResultButton = document.getElementById("revealResultButton");
+    const resultEyebrow = document.getElementById("resultEyebrow");
     const resultTitle = document.getElementById("resultTitle");
     const resultList = document.getElementById("resultList");
     const resultSecretWrap = document.getElementById("resultSecretWrap");
     const resultSecretLabel = document.getElementById("resultSecretLabel");
     const resultWord = document.getElementById("resultWord");
     const guessSummary = document.getElementById("guessSummary");
+    const werewolfAbilityPanel = document.getElementById("werewolfAbilityPanel");
+    const werewolfAbilityTitle = document.getElementById("werewolfAbilityTitle");
+    const werewolfAbilityCopy = document.getElementById("werewolfAbilityCopy");
+    const werewolfAbilityTargets = document.getElementById("werewolfAbilityTargets");
+    const resolveWerewolfAbilityButton = document.getElementById("resolveWerewolfAbilityButton");
+    const playAgainButton = document.getElementById("playAgainButton");
     const confettiLayer = document.getElementById("confettiLayer");
     let gameDeckSyncFrame = 0;
 
@@ -1886,7 +1903,10 @@
     }
 
     function roleIsInGame(title) {
-      return state.roles.some((role) => role.title === title);
+      return state.roles.some((role, index) => (
+        role.title === title
+        && (!usesGameMasterRound() || state.aliveIndexes.has(index))
+      ));
     }
 
     function usesGameMasterRound() {
@@ -2060,6 +2080,7 @@
       }
 
       state.gmRound += 1;
+      state.selectedVotes = new Set();
       resetTimer();
       if (!state.timerEnabled) buildVoteList();
       showScreen(state.timerEnabled ? "timer" : "voting");
@@ -2238,6 +2259,9 @@
       state.deadIndexes = new Set();
       state.gmRound = 1;
       state.gmDeathIndex = null;
+      state.villageVoteRound = 0;
+      state.werewolfGameOver = false;
+      state.pendingHunterTarget = null;
       state.currentRevealIndex = 0;
       state.selectedVotes = new Set();
       resetTimer();
@@ -2512,7 +2536,12 @@
     }
 
     function targetVoteCount() {
+      if (state.gameId === "werewolf") return 1;
       return state.imposterIndexes.size || state.imposters;
+    }
+
+    function availableVoteLabel() {
+      return state.gameId === "werewolf" ? "In village" : "Pick";
     }
 
     function buildVoteList() {
@@ -2533,7 +2562,7 @@
         name.textContent = player;
 
         const status = document.createElement("span");
-        status.textContent = state.selectedVotes.has(index) ? "Picked" : "Pick";
+        status.textContent = state.selectedVotes.has(index) ? "Selected" : availableVoteLabel();
         if (state.selectedVotes.has(index)) button.classList.add("selected");
 
         button.append(name, status);
@@ -2548,7 +2577,7 @@
       if (state.selectedVotes.has(index)) {
         state.selectedVotes.delete(index);
         button.classList.remove("selected");
-        button.lastElementChild.textContent = "Pick";
+        button.lastElementChild.textContent = availableVoteLabel();
         return;
       }
 
@@ -2558,13 +2587,209 @@
         const firstButton = voteList.querySelector(`[data-index="${first}"]`);
         if (firstButton) {
           firstButton.classList.remove("selected");
-          firstButton.lastElementChild.textContent = "Pick";
+          firstButton.lastElementChild.textContent = availableVoteLabel();
         }
       }
 
       state.selectedVotes.add(index);
       button.classList.add("selected");
-      button.lastElementChild.textContent = "Picked";
+      button.lastElementChild.textContent = "Selected";
+    }
+
+    function eliminateWerewolfPlayer(index) {
+      state.aliveIndexes.delete(index);
+      state.deadIndexes.add(index);
+    }
+
+    function livingWerewolfIndexes() {
+      return [...state.aliveIndexes].filter((index) => state.roles[index]?.kind === "threat");
+    }
+
+    function addEliminationResult(index) {
+      const name = document.createElement("div");
+      name.className = "result-name";
+      name.textContent = state.players[index];
+
+      const role = document.createElement("span");
+      role.className = "result-role";
+      role.textContent = state.roles[index].title;
+
+      name.appendChild(role);
+      resultList.appendChild(name);
+    }
+
+    function resetWerewolfAbilityPanel() {
+      werewolfAbilityPanel.classList.add("is-hidden");
+      werewolfAbilityTargets.innerHTML = "";
+      resolveWerewolfAbilityButton.classList.add("is-hidden");
+      resolveWerewolfAbilityButton.disabled = true;
+      state.pendingHunterTarget = null;
+    }
+
+    function showWerewolfAbility(title, copy) {
+      werewolfAbilityTitle.textContent = title;
+      werewolfAbilityCopy.textContent = copy;
+      werewolfAbilityPanel.classList.remove("is-hidden");
+      werewolfAbilityTargets.innerHTML = "";
+      resolveWerewolfAbilityButton.classList.add("is-hidden");
+      resolveWerewolfAbilityButton.disabled = true;
+    }
+
+    function renderHunterTargets() {
+      werewolfAbilityTargets.innerHTML = "";
+      [...state.aliveIndexes].forEach((index) => {
+        const button = document.createElement("button");
+        button.className = "vote-btn";
+        button.type = "button";
+        button.dataset.hunterTarget = index;
+        if (state.pendingHunterTarget === index) button.classList.add("selected");
+
+        const name = document.createElement("span");
+        name.textContent = state.players[index];
+
+        const status = document.createElement("span");
+        status.textContent = state.pendingHunterTarget === index ? "Targeted" : "Choose";
+
+        button.append(name, status);
+        button.addEventListener("click", () => {
+          state.pendingHunterTarget = index;
+          resolveWerewolfAbilityButton.disabled = false;
+          renderHunterTargets();
+          playSound("tap");
+        });
+        werewolfAbilityTargets.appendChild(button);
+      });
+    }
+
+    function triggerHunterAbility(playerName) {
+      showWerewolfAbility(
+        "Hunter's final shot",
+        `${playerName} was eliminated as the Hunter. Choose one living player to take down before the next night.`
+      );
+      resolveWerewolfAbilityButton.textContent = "Fire Hunter's shot";
+      resolveWerewolfAbilityButton.classList.remove("is-hidden");
+      playAgainButton.disabled = true;
+      renderHunterTargets();
+    }
+
+    function triggerWiseAbility(playerName) {
+      const simpleVillager = WEREWOLF_ROLES.simpleVillager;
+      const strippedPlayers = [];
+
+      [...state.aliveIndexes].forEach((index) => {
+        const role = state.roles[index];
+        if (role?.kind !== "player" || role.title === simpleVillager.title) return;
+        strippedPlayers.push(state.players[index]);
+        state.roles[index] = createRole(
+          simpleVillager.title,
+          "player",
+          simpleVillager.symbol,
+          simpleVillager.hint
+        );
+      });
+
+      const affectedCopy = strippedPlayers.length
+        ? `${strippedPlayers.join(", ")} ${strippedPlayers.length === 1 ? "loses" : "lose"} their special power and continue as Simple Villagers.`
+        : "No living special villagers remain, so no other role is changed.";
+      showWerewolfAbility(
+        "The village loses its powers",
+        `${playerName} was the Wise. ${affectedCopy}`
+      );
+    }
+
+    function finishWerewolfGame(title, summary) {
+      state.werewolfGameOver = true;
+      resultEyebrow.textContent = "Game over";
+      resultTitle.textContent = title;
+      guessSummary.textContent = summary;
+      playAgainButton.textContent = "Play again";
+      playAgainButton.disabled = false;
+      resetWerewolfAbilityPanel();
+      launchConfetti();
+    }
+
+    function resolveWerewolfVote() {
+      if (state.selectedVotes.size !== 1) {
+        voteHint.textContent = "Choose one living player before confirming the village vote.";
+        return;
+      }
+
+      const eliminatedIndex = state.selectedVotes.values().next().value;
+      const eliminatedRole = state.roles[eliminatedIndex];
+      const eliminatedName = state.players[eliminatedIndex];
+      state.villageVoteRound += 1;
+      state.werewolfGameOver = false;
+      eliminateWerewolfPlayer(eliminatedIndex);
+
+      resultEyebrow.textContent = "Village verdict";
+      resultTitle.textContent = `${eliminatedName} is out`;
+      resultList.innerHTML = "";
+      resultSecretWrap.classList.add("is-hidden");
+      resetWerewolfAbilityPanel();
+      addEliminationResult(eliminatedIndex);
+      playAgainButton.textContent = "Continue to next night";
+      playAgainButton.disabled = false;
+
+      if (eliminatedRole.kind === "threat") {
+        if (livingWerewolfIndexes().length === 0) {
+          finishWerewolfGame(
+            "The village wins",
+            `${eliminatedName} was the final Werewolf. Every surviving villager wins.`
+          );
+        } else {
+          guessSummary.textContent = `${eliminatedName} was a Werewolf and is removed from the village, but another Werewolf is still alive.`;
+        }
+      } else if (eliminatedRole.title === WEREWOLF_ROLES.simpleVillager.title) {
+        guessSummary.textContent = `${eliminatedName} was a Simple Villager and is removed from all future night and voting lists.`;
+      } else if (eliminatedRole.title === "Hunter") {
+        guessSummary.textContent = `${eliminatedName}'s final ability must be resolved before the village can continue.`;
+        triggerHunterAbility(eliminatedName);
+      } else if (eliminatedRole.title === "Wise") {
+        guessSummary.textContent = `${eliminatedName} was the Wise, so every surviving villager loses their special power.`;
+        triggerWiseAbility(eliminatedName);
+      } else if (eliminatedRole.title === "Angel" && state.villageVoteRound === 1) {
+        finishWerewolfGame(
+          "The Angel wins",
+          `${eliminatedName} was eliminated during the first village vote and completes the Angel's win condition.`
+        );
+      } else if (eliminatedRole.kind === "player") {
+        guessSummary.textContent = `${eliminatedName} was ${eliminatedRole.title} and is removed from all future night and voting lists.`;
+        showWerewolfAbility(
+          `${eliminatedRole.title} ability`,
+          `${eliminatedRole.hint} Resolve any outstanding effect now; this role will not act in future rounds.`
+        );
+      } else {
+        guessSummary.textContent = `${eliminatedName} was ${eliminatedRole.title} and is removed from the game.`;
+      }
+
+      showScreen("result");
+      playSound("success");
+    }
+
+    function resolveHunterAbility() {
+      const targetIndex = state.pendingHunterTarget;
+      if (targetIndex === null || !state.aliveIndexes.has(targetIndex)) return;
+
+      const targetRole = state.roles[targetIndex];
+      const targetName = state.players[targetIndex];
+      eliminateWerewolfPlayer(targetIndex);
+      addEliminationResult(targetIndex);
+      playAgainButton.disabled = false;
+
+      if (targetRole.kind === "threat" && livingWerewolfIndexes().length === 0) {
+        finishWerewolfGame(
+          "The village wins",
+          `The Hunter's final shot eliminated ${targetName}, the final Werewolf. Every surviving villager wins.`
+        );
+      } else {
+        werewolfAbilityTitle.textContent = "Hunter's shot resolved";
+        werewolfAbilityCopy.textContent = `${targetName} was ${targetRole.title} and is also removed from the game.`;
+        werewolfAbilityTargets.innerHTML = "";
+        resolveWerewolfAbilityButton.classList.add("is-hidden");
+        guessSummary.textContent = `The Hunter took ${targetName} down. Continue when the village is ready for the next night.`;
+        state.pendingHunterTarget = null;
+      }
+      playSound("success");
     }
 
     function revealResult() {
@@ -2572,8 +2797,17 @@
       clearInterval(state.timerId);
       state.timerId = null;
 
+      if (state.gameId === "werewolf") {
+        resolveWerewolfVote();
+        return;
+      }
+
+      resultEyebrow.textContent = "The truth";
       resultTitle.textContent = mode.resultTitle;
       resultList.innerHTML = "";
+      resetWerewolfAbilityPanel();
+      playAgainButton.textContent = "Play again";
+      playAgainButton.disabled = false;
       [...state.imposterIndexes].forEach((index) => {
         const name = document.createElement("div");
         name.className = "result-name";
@@ -2649,10 +2883,30 @@
       state.deadIndexes = new Set();
       state.gmRound = 1;
       state.gmDeathIndex = null;
+      state.villageVoteRound = 0;
+      state.werewolfGameOver = false;
+      state.pendingHunterTarget = null;
       state.selectedVotes = new Set();
       state.bombPrompt = null;
+      resetWerewolfAbilityPanel();
       resetTimer();
       resetBombTimer();
+    }
+
+    function continueWerewolfGame() {
+      state.selectedVotes = new Set();
+      resetWerewolfAbilityPanel();
+      setupGameMasterRound();
+      showScreen("gameMaster");
+      playSound("tap");
+    }
+
+    function handleResultPrimaryAction() {
+      if (state.gameId === "werewolf" && state.roles.length && !state.werewolfGameOver) {
+        continueWerewolfGame();
+        return;
+      }
+      playAgain();
     }
 
     function playAgain() {
@@ -2924,7 +3178,8 @@
       showScreen("voting");
     });
     revealResultButton.addEventListener("click", revealResult);
-    document.getElementById("playAgainButton").addEventListener("click", playAgain);
+    resolveWerewolfAbilityButton.addEventListener("click", resolveHunterAbility);
+    playAgainButton.addEventListener("click", handleResultPrimaryAction);
     document.getElementById("changeGameButton").addEventListener("click", chooseAnotherGame);
     document.getElementById("newPlayersButton").addEventListener("click", startOver);
 

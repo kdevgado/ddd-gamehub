@@ -1649,6 +1649,44 @@ input::placeholder {
   font-size: var(--text-sm);
 }
 
+.werewolf-ability-panel {
+  display: grid;
+  justify-items: stretch;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border: 2px solid var(--mustard-dark);
+  border-radius: var(--radius-sm);
+  background: var(--warning-surface);
+  text-align: left;
+}
+
+.ability-kicker {
+  color: var(--mustard-dark);
+  font-size: var(--text-xs);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.werewolf-ability-panel h3 {
+  color: var(--ink);
+  font-size: var(--text-lg);
+}
+
+.werewolf-ability-panel p {
+  color: var(--ink-muted);
+}
+
+.ability-target-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.werewolf-ability-panel > .btn {
+  width: 100%;
+}
+
 .word-reveal {
   display: grid;
   gap: var(--space-1);
