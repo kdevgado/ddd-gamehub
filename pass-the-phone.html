@@ -1916,10 +1916,6 @@
     function werewolfScriptSteps() {
       const steps = ["Everyone closes their eyes. Say: the village is asleep."];
 
-      if (state.gmRound === 1 && roleIsInGame("Cupid")) {
-        steps.push("Cupid opens their eyes and chooses two players to fall in love, then closes their eyes. Secretly show the lovers each other.");
-      }
-
       if (state.gmRound === 1 && roleIsInGame("Thief")) {
         steps.push("Thief opens their eyes and chooses one player whose role to steal. That player becomes a Simple Villager.");
       }
@@ -1952,10 +1948,6 @@
 
       if (roleIsInGame("Pyromaniac")) {
         steps.push("Pyromaniac opens their eyes and either oils two players or burns every previously oiled player. Do not tell players when they are oiled.");
-      }
-
-      if (roleIsInGame("Black Cat")) {
-        steps.push("Before the village vote, Black Cat chooses one player who will begin with two votes against them.");
       }
 
       if (roleIsInGame("Wise")) {
@@ -2003,6 +1995,30 @@
     function gameMasterScriptSteps() {
       if (state.gameId === "mafia") return mafiaScriptSteps();
       return werewolfScriptSteps();
+    }
+
+    function livingRoleIndex(title) {
+      return [...state.aliveIndexes].find((index) => state.roles[index]?.title === title);
+    }
+
+    function startGameMasterRoundFlow() {
+      const cupidIndex = livingRoleIndex("Cupid");
+      if (
+        state.gameId === "werewolf"
+        && state.gmRound === 1
+        && cupidIndex !== undefined
+        && state.loverIndexes.size !== 2
+      ) {
+        state.werewolfResultDestination = "nightAttack";
+        prepareWerewolfResult("First night", "Cupid chooses the lovers", "Begin night attack");
+        guessSummary.textContent = "Have everyone close their eyes. Cupid acts before the Werewolves, then the night attack begins.";
+        triggerCupidAbility(state.players[cupidIndex]);
+        showScreen("result");
+        return;
+      }
+
+      setupGameMasterRound();
+      showScreen("gameMaster");
     }
 
     function setupGameMasterRound() {
@@ -2092,6 +2108,11 @@
     function startGameMasterDiscussion() {
       if (state.gameId === "werewolf" && state.gmDeathIndex !== null) {
         resolveWerewolfNightAttack(state.gmDeathIndex);
+        return;
+      }
+
+      if (state.gameId === "werewolf") {
+        startBlackCatVotePhase();
         return;
       }
 
@@ -2488,8 +2509,7 @@
 
       if (state.currentRevealIndex >= state.players.length) {
         if (usesGameMasterRound()) {
-          setupGameMasterRound();
-          showScreen("gameMaster");
+          startGameMasterRoundFlow();
           return;
         }
 
@@ -2753,7 +2773,9 @@
     function triggerHunterAbility(playerName) {
       const continuation = state.werewolfResultDestination === "discussion"
         ? "daytime begins"
-        : "the next night";
+        : state.werewolfResultDestination === "blackCat"
+          ? "the Black Cat acts"
+          : "the next night";
       showWerewolfAbility(
         "Hunter's final shot",
         `${playerName} was eliminated as the Hunter. Choose one living player to take down before ${continuation}.`
@@ -2763,18 +2785,33 @@
 
     function triggerCupidAbility(playerName) {
       showWerewolfAbility(
-        "Cupid's final match",
-        `${playerName} was Cupid. Choose two living players to become lovers before daytime begins. If either lover is eliminated later, the other dies from heartbreak.`
+        "Cupid chooses the lovers",
+        `${playerName} acts before the Werewolves attack. Choose two living players to become lovers. If either lover is eliminated later, the other dies from heartbreak.`
       );
       beginTargetedWerewolfAbility("cupid", "Bind the two lovers");
     }
 
     function triggerBlackCatAbility(playerName) {
       showWerewolfAbility(
-        "Black Cat's final mark",
-        `${playerName} was the Black Cat. Choose one living player to begin the upcoming village vote with two votes against them.`
+        "Black Cat places two votes",
+        `${playerName} is still alive. Choose one living player to begin the upcoming village vote with two votes against them.`
       );
       beginTargetedWerewolfAbility("blackCat", "Place two votes");
+    }
+
+    function startBlackCatVotePhase() {
+      const blackCatIndex = livingRoleIndex("Black Cat");
+      if (blackCatIndex === undefined || state.blackCatTargetIndex !== null) {
+        state.werewolfResultDestination = "nextNight";
+        advanceToGameMasterDiscussion();
+        return;
+      }
+
+      state.werewolfResultDestination = "discussion";
+      prepareWerewolfResult("Before the village vote", "The Black Cat chooses", "Start day discussion");
+      guessSummary.textContent = "The Black Cat acts only while alive. Place two votes against one living player before discussion begins.";
+      triggerBlackCatAbility(state.players[blackCatIndex]);
+      showScreen("result");
     }
 
     function triggerWiseAbility(playerName) {
@@ -2824,6 +2861,16 @@
       playAgainButton.disabled = false;
     }
 
+    function setWerewolfNightResultDestination() {
+      if (livingRoleIndex("Black Cat") !== undefined) {
+        state.werewolfResultDestination = "blackCat";
+        playAgainButton.textContent = "Continue to Black Cat";
+      } else {
+        state.werewolfResultDestination = "discussion";
+        playAgainButton.textContent = "Start day discussion";
+      }
+    }
+
     function resolveWerewolfNightAttack(attackedIndex) {
       const attackedRole = state.roles[attackedIndex];
       const attackedName = state.players[attackedIndex];
@@ -2842,6 +2889,7 @@
           "Wise protection activated",
           "The Wise survives this attack and keeps their role. Their protection is now spent, so a future attack can eliminate them."
         );
+        setWerewolfNightResultDestination();
       } else {
         const eliminatedIndexes = eliminateWerewolfPlayer(attackedIndex);
         const heartbreakCopy = loverEliminationCopy(eliminatedIndexes);
@@ -2849,6 +2897,7 @@
           state.roles[index].kind === "threat"
         )) && livingWerewolfIndexes().length === 0;
         addEliminationResults(eliminatedIndexes);
+        setWerewolfNightResultDestination();
 
         if (attackedRole.title === "Hunter") {
           guessSummary.textContent = `${attackedName} was killed by the Werewolves.${heartbreakCopy} Resolve the Hunter's final shot before starting daytime.`;
@@ -2859,11 +2908,9 @@
             `${attackedName}'s death also took the final Werewolf out through Cupid's bond. Every surviving villager wins.`
           );
         } else if (attackedRole.title === "Cupid") {
-          guessSummary.textContent = `${attackedName} was killed by the Werewolves.${heartbreakCopy} Cupid must bind two living players before daytime.`;
-          triggerCupidAbility(attackedName);
+          guessSummary.textContent = `${attackedName} was killed by the Werewolves and is removed from the village.${heartbreakCopy} The existing lovers remain bound.`;
         } else if (attackedRole.title === "Black Cat") {
-          guessSummary.textContent = `${attackedName} was killed by the Werewolves.${heartbreakCopy} The Black Cat must place their final two-vote mark.`;
-          triggerBlackCatAbility(attackedName);
+          guessSummary.textContent = `${attackedName} was killed by the Werewolves and is removed from the village.${heartbreakCopy} The Black Cat does not place votes after dying.`;
         } else if (attackedRole.title === "Wise") {
           guessSummary.textContent = `${attackedName}'s protection was already spent, so the Wise is removed from the village.${heartbreakCopy}`;
           showWerewolfAbility(
@@ -2932,6 +2979,10 @@
           "The Angel wins",
           `${eliminatedName} was eliminated during the first village vote and completes the Angel's win condition.`
         );
+      } else if (eliminatedRole.title === "Cupid") {
+        guessSummary.textContent = `${eliminatedName} was Cupid and is removed from the village.${heartbreakCopy} Cupid does not choose new lovers after being voted out.`;
+      } else if (eliminatedRole.title === "Black Cat") {
+        guessSummary.textContent = `${eliminatedName} was the Black Cat and is removed from the village.${heartbreakCopy} The Black Cat does not place votes after being voted out.`;
       } else if (eliminatedRole.kind === "player") {
         guessSummary.textContent = `${eliminatedName} was ${eliminatedRole.title} and is removed from all future night and voting lists.${heartbreakCopy}`;
         showWerewolfAbility(
@@ -2961,12 +3012,17 @@
       const targetIndex = state.pendingAbilityTargets.values().next().value;
       if (targetIndex === undefined || !state.aliveIndexes.has(targetIndex)) return;
 
+      const isNightResolution = (
+        state.werewolfResultDestination === "discussion"
+        || state.werewolfResultDestination === "blackCat"
+      );
       const targetRole = state.roles[targetIndex];
       const targetName = state.players[targetIndex];
       const eliminatedIndexes = eliminateWerewolfPlayer(targetIndex);
       const heartbreakCopy = loverEliminationCopy(eliminatedIndexes);
       addEliminationResults(eliminatedIndexes);
       playAgainButton.disabled = false;
+      if (isNightResolution) setWerewolfNightResultDestination();
 
       if (livingWerewolfIndexes().length === 0) {
         const shotEndedWerewolves = eliminatedIndexes.some((index) => (
@@ -2985,7 +3041,9 @@
         resolveWerewolfAbilityButton.classList.add("is-hidden");
         const continuation = state.werewolfResultDestination === "discussion"
           ? "Start the day discussion when the village is ready."
-          : "Continue when the village is ready for the next night.";
+          : state.werewolfResultDestination === "blackCat"
+            ? "Continue so the surviving Black Cat can place two votes."
+            : "Continue when the village is ready for the next night.";
         guessSummary.textContent = `The Hunter took ${targetName} down. ${continuation}`;
         state.pendingWerewolfAbility = null;
         state.pendingAbilityTargets = new Set();
@@ -3002,7 +3060,7 @@
       werewolfAbilityCopy.textContent = `${state.players[lovers[0]]} and ${state.players[lovers[1]]} are now lovers. If one is eliminated, the other will be removed too.`;
       werewolfAbilityTargets.innerHTML = "";
       resolveWerewolfAbilityButton.classList.add("is-hidden");
-      guessSummary.textContent = `Cupid linked ${state.players[lovers[0]]} and ${state.players[lovers[1]]}. Start daytime when the village is ready.`;
+      guessSummary.textContent = `Cupid linked ${state.players[lovers[0]]} and ${state.players[lovers[1]]}. Begin the Werewolf attack when ready.`;
       playAgainButton.disabled = false;
       state.pendingWerewolfAbility = null;
       state.pendingAbilityTargets = new Set();
@@ -3144,6 +3202,18 @@
     function continueWerewolfGame() {
       state.selectedVotes = new Set();
       resetWerewolfAbilityPanel();
+      if (state.werewolfResultDestination === "nightAttack") {
+        state.werewolfResultDestination = "nextNight";
+        setupGameMasterRound();
+        showScreen("gameMaster");
+        playSound("tap");
+        return;
+      }
+      if (state.werewolfResultDestination === "blackCat") {
+        startBlackCatVotePhase();
+        playSound("tap");
+        return;
+      }
       if (state.werewolfResultDestination === "discussion") {
         state.werewolfResultDestination = "nextNight";
         advanceToGameMasterDiscussion();
