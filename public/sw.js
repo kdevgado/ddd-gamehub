@@ -1,4 +1,4 @@
-const CACHE_NAME = "ddd-game-hub-v14";
+const CACHE_NAME = "ddd-game-hub-v15";
 
 const APP_SHELL = [
   "/manifest.webmanifest",
@@ -21,11 +21,22 @@ const APP_SHELL = [
   "/icons/mafia/detective.png",
   "/icons/mafia/doctor.png",
   "/icons/mafia/spy.png",
+  "/icons/werewolf/angel.png",
+  "/icons/werewolf/black-cat.png",
+  "/icons/werewolf/black-werewolf.png",
   "/icons/werewolf/cupid.png",
+  "/icons/werewolf/easter-bunny.png",
+  "/icons/werewolf/guardian.png",
   "/icons/werewolf/hunter.png",
+  "/icons/werewolf/little-girl.png",
+  "/icons/werewolf/pyromaniac.png",
+  "/icons/werewolf/ripper.png",
   "/icons/werewolf/seer.png",
+  "/icons/werewolf/survivor.png",
+  "/icons/werewolf/thief.png",
   "/icons/werewolf/villager.png",
-  "/icons/werewolf/werewolf.png"
+  "/icons/werewolf/werewolf.png",
+  "/icons/werewolf/wizard.png"
 ];
 
 async function cachePageWithBuildAssets(cache, pageUrl) {
