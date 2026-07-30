@@ -77,7 +77,7 @@
         <div class="card">
           <div class="stack">
             <div class="stack center">
-              <p class="eyebrow">Step 2</p>
+              <p class="eyebrow" id="setupEyebrow">Step 2</p>
               <h2 id="setupTitle">Set up the game</h2>
               <p class="lead" id="setupLead">Choose the role mix and timer for this round.</p>
             </div>
@@ -137,7 +137,7 @@
             <p class="error" id="setupError" aria-live="polite"></p>
             <div class="button-row">
               <button class="btn" id="assignButton" type="button">Shuffle roles</button>
-              <button class="btn secondary" type="button" data-go="players">Back</button>
+              <button class="btn secondary" id="setupBackButton" type="button" data-go="players">Back</button>
             </div>
           </div>
         </div>
@@ -778,7 +778,7 @@
         defaultCategory: "Mixed",
         secretSectionTitle: "Categories",
         cardText: "Name something in the category and pass before the bomb explodes.",
-        playerLead: "Add at least two players. Players can only pass the phone after the group accepts their answer.",
+        playerLead: "No names needed. Gather at least two people and pass the phone after each accepted answer.",
         setupTitle: "Set up Bomb",
         setupLead: "Choose a category pack and a fuse length. The explosion time is random.",
         summary: "A category appears. The phone holder names a valid answer, then immediately passes the ticking phone. No button needed.",
@@ -891,6 +891,8 @@
     const playerNameInput = document.getElementById("playerNameInput");
     const playerChips = document.getElementById("playerChips");
     const playerError = document.getElementById("playerError");
+    const setupEyebrow = document.getElementById("setupEyebrow");
+    const setupBackButton = document.getElementById("setupBackButton");
     const setupTitle = document.getElementById("setupTitle");
     const setupLead = document.getElementById("setupLead");
     const setupError = document.getElementById("setupError");
@@ -1604,6 +1606,8 @@
       const mode = currentMode();
       playersEyebrow.textContent = mode.name;
       playersLead.textContent = mode.playerLead;
+      setupEyebrow.textContent = mode.type === "wordBomb" ? "Quick setup" : "Step 2";
+      setupBackButton.dataset.go = mode.type === "wordBomb" ? "welcome" : "players";
       setupTitle.textContent = mode.setupTitle;
       setupLead.textContent = mode.setupLead;
       modeSummary.textContent = mode.summary;
@@ -2189,16 +2193,17 @@
 
     function assignRoles() {
       const mode = currentMode();
-      state.secretWord = chooseSecretWord();
-
-      if (state.players.length < mode.minPlayers) {
-        setError(setupError, `Add at least ${mode.minPlayers} players for ${mode.name}.`);
-        return;
-      }
 
       if (mode.type === "wordBomb") {
         setError(setupError, "");
         startBombRound();
+        return;
+      }
+
+      state.secretWord = chooseSecretWord();
+
+      if (state.players.length < mode.minPlayers) {
+        setError(setupError, `Add at least ${mode.minPlayers} players for ${mode.name}.`);
         return;
       }
 
@@ -2676,7 +2681,7 @@
       selectGame(button.dataset.game);
       renderPlayers();
       playSound("tap");
-      showScreen("players");
+      showScreen(currentMode().type === "wordBomb" ? "setup" : "players");
     });
 
     gameGrid.addEventListener("scroll", queueGameDeckDotSync, { passive: true });
