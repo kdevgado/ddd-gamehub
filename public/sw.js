@@ -1,7 +1,8 @@
-const CACHE_NAME = "ddd-game-hub-v5";
+const CACHE_NAME = "ddd-game-hub-v6";
 
 const APP_SHELL = [
   "/manifest.webmanifest",
+  "/cabinet-tokens.css",
   "/images/mask-transparent.gif",
   "/images/werewolf-transparent.gif",
   "/images/gun-transparent.gif",

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import TriviaRoom from "./TriviaRoom.jsx";
-import unoIcon from "../icons/Uno.png";
 
 export default function App() {
   const [mode, setMode] = useState(null);
@@ -25,7 +24,7 @@ export default function App() {
       } else {
         window.location.assign("/pass-the-phone.html");
       }
-    }, 520);
+    }, 360);
   }
 
   if (mode === "online") {
@@ -47,40 +46,41 @@ export default function App() {
               <i />
             </span>
             <span>
-              <strong>DDD</strong>
-              <small>Game Hub</small>
+              <strong>DDD Game Hub</strong>
+              <small>Pick a game and gather around</small>
             </span>
           </div>
           <div className="hub-availability">
-            <i aria-hidden="true" />
-            Local + live play
+            <span aria-hidden="true">07</span>
+            Games in the cabinet
           </div>
         </header>
 
         <div className="hub-hero">
-          <div className="hub-heading hub-reveal" style={{ "--reveal-delay": "120ms" }}>
-            <p className="hub-kicker"><span>Party system</span> / pick a portal</p>
+          <div className="hub-heading hub-reveal" style={{ "--reveal-delay": "110ms" }}>
+            <p className="hub-kicker"><span>Tonight’s collection</span> Cabinet no. 07</p>
             <h1 id="hub-title">
-              <span>Choose your</span>
-              <strong>kind of chaos.</strong>
+              <span>Pull up a chair.</span>
+              <strong>Pick your game.</strong>
             </h1>
-            <p>Secret roles on one screen or a live room on every phone. Zero setup drama—just choose a side and start playing.</p>
+            <p>A hand-picked shelf of quick party games, hidden roles, cards, and trivia—ready whenever your table is.</p>
             <div className="hub-meta" aria-label="Game Hub features">
-              <span><strong>07</strong> games</span>
-              <span><strong>02</strong> ways to play</span>
-              <span><strong>∞</strong> rematches</span>
+              <span><strong>2–12</strong> players</span>
+              <span><strong>3–20</strong> minutes</span>
+              <span><strong>2</strong> ways to play</span>
             </div>
           </div>
 
-          <div className="hub-orbit hub-reveal" style={{ "--reveal-delay": "180ms" }} aria-hidden="true">
-            <div className="hub-orbit-ring orbit-outer" />
-            <div className="hub-orbit-ring orbit-inner" />
-            <span className="hub-orbit-node node-one" />
-            <span className="hub-orbit-node node-two" />
-            <div className="hub-core">
-              <small>Ready to</small>
-              <strong>PLAY</strong>
-              <i />
+          <div className="cabinet-stamp hub-reveal" style={{ "--reveal-delay": "170ms" }} aria-hidden="true">
+            <span className="cabinet-stamp-ring">
+              <small>The game</small>
+              <strong>Cabinet</strong>
+              <i>DDD</i>
+            </span>
+            <div className="cabinet-token-row">
+              <b>●</b>
+              <b>◆</b>
+              <b>▲</b>
             </div>
           </div>
         </div>
@@ -90,26 +90,33 @@ export default function App() {
             className="mode-card pass-mode hub-reveal"
             href="/pass-the-phone.html"
             onClick={(event) => launchGame(event, "pass")}
-            style={{ "--reveal-delay": "240ms" }}
+            style={{ "--reveal-delay": "230ms" }}
           >
             <span className="mode-art pass-visual" aria-hidden="true">
-              <span className="mode-number">01</span>
-              <span className="character-stack">
-                <img src="/images/mask-transparent.gif" alt="" />
-                <img src="/images/werewolf-transparent.gif" alt="" />
-                <img src="/images/bomb-transparent.gif" alt="" />
+              <span className="mode-number">Shelf 01</span>
+              <span className="game-box-emblem">
+                <i className="mask-eye" />
+                <b>?</b>
+                <span className="counter-row"><em /><em /><em /></span>
               </span>
-              <span className="visual-caption">Same room / one screen</span>
+              <span className="visual-caption">One screen · same table</span>
             </span>
             <span className="mode-copy">
-              <small><i aria-hidden="true" /> One device</small>
+              <small><i aria-hidden="true" /> Pass-the-phone collection</small>
               <strong>Pass the phone</strong>
-              <em>Bluff, accuse, survive. Five fast party games built for everyone in the room.</em>
-              <span className="mode-tags" aria-hidden="true">
-                <i>5 games</i>
-                <i>Secret roles</i>
+              <em>Deal private roles, bluff convincingly, and pass one screen around the table.</em>
+              <span className="mode-facts">
+                <i>2–12 players</i>
+                <i>3–10 min</i>
               </span>
-              <span className="mode-action">Browse the game deck <i aria-hidden="true">↗</i></span>
+              <span className="mode-tags">
+                <i>Imposter</i>
+                <i>Werewolf</i>
+                <i>Mafia</i>
+                <i>Bomb</i>
+                <i>Spyfall</i>
+              </span>
+              <span className="mode-action">Open this game box <i aria-hidden="true">→</i></span>
             </span>
           </a>
 
@@ -118,36 +125,42 @@ export default function App() {
             type="button"
             disabled={Boolean(launchMode)}
             onClick={(event) => launchGame(event, "online")}
-            style={{ "--reveal-delay": "310ms" }}
+            style={{ "--reveal-delay": "300ms" }}
           >
             <span className="mode-art online-visual" aria-hidden="true">
-              <span className="mode-number">02</span>
-              <span className="demo-card uno-demo"><img src={unoIcon} alt="" /></span>
+              <span className="mode-number">Shelf 02</span>
+              <span className="demo-card uno-demo"><b>7</b><small>Wild hand</small></span>
               <span className="demo-card trivia-demo"><b>?</b><small>Trivia</small></span>
               <span className="room-signal"><i /><i /><i /></span>
-              <span className="visual-caption">Any screen / one room</span>
+              <span className="visual-caption">Many screens · one room</span>
             </span>
             <span className="mode-copy">
-              <small><i aria-hidden="true" /> Multiple devices</small>
+              <small><i aria-hidden="true" /> Live room collection</small>
               <strong>Online room</strong>
-              <em>Share a four-letter code and play synchronized UNO or Trivia from every phone.</em>
-              <span className="mode-tags" aria-hidden="true">
-                <i>Live rooms</i>
+              <em>Share a four-letter code, then play a synchronized round from every phone.</em>
+              <span className="mode-facts">
                 <i>2–8 players</i>
+                <i>5–20 min</i>
               </span>
-              <span className="mode-action">Create or join a room <i aria-hidden="true">↗</i></span>
+              <span className="mode-tags">
+                <i>UNO</i>
+                <i>Trivia Party</i>
+              </span>
+              <span className="mode-action">Create or join a room <i aria-hidden="true">→</i></span>
             </span>
           </button>
         </div>
 
-        <footer className="hub-footer hub-reveal" style={{ "--reveal-delay": "380ms" }}>
-          <span>Built for game night</span>
+        <footer className="hub-footer hub-reveal" style={{ "--reveal-delay": "370ms" }}>
+          <span>Made for game night</span>
           <i aria-hidden="true" />
-          <span>No app download required</span>
+          <span>No rulebook required</span>
+          <i aria-hidden="true" />
+          <span>Phone and tablet friendly</span>
         </footer>
 
         <div className={`hub-transition ${launchMode ? "active" : ""}`} aria-hidden="true">
-          <span>{launchMode === "online" ? "Opening live rooms" : "Dealing the game deck"}</span>
+          <span>{launchMode === "online" ? "Opening live rooms" : "Taking the box from the shelf"}</span>
           <i />
         </div>
       </section>

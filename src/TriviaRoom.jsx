@@ -45,12 +45,16 @@ const ONLINE_GAMES = {
   trivia: {
     title: "Trivia Party",
     label: "Fast quiz rounds",
-    description: "Race through live questions and climb the scoreboard."
+    description: "Race through live questions and climb the scoreboard.",
+    facts: ["2+ players", "5–15 min"],
+    motif: "Question cards"
   },
   uno: {
     title: "UNO",
     label: "Classic card game",
-    description: "Match colors, use action cards, and empty your hand first."
+    description: "Match colors, use action cards, and empty your hand first.",
+    facts: ["2–8 players", "10–20 min"],
+    motif: "Card deck"
   }
 };
 
@@ -487,6 +491,9 @@ export default function TriviaRoom({ onBack }) {
                         <strong>{game.title}</strong>
                         <small>{game.label}</small>
                         <em>{game.description}</em>
+                        <span className="game-choice-facts">
+                          {game.facts.map((fact) => <i key={fact}>{fact}</i>)}
+                        </span>
                       </span>
                     </button>
                   ))}

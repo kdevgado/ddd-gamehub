@@ -3,24 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#001219" />
+  <meta name="theme-color" content="#4F6653" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <title>Pass the Phone Game Hub</title>
+  <title>Pass the Phone — DDD Game Hub</title>
   <link rel="stylesheet" href="/pass-the-phone.css" />
 </head>
 <body>
   <div class="app" id="app">
-    <div class="particle-field" aria-hidden="true">
-      <span style="--x:7%;--y:21%;--tilt:22deg;--speed:5.5s;--delay:-1s;--drift:20px;"></span>
-      <span style="--x:23%;--y:78%;--tilt:-16deg;--speed:6.8s;--delay:-3s;--drift:-18px;"></span>
-      <span style="--x:42%;--y:14%;--tilt:34deg;--speed:6.2s;--delay:-2s;--drift:26px;"></span>
-      <span style="--x:58%;--y:88%;--tilt:-24deg;--speed:7.2s;--delay:-4s;--drift:-22px;"></span>
-      <span style="--x:75%;--y:28%;--tilt:12deg;--speed:5.9s;--delay:-2.8s;--drift:18px;"></span>
-      <span style="--x:91%;--y:63%;--tilt:-28deg;--speed:6.5s;--delay:-0.6s;--drift:-24px;"></span>
-      <span style="--x:15%;--y:52%;--tilt:40deg;--speed:7.8s;--delay:-5s;--drift:30px;"></span>
-      <span style="--x:68%;--y:49%;--tilt:-8deg;--speed:6.1s;--delay:-1.7s;--drift:-16px;"></span>
-    </div>
-
     <main>
       <!-- 1. Game hub -->
       <section class="screen active" data-screen="welcome">
@@ -40,13 +29,17 @@
               </button>
             </div>
             <p class="settings-status hub-fullscreen-status" id="fullscreenStatus" aria-live="polite"></p>
-            <p class="eyebrow">Pass the phone</p>
-            <h1><span class="title-glow">Game Hub</span></h1>
-            <p class="lead">Pick a hidden-role game, pass the phone for private reveals, then argue your way to the truth.</p>
+            <div class="cabinet-intro" aria-hidden="true">
+              <span class="shelf-mark"><i>D</i><i>D</i><i>D</i></span>
+              <span>Game cabinet · shelf 01</span>
+            </div>
+            <p class="eyebrow">Pass the phone collection</p>
+            <h1>The tabletop shelf</h1>
+            <p class="lead">Choose a box, gather the group, and pass one phone for private roles, quick clues, and very public accusations.</p>
             <div class="mini-badges" aria-label="Hub highlights">
-              <span class="badge">5 games</span>
+              <span class="badge">5 game boxes</span>
+              <span class="badge">2–12 players</span>
               <span class="badge">No login</span>
-              <span class="badge">One phone</span>
             </div>
             <div class="game-grid" id="gameGrid" aria-label="Choose a game"></div>
             <div class="game-deck-dots" id="gameDeckDots" aria-label="Game deck navigation"></div>
@@ -645,9 +638,11 @@
       imposter: {
         name: "Imposter",
         mark: "IM",
-        image: "images/mask-transparent.gif",
-        colorA: "#0a9396",
-        colorB: "#ee9b00",
+        motif: "?",
+        colorA: "#4F6653",
+        colorB: "#C49339",
+        duration: "5–10 min",
+        difficulty: "Easy",
         minPlayers: 3,
         defaultTimer: 1,
         defaultThreats: 1,
@@ -690,9 +685,11 @@
       werewolf: {
         name: "Werewolf",
         mark: "WW",
-        image: "images/werewolf-transparent.gif",
-        colorA: "#e9d8a6",
-        colorB: "#ae2012",
+        motif: "◐",
+        colorA: "#743F47",
+        colorB: "#C49339",
+        duration: "10–20 min",
+        difficulty: "Strategic",
         minPlayers: 5,
         defaultTimer: 3,
         defaultThreats: 1,
@@ -728,9 +725,11 @@
       mafia: {
         name: "Mafia",
         mark: "MF",
-        image: "images/gun-transparent.gif",
-        colorA: "#bb3e03",
-        colorB: "#9b2226",
+        motif: "◆",
+        colorA: "#B25A42",
+        colorB: "#743F47",
+        duration: "10–20 min",
+        difficulty: "Strategic",
         minPlayers: 5,
         defaultTimer: 3,
         defaultThreats: 1,
@@ -764,9 +763,11 @@
       bomb: {
         name: "Who's Got the Bomb",
         mark: "BG",
-        image: "images/bomb-transparent.gif",
-        colorA: "#ee9b00",
-        colorB: "#ca6702",
+        motif: "✦",
+        colorA: "#C49339",
+        colorB: "#B25A42",
+        duration: "3–8 min",
+        difficulty: "Quick",
         type: "wordBomb",
         minPlayers: 2,
         defaultTimer: "random",
@@ -801,9 +802,11 @@
       spyfall: {
         name: "Spyfall",
         mark: "SP",
-        image: "images/spy-transparent.gif",
-        colorA: "#005f73",
-        colorB: "#94d2bd",
+        motif: "◎",
+        colorA: "#607985",
+        colorB: "#4F6653",
+        duration: "8–15 min",
+        difficulty: "Medium",
         minPlayers: 3,
         defaultTimer: 5,
         defaultThreats: 1,
@@ -995,7 +998,7 @@
       const indexes = shuffledIndexes(players.length);
       const targets = indexes.slice(0, threatCount);
       const roles = players.map(() => createRole(
-        "Your safe!",
+        "You're safe!",
         "player",
         "OK",
         "You know the secret word. Give clues without making it too obvious.",
@@ -1419,9 +1422,9 @@
     }
 
     function categoryColor(category, index) {
-      if (category === ALL_CATEGORIES) return "#94d2bd";
-      const colors = ["#005f73", "#0a9396", "#94d2bd", "#ee9b00", "#ca6702", "#bb3e03", "#ae2012", "#9b2226"];
-      if (category === "Custom") return "#e9d8a6";
+      if (category === ALL_CATEGORIES) return "#4F6653";
+      const colors = ["#4F6653", "#607985", "#C49339", "#B25A42", "#743F47", "#666458"];
+      if (category === "Custom") return "#49382D";
       return colors[index % colors.length];
     }
 
@@ -1524,18 +1527,32 @@
         players.className = "game-players";
         players.textContent = `${mode.minPlayers}+ players`;
 
+        const meta = document.createElement("span");
+        meta.className = "game-meta";
+        const duration = document.createElement("i");
+        duration.textContent = mode.duration;
+        const difficulty = document.createElement("i");
+        difficulty.textContent = mode.difficulty;
+        meta.append(duration, difficulty);
+
         const art = document.createElement("span");
-        art.className = "game-art";
+        art.className = `game-art ${gameId}-art`;
         art.setAttribute("aria-hidden", "true");
 
-        const image = document.createElement("img");
-        image.src = mode.image;
-        image.alt = "";
-        image.loading = "lazy";
-        image.decoding = "async";
-        art.appendChild(image);
+        const motif = document.createElement("span");
+        motif.className = "game-motif";
+        motif.textContent = mode.motif;
 
-        copy.append(name, desc, players);
+        const edition = document.createElement("span");
+        edition.className = "game-edition";
+        edition.textContent = mode.mark;
+
+        const counters = document.createElement("span");
+        counters.className = "game-counters";
+        counters.append(document.createElement("i"), document.createElement("i"), document.createElement("i"));
+        art.append(motif, edition, counters);
+
+        copy.append(name, desc, players, meta);
         button.append(copy, art);
         gameGrid.appendChild(button);
 
@@ -1558,6 +1575,9 @@
     function selectGame(gameId) {
       state.gameId = gameId;
       const mode = currentMode();
+      app.dataset.game = gameId;
+      app.style.setProperty("--game-a", mode.colorA);
+      app.style.setProperty("--game-b", mode.colorB);
       state.imposters = mode.defaultThreats;
       state.timerMinutes = mode.defaultTimer;
       state.secretWord = "";
@@ -2598,7 +2618,7 @@
 
     function launchConfetti() {
       confettiLayer.innerHTML = "";
-      const colors = ["#005f73", "#0a9396", "#94d2bd", "#ee9b00", "#ca6702", "#ae2012"];
+      const colors = ["#4F6653", "#B25A42", "#C49339", "#607985", "#743F47", "#F8F2E5"];
 
       for (let i = 0; i < 90; i += 1) {
         const piece = document.createElement("span");

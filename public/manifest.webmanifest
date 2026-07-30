@@ -5,8 +5,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#001219",
-  "theme_color": "#001219",
+  "background_color": "#E9DFCC",
+  "theme_color": "#4F6653",
   "icons": [
     {
       "src": "/icons/imposter/custom.png",
