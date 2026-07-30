@@ -2737,6 +2737,26 @@
       return [...state.aliveIndexes].filter((index) => state.roles[index]?.kind === "threat");
     }
 
+    function livingVillagerIndexes() {
+      return [...state.aliveIndexes].filter((index) => state.roles[index]?.kind === "player");
+    }
+
+    function finishWerewolfWinIfAtMostOneVillagerRemains() {
+      const werewolves = livingWerewolfIndexes();
+      const villagers = livingVillagerIndexes();
+      if (werewolves.length === 0 || villagers.length > 1) return false;
+
+      const victoryCopy = villagers.length === 1
+        ? `${state.players[villagers[0]]} is the only villager left after the vote.`
+        : "No villagers remain after the vote.";
+
+      finishWerewolfGame(
+        "The Werewolves win",
+        `${victoryCopy} The Werewolves take over the village.`
+      );
+      return true;
+    }
+
     function addEliminationResult(index) {
       const name = document.createElement("div");
       name.className = "result-name";
@@ -3239,6 +3259,7 @@
           "Survivor protection activated",
           "The village vote does not remove the Survivor this time. The protection charge is now spent."
         );
+        finishWerewolfWinIfAtMostOneVillagerRemains();
         showScreen("result");
         playSound("success");
         return;
@@ -3296,6 +3317,13 @@
           "The village wins",
           `${eliminatedName}'s elimination also took the final Werewolf out through Cupid's bond. Every surviving villager wins.`
         );
+      }
+
+      if (
+        !state.werewolfGameOver
+        && eliminatedRole.title !== "Hunter"
+      ) {
+        finishWerewolfWinIfAtMostOneVillagerRemains();
       }
 
       showScreen("result");
@@ -3488,6 +3516,7 @@
         state.pendingWerewolfAbility = null;
         state.pendingAbilityTargets = new Set();
         state.pendingAbilityActorIndex = null;
+        if (!isNightResolution) finishWerewolfWinIfAtMostOneVillagerRemains();
         playSound("success");
         return;
       }
@@ -3508,6 +3537,8 @@
             ? `The Hunter's final shot eliminated the final Werewolf. Every surviving villager wins.${heartbreakCopy}`
             : `The final Werewolf fell through Cupid's bond before the Hunter's shot was resolved. Every surviving villager wins.`
         );
+      } else if (!isNightResolution && finishWerewolfWinIfAtMostOneVillagerRemains()) {
+        // The Hunter's final shot resolves before the post-vote Werewolf victory check.
       } else {
         werewolfAbilityTitle.textContent = "Hunter's shot resolved";
         werewolfAbilityCopy.textContent = `${targetName} was ${targetRole.title} and is also removed from the game.${heartbreakCopy}`;
