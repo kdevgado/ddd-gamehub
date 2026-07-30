@@ -2425,7 +2425,7 @@
       }
 
       if (role.kind === "threat") {
-        playSound("imposter");
+        if (state.gameId !== "werewolf") playSound("imposter");
         const quietRevealGames = ["imposter", "werewolf", "mafia"];
         if (!quietRevealGames.includes(state.gameId) && "vibrate" in navigator) {
           navigator.vibrate([60, 40, 120]);
