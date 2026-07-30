@@ -868,8 +868,15 @@
       wiseProtectionUsedIndexes: new Set(),
       loverIndexes: new Set(),
       blackCatTargetIndex: null,
+      thiefAbilityUsed: false,
+      ripperActedRound: 0,
+      pyromaniacActedRound: 0,
+      oiledIndexes: new Set(),
+      survivorProtectionUses: new Map(),
       pendingWerewolfAbility: null,
       pendingAbilityTargets: new Set(),
+      pendingAbilityActorIndex: null,
+      pendingPyromaniacMode: null,
       currentRevealIndex: 0,
       selectedVotes: new Set(),
       imposterHints: false,
@@ -1926,10 +1933,6 @@
     function werewolfScriptSteps() {
       const steps = ["Everyone closes their eyes. Say: the village is asleep."];
 
-      if (state.gmRound === 1 && roleIsInGame("Thief")) {
-        steps.push("Thief opens their eyes and chooses one player whose role to steal. That player becomes a Simple Villager.");
-      }
-
       if (roleIsInGame("Little Girl")) {
         steps.push("The Little Girl may secretly peek while the werewolves choose, but must not let the werewolves catch her.");
       }
@@ -1952,14 +1955,6 @@
         steps.push("Easter Bunny opens their eyes and gives Easter eggs to two players who do not already have one.");
       }
 
-      if (roleIsInGame("Ripper")) {
-        steps.push("Ripper opens their eyes and chooses one player to kill, then closes their eyes.");
-      }
-
-      if (roleIsInGame("Pyromaniac")) {
-        steps.push("Pyromaniac opens their eyes and either oils two players or burns every previously oiled player. Do not tell players when they are oiled.");
-      }
-
       if (roleIsInGame("Wise")) {
         steps.push("Remember that Wise survives one werewolf attack. If the village votes Wise out, every surviving villager loses their power.");
       }
@@ -1980,7 +1975,7 @@
         steps.push("During the first village vote, Angel wins if they are voted out. After that first round, Angel becomes a Simple Villager.");
       }
 
-      steps.push("Everyone wakes up. Announce who died, or announce that the village survived the night.");
+      steps.push("Keep everyone asleep. Mark the Werewolves' target; any remaining night abilities will resolve before the village wakes.");
       return steps;
     }
 
@@ -2013,17 +2008,35 @@
 
     function startGameMasterRoundFlow() {
       const cupidIndex = livingRoleIndex("Cupid");
+      const thiefIndex = livingRoleIndex("Thief");
       if (
         state.gameId === "werewolf"
         && state.gmRound === 1
         && cupidIndex !== undefined
         && state.loverIndexes.size !== 2
       ) {
-        state.werewolfResultDestination = "nightAttack";
-        prepareWerewolfResult("First night", "Cupid chooses the lovers", "Begin night attack");
-        guessSummary.textContent = "Have everyone close their eyes. Cupid acts before the Werewolves, then the night attack begins.";
+        const thiefActsNext = thiefIndex !== undefined && !state.thiefAbilityUsed;
+        state.werewolfResultDestination = thiefActsNext ? "thief" : "nightAttack";
+        prepareWerewolfResult(
+          "First night",
+          "Cupid chooses the lovers",
+          thiefActsNext ? "Continue to Thief" : "Begin night attack"
+        );
+        guessSummary.textContent = thiefActsNext
+          ? "Have everyone close their eyes. Cupid binds the lovers, then the Thief acts."
+          : "Have everyone close their eyes. Cupid acts before the Werewolves, then the night attack begins.";
         triggerCupidAbility(state.players[cupidIndex]);
         showScreen("result");
+        return;
+      }
+
+      if (
+        state.gameId === "werewolf"
+        && state.gmRound === 1
+        && thiefIndex !== undefined
+        && !state.thiefAbilityUsed
+      ) {
+        startThiefOpeningPhase(thiefIndex);
         return;
       }
 
@@ -2038,6 +2051,9 @@
       gmTitle.textContent = nightLabel;
       gmLead.textContent = `Read each step, resolve actions, then mark the ${mode.name} night result before discussion.`;
       gmDeathTitle.textContent = state.gameId === "werewolf" ? "Who was attacked?" : "Who died?";
+      gmStartDiscussionButton.textContent = state.gameId === "werewolf"
+        ? "Resolve night result"
+        : "Start day discussion";
       gmDeathSummary.textContent = state.gameId === "mafia"
         ? "Choose who the mafia eliminated, or tap no one was eliminated."
         : "Choose who the werewolves attacked, or tap no one died.";
@@ -2087,6 +2103,13 @@
         && !state.wiseProtectionUsedIndexes.has(index)
       ) {
         gmDeathSummary.textContent = `${state.players[index]} was attacked, but the Wise survives once. Continuing will use that protection.`;
+      } else if (
+        state.gameId === "werewolf"
+        && role.title === "Survivor"
+        && (state.survivorProtectionUses.get(index) || 0) < 2
+      ) {
+        const remaining = 2 - (state.survivorProtectionUses.get(index) || 0);
+        gmDeathSummary.textContent = `${state.players[index]} was attacked, but Survivor protection will activate. ${remaining} ${remaining === 1 ? "charge is" : "charges are"} currently available.`;
       } else {
         const deathAction = role.title === "Hunter"
           ? " The Hunter's final shot will trigger before daytime."
@@ -2122,7 +2145,7 @@
       }
 
       if (state.gameId === "werewolf") {
-        startBlackCatVotePhase();
+        startNextPostAttackPhase();
         return;
       }
 
@@ -2312,8 +2335,15 @@
       state.wiseProtectionUsedIndexes = new Set();
       state.loverIndexes = new Set();
       state.blackCatTargetIndex = null;
+      state.thiefAbilityUsed = false;
+      state.ripperActedRound = 0;
+      state.pyromaniacActedRound = 0;
+      state.oiledIndexes = new Set();
+      state.survivorProtectionUses = new Map();
       state.pendingWerewolfAbility = null;
       state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = null;
+      state.pendingPyromaniacMode = null;
       state.currentRevealIndex = 0;
       state.selectedVotes = new Set();
       resetTimer();
@@ -2660,6 +2690,7 @@
 
       state.aliveIndexes.delete(index);
       state.deadIndexes.add(index);
+      state.oiledIndexes.delete(index);
       const eliminatedIndexes = [index];
 
       if (state.loverIndexes.has(index)) {
@@ -2669,12 +2700,37 @@
         if (partnerIndex !== undefined) {
           state.aliveIndexes.delete(partnerIndex);
           state.deadIndexes.add(partnerIndex);
+          state.oiledIndexes.delete(partnerIndex);
           eliminatedIndexes.push(partnerIndex);
         }
         state.loverIndexes = new Set();
       }
 
       return eliminatedIndexes;
+    }
+
+    function useSurvivorProtection(index) {
+      if (
+        !state.aliveIndexes.has(index)
+        || state.roles[index]?.title !== "Survivor"
+      ) return null;
+
+      const used = state.survivorProtectionUses.get(index) || 0;
+      if (used >= 2) return null;
+
+      const nextUsed = used + 1;
+      state.survivorProtectionUses.set(index, nextUsed);
+      return {
+        used: nextUsed,
+        remaining: 2 - nextUsed
+      };
+    }
+
+    function survivorProtectionCopy(playerName, protection) {
+      const remainingCopy = protection.remaining === 1
+        ? "One protection remains."
+        : "No protections remain.";
+      return `${playerName} activates Survivor protection and stays in the game. ${remainingCopy}`;
     }
 
     function livingWerewolfIndexes() {
@@ -2710,6 +2766,8 @@
       resolveWerewolfAbilityButton.disabled = true;
       state.pendingWerewolfAbility = null;
       state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = null;
+      state.pendingPyromaniacMode = null;
     }
 
     function showWerewolfAbility(title, copy) {
@@ -2722,18 +2780,43 @@
     }
 
     function pendingAbilityTargetLimit() {
-      return state.pendingWerewolfAbility === "cupid" ? 2 : 1;
+      if (
+        state.pendingWerewolfAbility === "cupid"
+        || (
+          state.pendingWerewolfAbility === "pyromaniac"
+          && state.pendingPyromaniacMode === "oil"
+        )
+      ) return 2;
+      return 1;
     }
 
     function pendingAbilityTargetLabel() {
       if (state.pendingWerewolfAbility === "hunter") return "Targeted";
       if (state.pendingWerewolfAbility === "cupid") return "Lover";
+      if (state.pendingWerewolfAbility === "thief") return "Steal";
+      if (state.pendingWerewolfAbility === "ripper") return "Targeted";
+      if (state.pendingWerewolfAbility === "pyromaniac") return "Oiled";
       return "Marked";
+    }
+
+    function pendingAbilityEligibleIndexes() {
+      return [...state.aliveIndexes].filter((index) => {
+        if (
+          ["thief", "ripper", "pyromaniac"].includes(state.pendingWerewolfAbility)
+          && index === state.pendingAbilityActorIndex
+        ) return false;
+        if (
+          state.pendingWerewolfAbility === "pyromaniac"
+          && state.pendingPyromaniacMode === "oil"
+          && state.oiledIndexes.has(index)
+        ) return false;
+        return true;
+      });
     }
 
     function renderWerewolfAbilityTargets() {
       werewolfAbilityTargets.innerHTML = "";
-      [...state.aliveIndexes].forEach((index) => {
+      pendingAbilityEligibleIndexes().forEach((index) => {
         const button = document.createElement("button");
         button.className = "vote-btn";
         button.type = "button";
@@ -2770,9 +2853,10 @@
       });
     }
 
-    function beginTargetedWerewolfAbility(type, buttonLabel) {
+    function beginTargetedWerewolfAbility(type, buttonLabel, actorIndex = null) {
       state.pendingWerewolfAbility = type;
       state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = actorIndex;
       resolveWerewolfAbilityButton.textContent = buttonLabel;
       resolveWerewolfAbilityButton.classList.remove("is-hidden");
       resolveWerewolfAbilityButton.disabled = true;
@@ -2783,6 +2867,10 @@
     function triggerHunterAbility(playerName) {
       const continuation = state.werewolfResultDestination === "discussion"
         ? "daytime begins"
+        : state.werewolfResultDestination === "ripper"
+          ? "the Ripper acts"
+          : state.werewolfResultDestination === "pyromaniac"
+            ? "the Pyromaniac acts"
         : state.werewolfResultDestination === "blackCat"
           ? "the Black Cat acts"
           : "the next night";
@@ -2799,6 +2887,148 @@
         `${playerName} acts before the Werewolves attack. Choose two living players to become lovers. If either lover is eliminated later, the other dies from heartbreak.`
       );
       beginTargetedWerewolfAbility("cupid", "Bind the two lovers");
+    }
+
+    function triggerThiefAbility(playerName, playerIndex) {
+      showWerewolfAbility(
+        "Thief steals a role",
+        `${playerName} acts once before the first attack. Choose another living player: the Thief takes that role and the target becomes a Simple Villager.`
+      );
+      beginTargetedWerewolfAbility("thief", "Steal selected role", playerIndex);
+    }
+
+    function startThiefOpeningPhase(thiefIndex = livingRoleIndex("Thief")) {
+      if (thiefIndex === undefined || state.thiefAbilityUsed) {
+        setupGameMasterRound();
+        showScreen("gameMaster");
+        return;
+      }
+
+      state.werewolfResultDestination = "nightAttack";
+      prepareWerewolfResult("First night", "The Thief chooses", "Begin night attack");
+      guessSummary.textContent = "The Thief acts before the Werewolves. Choose one player whose role will be stolen.";
+      triggerThiefAbility(state.players[thiefIndex], thiefIndex);
+      showScreen("result");
+    }
+
+    function triggerRipperAbility(playerName, playerIndex) {
+      showWerewolfAbility(
+        "Ripper chooses a victim",
+        `${playerName} may eliminate one other living player tonight. Survivor protection still applies.`
+      );
+      beginTargetedWerewolfAbility("ripper", "Eliminate selected player", playerIndex);
+    }
+
+    function startRipperNightPhase(ripperIndex = livingRoleIndex("Ripper")) {
+      if (ripperIndex === undefined || state.ripperActedRound >= state.gmRound) {
+        startNextPostAttackPhase();
+        return;
+      }
+
+      prepareWerewolfResult("Night ability", "The Ripper acts", "Continue night");
+      guessSummary.textContent = "Choose one living player for the Ripper to eliminate before daytime.";
+      triggerRipperAbility(state.players[ripperIndex], ripperIndex);
+      showScreen("result");
+    }
+
+    function choosePyromaniacMode(mode) {
+      state.pendingPyromaniacMode = mode;
+      state.pendingAbilityTargets = new Set();
+
+      if (mode === "burn") {
+        const oiledPlayers = [...state.oiledIndexes].filter((index) => state.aliveIndexes.has(index));
+        werewolfAbilityTargets.innerHTML = "";
+        oiledPlayers.forEach((index) => {
+          const row = document.createElement("div");
+          row.className = "vote-btn selected";
+          const name = document.createElement("span");
+          name.textContent = state.players[index];
+          const status = document.createElement("span");
+          status.textContent = "Oiled";
+          row.append(name, status);
+          werewolfAbilityTargets.appendChild(row);
+        });
+        resolveWerewolfAbilityButton.textContent = "Burn all oiled players";
+        resolveWerewolfAbilityButton.disabled = oiledPlayers.length === 0;
+      } else {
+        resolveWerewolfAbilityButton.textContent = "Oil selected players";
+        resolveWerewolfAbilityButton.disabled = true;
+        renderWerewolfAbilityTargets();
+      }
+    }
+
+    function renderPyromaniacModeChoices() {
+      const livingOiled = [...state.oiledIndexes].filter((index) => state.aliveIndexes.has(index));
+      const oilCandidates = [...state.aliveIndexes].filter((index) => (
+        index !== state.pendingAbilityActorIndex && !state.oiledIndexes.has(index)
+      ));
+      werewolfAbilityTargets.innerHTML = "";
+
+      const oilButton = document.createElement("button");
+      oilButton.className = "vote-btn";
+      oilButton.type = "button";
+      oilButton.disabled = oilCandidates.length < 2;
+      oilButton.innerHTML = `<span>Oil two players</span><span>${oilCandidates.length} available</span>`;
+      oilButton.addEventListener("click", () => {
+        choosePyromaniacMode("oil");
+        playSound("tap");
+      });
+
+      const burnButton = document.createElement("button");
+      burnButton.className = "vote-btn";
+      burnButton.type = "button";
+      burnButton.disabled = livingOiled.length === 0;
+      burnButton.innerHTML = `<span>Burn oiled players</span><span>${livingOiled.length} ready</span>`;
+      burnButton.addEventListener("click", () => {
+        choosePyromaniacMode("burn");
+        playSound("tap");
+      });
+
+      werewolfAbilityTargets.append(oilButton, burnButton);
+    }
+
+    function triggerPyromaniacAbility(playerName, playerIndex) {
+      showWerewolfAbility(
+        "Pyromaniac chooses an action",
+        `${playerName} may oil two new players or burn every living player who was oiled on an earlier night.`
+      );
+      state.pendingWerewolfAbility = "pyromaniac";
+      state.pendingAbilityActorIndex = playerIndex;
+      state.pendingAbilityTargets = new Set();
+      state.pendingPyromaniacMode = null;
+      resolveWerewolfAbilityButton.classList.remove("is-hidden");
+      resolveWerewolfAbilityButton.disabled = true;
+      playAgainButton.disabled = true;
+      renderPyromaniacModeChoices();
+    }
+
+    function startPyromaniacNightPhase(pyromaniacIndex = livingRoleIndex("Pyromaniac")) {
+      if (pyromaniacIndex === undefined || state.pyromaniacActedRound >= state.gmRound) {
+        startNextPostAttackPhase();
+        return;
+      }
+
+      const livingOiled = [...state.oiledIndexes].filter((index) => state.aliveIndexes.has(index));
+      const oilCandidates = [...state.aliveIndexes].filter((index) => (
+        index !== pyromaniacIndex && !state.oiledIndexes.has(index)
+      ));
+      if (livingOiled.length === 0 && oilCandidates.length < 2) {
+        state.pyromaniacActedRound = state.gmRound;
+        prepareWerewolfResult("Night ability", "The Pyromaniac cannot act", "Continue night");
+        guessSummary.textContent = "Fewer than two valid oil targets remain, and nobody is currently oiled.";
+        showWerewolfAbility(
+          "No valid Pyromaniac action",
+          "The Pyromaniac skips this night because neither oiling nor burning can be completed."
+        );
+        setWerewolfNightResultDestination();
+        showScreen("result");
+        return;
+      }
+
+      prepareWerewolfResult("Night ability", "The Pyromaniac acts", "Continue night");
+      guessSummary.textContent = "Choose whether to oil two players or burn everyone previously oiled.";
+      triggerPyromaniacAbility(state.players[pyromaniacIndex], pyromaniacIndex);
+      showScreen("result");
     }
 
     function triggerBlackCatAbility(playerName) {
@@ -2822,6 +3052,20 @@
       guessSummary.textContent = "The Black Cat acts only while alive. Place two votes against one living player before discussion begins.";
       triggerBlackCatAbility(state.players[blackCatIndex]);
       showScreen("result");
+    }
+
+    function startNextPostAttackPhase() {
+      setWerewolfNightResultDestination();
+      if (state.werewolfResultDestination === "ripper") {
+        startRipperNightPhase();
+      } else if (state.werewolfResultDestination === "pyromaniac") {
+        startPyromaniacNightPhase();
+      } else if (state.werewolfResultDestination === "blackCat") {
+        startBlackCatVotePhase();
+      } else {
+        state.werewolfResultDestination = "nextNight";
+        advanceToGameMasterDiscussion();
+      }
     }
 
     function triggerWiseAbility(playerName) {
@@ -2872,7 +3116,19 @@
     }
 
     function setWerewolfNightResultDestination() {
-      if (livingRoleIndex("Black Cat") !== undefined) {
+      if (
+        livingRoleIndex("Ripper") !== undefined
+        && state.ripperActedRound < state.gmRound
+      ) {
+        state.werewolfResultDestination = "ripper";
+        playAgainButton.textContent = "Continue to Ripper";
+      } else if (
+        livingRoleIndex("Pyromaniac") !== undefined
+        && state.pyromaniacActedRound < state.gmRound
+      ) {
+        state.werewolfResultDestination = "pyromaniac";
+        playAgainButton.textContent = "Continue to Pyromaniac";
+      } else if (livingRoleIndex("Black Cat") !== undefined) {
         state.werewolfResultDestination = "blackCat";
         playAgainButton.textContent = "Continue to Black Cat";
       } else {
@@ -2886,6 +3142,7 @@
       const attackedName = state.players[attackedIndex];
       state.werewolfResultDestination = "discussion";
       prepareWerewolfResult("Night result", `${attackedName} was attacked`, "Start day discussion");
+      const survivorProtection = useSurvivorProtection(attackedIndex);
 
       if (
         attackedRole.title === "Wise"
@@ -2898,6 +3155,15 @@
         showWerewolfAbility(
           "Wise protection activated",
           "The Wise survives this attack and keeps their role. Their protection is now spent, so a future attack can eliminate them."
+        );
+        setWerewolfNightResultDestination();
+      } else if (survivorProtection) {
+        addEliminationResult(attackedIndex);
+        resultTitle.textContent = `${attackedName} survives`;
+        guessSummary.textContent = survivorProtectionCopy(attackedName, survivorProtection);
+        showWerewolfAbility(
+          "Survivor protection activated",
+          `The Werewolf attack was blocked. ${survivorProtection.remaining} ${survivorProtection.remaining === 1 ? "protection remains" : "protections remain"}.`
         );
         setWerewolfNightResultDestination();
       } else {
@@ -2957,14 +3223,32 @@
       state.villageVoteRound += 1;
       state.werewolfGameOver = false;
       state.werewolfResultDestination = "nextNight";
+      const survivorProtection = useSurvivorProtection(eliminatedIndex);
+      state.blackCatTargetIndex = null;
+
+      prepareWerewolfResult(
+        "Village verdict",
+        survivorProtection ? `${eliminatedName} survives` : `${eliminatedName} is out`,
+        "Continue to next night"
+      );
+
+      if (survivorProtection) {
+        addEliminationResult(eliminatedIndex);
+        guessSummary.textContent = survivorProtectionCopy(eliminatedName, survivorProtection);
+        showWerewolfAbility(
+          "Survivor protection activated",
+          "The village vote does not remove the Survivor this time. The protection charge is now spent."
+        );
+        showScreen("result");
+        playSound("success");
+        return;
+      }
+
       const eliminatedIndexes = eliminateWerewolfPlayer(eliminatedIndex);
       const heartbreakCopy = loverEliminationCopy(eliminatedIndexes);
       const heartbreakEndedWerewolves = eliminatedIndexes.slice(1).some((index) => (
         state.roles[index].kind === "threat"
       )) && livingWerewolfIndexes().length === 0;
-      state.blackCatTargetIndex = null;
-
-      prepareWerewolfResult("Village verdict", `${eliminatedName} is out`, "Continue to next night");
       addEliminationResults(eliminatedIndexes);
 
       if (eliminatedRole.kind === "threat") {
@@ -3018,16 +3302,196 @@
       playSound("success");
     }
 
+    function resolveThiefAbility() {
+      const thiefIndex = state.pendingAbilityActorIndex;
+      const targetIndex = state.pendingAbilityTargets.values().next().value;
+      if (
+        thiefIndex === null
+        || targetIndex === undefined
+        || !state.aliveIndexes.has(thiefIndex)
+        || !state.aliveIndexes.has(targetIndex)
+      ) return;
+
+      const stolenRole = state.roles[targetIndex];
+      const simpleVillager = WEREWOLF_ROLES.simpleVillager;
+      state.roles[thiefIndex] = createRole(
+        stolenRole.title,
+        stolenRole.kind,
+        stolenRole.symbol,
+        stolenRole.hint,
+        stolenRole.details || []
+      );
+      state.roles[targetIndex] = createRole(
+        simpleVillager.title,
+        "player",
+        simpleVillager.symbol,
+        simpleVillager.hint
+      );
+      state.imposterIndexes.delete(targetIndex);
+      if (stolenRole.kind === "threat") state.imposterIndexes.add(thiefIndex);
+      state.thiefAbilityUsed = true;
+
+      werewolfAbilityTitle.textContent = "The role was stolen";
+      werewolfAbilityCopy.textContent = `${state.players[thiefIndex]} becomes ${stolenRole.title}. ${state.players[targetIndex]} continues as a Simple Villager.`;
+      werewolfAbilityTargets.innerHTML = "";
+      resolveWerewolfAbilityButton.classList.add("is-hidden");
+      guessSummary.textContent = "The Thief's one-time ability is complete. Continue to the Werewolf attack.";
+      playAgainButton.disabled = false;
+      state.pendingWerewolfAbility = null;
+      state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = null;
+      playSound("success");
+    }
+
+    function resolveRipperAbility() {
+      const targetIndex = state.pendingAbilityTargets.values().next().value;
+      if (targetIndex === undefined || !state.aliveIndexes.has(targetIndex)) return;
+
+      const targetName = state.players[targetIndex];
+      const targetRole = state.roles[targetIndex];
+      const protection = useSurvivorProtection(targetIndex);
+      state.ripperActedRound = state.gmRound;
+      playAgainButton.disabled = false;
+
+      if (protection) {
+        addEliminationResult(targetIndex);
+        resultTitle.textContent = `${targetName} survives`;
+        werewolfAbilityTitle.textContent = "Survivor protection activated";
+        werewolfAbilityCopy.textContent = survivorProtectionCopy(targetName, protection);
+        guessSummary.textContent = `The Ripper targeted ${targetName}, but Survivor protection prevented the elimination.`;
+      } else {
+        const eliminatedIndexes = eliminateWerewolfPlayer(targetIndex);
+        const heartbreakCopy = loverEliminationCopy(eliminatedIndexes);
+        addEliminationResults(eliminatedIndexes);
+        resultTitle.textContent = `${targetName} is out`;
+        werewolfAbilityTitle.textContent = "Ripper attack resolved";
+        werewolfAbilityCopy.textContent = `${targetName} was ${targetRole.title} and is removed from the game.${heartbreakCopy}`;
+        guessSummary.textContent = `The Ripper eliminated ${targetName}.${heartbreakCopy}`;
+
+        if (
+          livingWerewolfIndexes().length === 0
+          && eliminatedIndexes.some((index) => state.roles[index].kind === "threat")
+        ) {
+          finishWerewolfGame(
+            "The village wins",
+            "The Ripper eliminated the final Werewolf. Every surviving villager wins."
+          );
+          playSound("success");
+          return;
+        }
+      }
+
+      werewolfAbilityTargets.innerHTML = "";
+      resolveWerewolfAbilityButton.classList.add("is-hidden");
+      state.pendingWerewolfAbility = null;
+      state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = null;
+      setWerewolfNightResultDestination();
+      playSound("success");
+    }
+
+    function resolvePyromaniacAbility() {
+      const mode = state.pendingPyromaniacMode;
+      if (!mode) return;
+
+      const oilTargets = [...state.pendingAbilityTargets];
+      if (
+        mode === "oil"
+        && (
+          oilTargets.length !== 2
+          || oilTargets.some((index) => !state.aliveIndexes.has(index))
+        )
+      ) return;
+
+      state.pyromaniacActedRound = state.gmRound;
+      playAgainButton.disabled = false;
+
+      if (mode === "oil") {
+        oilTargets.forEach((index) => state.oiledIndexes.add(index));
+        werewolfAbilityTitle.textContent = "Two players were oiled";
+        werewolfAbilityCopy.textContent = `${state.players[oilTargets[0]]} and ${state.players[oilTargets[1]]} are secretly oiled. They remain alive until the Pyromaniac chooses to burn.`;
+        guessSummary.textContent = "The oiling is complete. Do not reveal the marked players to the village.";
+      } else {
+        const burnTargets = [...state.oiledIndexes].filter((index) => state.aliveIndexes.has(index));
+        const eliminatedIndexes = [];
+        const protectedPlayers = [];
+        burnTargets.forEach((index) => {
+          if (!state.aliveIndexes.has(index)) return;
+          const protection = useSurvivorProtection(index);
+          if (protection) {
+            protectedPlayers.push({ index, protection });
+            return;
+          }
+          eliminateWerewolfPlayer(index).forEach((eliminatedIndex) => {
+            if (!eliminatedIndexes.includes(eliminatedIndex)) eliminatedIndexes.push(eliminatedIndex);
+          });
+        });
+        state.oiledIndexes = new Set();
+        addEliminationResults(eliminatedIndexes);
+
+        const eliminatedCopy = eliminatedIndexes.length
+          ? `${eliminatedIndexes.map((index) => state.players[index]).join(", ")} ${eliminatedIndexes.length === 1 ? "was" : "were"} eliminated.`
+          : "No player was eliminated.";
+        const protectedCopy = protectedPlayers.length
+          ? ` ${protectedPlayers.map(({ index }) => state.players[index]).join(", ")} survived by spending Survivor protection.`
+          : "";
+        werewolfAbilityTitle.textContent = "The fire is resolved";
+        werewolfAbilityCopy.textContent = `${eliminatedCopy}${protectedCopy}`;
+        guessSummary.textContent = "All oil marks have been cleared after the burn.";
+
+        if (
+          livingWerewolfIndexes().length === 0
+          && eliminatedIndexes.some((index) => state.roles[index].kind === "threat")
+        ) {
+          finishWerewolfGame(
+            "The village wins",
+            "The Pyromaniac's fire eliminated the final Werewolf. Every surviving villager wins."
+          );
+          playSound("success");
+          return;
+        }
+      }
+
+      werewolfAbilityTargets.innerHTML = "";
+      resolveWerewolfAbilityButton.classList.add("is-hidden");
+      state.pendingWerewolfAbility = null;
+      state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = null;
+      state.pendingPyromaniacMode = null;
+      setWerewolfNightResultDestination();
+      playSound("success");
+    }
+
     function resolveHunterAbility() {
       const targetIndex = state.pendingAbilityTargets.values().next().value;
       if (targetIndex === undefined || !state.aliveIndexes.has(targetIndex)) return;
 
       const isNightResolution = (
         state.werewolfResultDestination === "discussion"
+        || state.werewolfResultDestination === "ripper"
+        || state.werewolfResultDestination === "pyromaniac"
         || state.werewolfResultDestination === "blackCat"
       );
       const targetRole = state.roles[targetIndex];
       const targetName = state.players[targetIndex];
+      const survivorProtection = useSurvivorProtection(targetIndex);
+
+      if (survivorProtection) {
+        addEliminationResult(targetIndex);
+        playAgainButton.disabled = false;
+        if (isNightResolution) setWerewolfNightResultDestination();
+        werewolfAbilityTitle.textContent = "Survivor protection activated";
+        werewolfAbilityCopy.textContent = survivorProtectionCopy(targetName, survivorProtection);
+        werewolfAbilityTargets.innerHTML = "";
+        resolveWerewolfAbilityButton.classList.add("is-hidden");
+        guessSummary.textContent = `The Hunter targeted ${targetName}, but the Survivor remains in the game.`;
+        state.pendingWerewolfAbility = null;
+        state.pendingAbilityTargets = new Set();
+        state.pendingAbilityActorIndex = null;
+        playSound("success");
+        return;
+      }
+
       const eliminatedIndexes = eliminateWerewolfPlayer(targetIndex);
       const heartbreakCopy = loverEliminationCopy(eliminatedIndexes);
       addEliminationResults(eliminatedIndexes);
@@ -3051,6 +3515,10 @@
         resolveWerewolfAbilityButton.classList.add("is-hidden");
         const continuation = state.werewolfResultDestination === "discussion"
           ? "Start the day discussion when the village is ready."
+          : state.werewolfResultDestination === "ripper"
+            ? "Continue so the surviving Ripper can act."
+            : state.werewolfResultDestination === "pyromaniac"
+              ? "Continue so the surviving Pyromaniac can act."
           : state.werewolfResultDestination === "blackCat"
             ? "Continue so the surviving Black Cat can place two votes."
             : "Continue when the village is ready for the next night.";
@@ -3070,7 +3538,9 @@
       werewolfAbilityCopy.textContent = `${state.players[lovers[0]]} and ${state.players[lovers[1]]} are now lovers. If one is eliminated, the other will be removed too.`;
       werewolfAbilityTargets.innerHTML = "";
       resolveWerewolfAbilityButton.classList.add("is-hidden");
-      guessSummary.textContent = `Cupid linked ${state.players[lovers[0]]} and ${state.players[lovers[1]]}. Begin the Werewolf attack when ready.`;
+      guessSummary.textContent = state.werewolfResultDestination === "thief"
+        ? `Cupid linked ${state.players[lovers[0]]} and ${state.players[lovers[1]]}. Continue so the Thief can act.`
+        : `Cupid linked ${state.players[lovers[0]]} and ${state.players[lovers[1]]}. Begin the Werewolf attack when ready.`;
       playAgainButton.disabled = false;
       state.pendingWerewolfAbility = null;
       state.pendingAbilityTargets = new Set();
@@ -3098,6 +3568,12 @@
         resolveHunterAbility();
       } else if (state.pendingWerewolfAbility === "cupid") {
         resolveCupidAbility();
+      } else if (state.pendingWerewolfAbility === "thief") {
+        resolveThiefAbility();
+      } else if (state.pendingWerewolfAbility === "ripper") {
+        resolveRipperAbility();
+      } else if (state.pendingWerewolfAbility === "pyromaniac") {
+        resolvePyromaniacAbility();
       } else if (state.pendingWerewolfAbility === "blackCat") {
         resolveBlackCatAbility();
       }
@@ -3200,8 +3676,15 @@
       state.wiseProtectionUsedIndexes = new Set();
       state.loverIndexes = new Set();
       state.blackCatTargetIndex = null;
+      state.thiefAbilityUsed = false;
+      state.ripperActedRound = 0;
+      state.pyromaniacActedRound = 0;
+      state.oiledIndexes = new Set();
+      state.survivorProtectionUses = new Map();
       state.pendingWerewolfAbility = null;
       state.pendingAbilityTargets = new Set();
+      state.pendingAbilityActorIndex = null;
+      state.pendingPyromaniacMode = null;
       state.selectedVotes = new Set();
       state.bombPrompt = null;
       resetWerewolfAbilityPanel();
@@ -3212,10 +3695,25 @@
     function continueWerewolfGame() {
       state.selectedVotes = new Set();
       resetWerewolfAbilityPanel();
+      if (state.werewolfResultDestination === "thief") {
+        startThiefOpeningPhase();
+        playSound("tap");
+        return;
+      }
       if (state.werewolfResultDestination === "nightAttack") {
         state.werewolfResultDestination = "nextNight";
         setupGameMasterRound();
         showScreen("gameMaster");
+        playSound("tap");
+        return;
+      }
+      if (state.werewolfResultDestination === "ripper") {
+        startRipperNightPhase();
+        playSound("tap");
+        return;
+      }
+      if (state.werewolfResultDestination === "pyromaniac") {
+        startPyromaniacNightPhase();
         playSound("tap");
         return;
       }

@@ -1,4 +1,4 @@
-const CACHE_NAME = "ddd-game-hub-v15";
+const CACHE_NAME = "ddd-game-hub-v16";
 
 const APP_SHELL = [
   "/manifest.webmanifest",
