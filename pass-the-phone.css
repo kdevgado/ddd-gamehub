@@ -1288,6 +1288,7 @@ input::placeholder {
 .flip-wrap {
   width: min(430px, 100%);
   min-height: 430px;
+  justify-self: center;
   perspective: 1100px;
 }
 
