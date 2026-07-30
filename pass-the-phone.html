@@ -252,7 +252,7 @@
               <ol class="gm-script-list" id="gmScriptList"></ol>
             </div>
             <div class="gm-panel">
-              <h3>Who died?</h3>
+              <h3 id="gmDeathTitle">Who died?</h3>
               <div class="vote-list" id="gmDeathList"></div>
               <button class="btn secondary" id="gmNoDeathButton" type="button">No one died</button>
               <p class="hint" id="gmDeathSummary" aria-live="polite"></p>
@@ -870,6 +870,8 @@
       gmDeathIndex: null,
       villageVoteRound: 0,
       werewolfGameOver: false,
+      werewolfResultDestination: "nextNight",
+      wiseProtectionUsedIndexes: new Set(),
       pendingHunterTarget: null,
       currentRevealIndex: 0,
       selectedVotes: new Set(),
@@ -952,6 +954,7 @@
     const gmTitle = document.getElementById("gmTitle");
     const gmLead = document.getElementById("gmLead");
     const gmScriptList = document.getElementById("gmScriptList");
+    const gmDeathTitle = document.getElementById("gmDeathTitle");
     const gmDeathList = document.getElementById("gmDeathList");
     const gmNoDeathButton = document.getElementById("gmNoDeathButton");
     const gmDeathSummary = document.getElementById("gmDeathSummary");
@@ -2015,9 +2018,10 @@
       gmEyebrow.textContent = `${mode.name} round ${state.gmRound}`;
       gmTitle.textContent = nightLabel;
       gmLead.textContent = `Read each step, resolve actions, then mark the ${mode.name} night result before discussion.`;
+      gmDeathTitle.textContent = state.gameId === "werewolf" ? "Who was attacked?" : "Who died?";
       gmDeathSummary.textContent = state.gameId === "mafia"
         ? "Choose who the mafia eliminated, or tap no one was eliminated."
-        : "Choose a player who died tonight, or tap no one died.";
+        : "Choose who the werewolves attacked, or tap no one died.";
       state.gmDeathIndex = null;
       gmNoDeathButton.classList.remove("active");
 
@@ -2058,9 +2062,19 @@
       state.gmDeathIndex = index;
       gmNoDeathButton.classList.remove("active");
       const role = state.roles[index];
-      const deathAction = role.title === "Hunter" ? " Let the Hunter choose one player to take down." : "";
-      const resultVerb = state.gameId === "mafia" ? "was eliminated tonight" : "died tonight";
-      gmDeathSummary.textContent = `${state.players[index]} ${resultVerb}. Reveal: ${role.title}. ${role.hint}${deathAction}`;
+      if (
+        state.gameId === "werewolf"
+        && role.title === "Wise"
+        && !state.wiseProtectionUsedIndexes.has(index)
+      ) {
+        gmDeathSummary.textContent = `${state.players[index]} was attacked, but the Wise survives once. Continuing will use that protection.`;
+      } else {
+        const deathAction = role.title === "Hunter"
+          ? " The Hunter's final shot will trigger before daytime."
+          : "";
+        const resultVerb = state.gameId === "mafia" ? "was eliminated tonight" : "was attacked and will die";
+        gmDeathSummary.textContent = `${state.players[index]} ${resultVerb}. Reveal: ${role.title}. ${role.hint}${deathAction}`;
+      }
       renderGameMasterDeathList();
     }
 
@@ -2073,18 +2087,27 @@
       renderGameMasterDeathList();
     }
 
-    function startGameMasterDiscussion() {
-      if (state.gmDeathIndex !== null) {
-        state.deadIndexes.add(state.gmDeathIndex);
-        state.aliveIndexes.delete(state.gmDeathIndex);
-      }
-
+    function advanceToGameMasterDiscussion() {
       state.gmRound += 1;
       state.selectedVotes = new Set();
       resetTimer();
       if (!state.timerEnabled) buildVoteList();
       showScreen(state.timerEnabled ? "timer" : "voting");
       playSound("success");
+    }
+
+    function startGameMasterDiscussion() {
+      if (state.gameId === "werewolf" && state.gmDeathIndex !== null) {
+        resolveWerewolfNightAttack(state.gmDeathIndex);
+        return;
+      }
+
+      if (state.gmDeathIndex !== null) {
+        state.deadIndexes.add(state.gmDeathIndex);
+        state.aliveIndexes.delete(state.gmDeathIndex);
+      }
+
+      advanceToGameMasterDiscussion();
     }
 
     function syncTimerButtons() {
@@ -2261,6 +2284,8 @@
       state.gmDeathIndex = null;
       state.villageVoteRound = 0;
       state.werewolfGameOver = false;
+      state.werewolfResultDestination = "nextNight";
+      state.wiseProtectionUsedIndexes = new Set();
       state.pendingHunterTarget = null;
       state.currentRevealIndex = 0;
       state.selectedVotes = new Set();
@@ -2662,9 +2687,12 @@
     }
 
     function triggerHunterAbility(playerName) {
+      const continuation = state.werewolfResultDestination === "discussion"
+        ? "daytime begins"
+        : "the next night";
       showWerewolfAbility(
         "Hunter's final shot",
-        `${playerName} was eliminated as the Hunter. Choose one living player to take down before the next night.`
+        `${playerName} was eliminated as the Hunter. Choose one living player to take down before ${continuation}.`
       );
       resolveWerewolfAbilityButton.textContent = "Fire Hunter's shot";
       resolveWerewolfAbilityButton.classList.remove("is-hidden");
@@ -2708,6 +2736,65 @@
       launchConfetti();
     }
 
+    function prepareWerewolfResult(eyebrow, title, buttonLabel) {
+      state.werewolfGameOver = false;
+      resultEyebrow.textContent = eyebrow;
+      resultTitle.textContent = title;
+      resultList.innerHTML = "";
+      resultSecretWrap.classList.add("is-hidden");
+      resetWerewolfAbilityPanel();
+      playAgainButton.textContent = buttonLabel;
+      playAgainButton.disabled = false;
+    }
+
+    function resolveWerewolfNightAttack(attackedIndex) {
+      const attackedRole = state.roles[attackedIndex];
+      const attackedName = state.players[attackedIndex];
+      state.werewolfResultDestination = "discussion";
+      prepareWerewolfResult("Night result", `${attackedName} was attacked`, "Start day discussion");
+      addEliminationResult(attackedIndex);
+
+      if (
+        attackedRole.title === "Wise"
+        && !state.wiseProtectionUsedIndexes.has(attackedIndex)
+      ) {
+        state.wiseProtectionUsedIndexes.add(attackedIndex);
+        resultTitle.textContent = `${attackedName} survives`;
+        guessSummary.textContent = `${attackedName}'s Wise protection blocked the Werewolf attack. They remain in the village.`;
+        showWerewolfAbility(
+          "Wise protection activated",
+          "The Wise survives this attack and keeps their role. Their protection is now spent, so a future attack can eliminate them."
+        );
+      } else {
+        eliminateWerewolfPlayer(attackedIndex);
+
+        if (attackedRole.title === "Hunter") {
+          guessSummary.textContent = `${attackedName} was killed by the Werewolves. Resolve the Hunter's final shot before starting daytime.`;
+          triggerHunterAbility(attackedName);
+        } else if (attackedRole.title === "Wise") {
+          guessSummary.textContent = `${attackedName}'s protection was already spent, so the Wise is removed from the village.`;
+          showWerewolfAbility(
+            "Wise protection already used",
+            "The Wise does not survive a second Werewolf attack. Their village-wide power loss only triggers when the village votes them out."
+          );
+        } else if (
+          attackedRole.kind === "player"
+          && attackedRole.title !== WEREWOLF_ROLES.simpleVillager.title
+        ) {
+          guessSummary.textContent = `${attackedName} was ${attackedRole.title} and is removed from future night and voting lists.`;
+          showWerewolfAbility(
+            `${attackedRole.title} night resolved`,
+            `${attackedRole.hint} Any action this role completed earlier tonight still counts; the ability now ends because the player is out.`
+          );
+        } else {
+          guessSummary.textContent = `${attackedName} was ${attackedRole.title} and is removed from the game.`;
+        }
+      }
+
+      showScreen("result");
+      playSound("success");
+    }
+
     function resolveWerewolfVote() {
       if (state.selectedVotes.size !== 1) {
         voteHint.textContent = "Choose one living player before confirming the village vote.";
@@ -2719,16 +2806,11 @@
       const eliminatedName = state.players[eliminatedIndex];
       state.villageVoteRound += 1;
       state.werewolfGameOver = false;
+      state.werewolfResultDestination = "nextNight";
       eliminateWerewolfPlayer(eliminatedIndex);
 
-      resultEyebrow.textContent = "Village verdict";
-      resultTitle.textContent = `${eliminatedName} is out`;
-      resultList.innerHTML = "";
-      resultSecretWrap.classList.add("is-hidden");
-      resetWerewolfAbilityPanel();
+      prepareWerewolfResult("Village verdict", `${eliminatedName} is out`, "Continue to next night");
       addEliminationResult(eliminatedIndex);
-      playAgainButton.textContent = "Continue to next night";
-      playAgainButton.disabled = false;
 
       if (eliminatedRole.kind === "threat") {
         if (livingWerewolfIndexes().length === 0) {
@@ -2786,7 +2868,10 @@
         werewolfAbilityCopy.textContent = `${targetName} was ${targetRole.title} and is also removed from the game.`;
         werewolfAbilityTargets.innerHTML = "";
         resolveWerewolfAbilityButton.classList.add("is-hidden");
-        guessSummary.textContent = `The Hunter took ${targetName} down. Continue when the village is ready for the next night.`;
+        const continuation = state.werewolfResultDestination === "discussion"
+          ? "Start the day discussion when the village is ready."
+          : "Continue when the village is ready for the next night.";
+        guessSummary.textContent = `The Hunter took ${targetName} down. ${continuation}`;
         state.pendingHunterTarget = null;
       }
       playSound("success");
@@ -2885,6 +2970,8 @@
       state.gmDeathIndex = null;
       state.villageVoteRound = 0;
       state.werewolfGameOver = false;
+      state.werewolfResultDestination = "nextNight";
+      state.wiseProtectionUsedIndexes = new Set();
       state.pendingHunterTarget = null;
       state.selectedVotes = new Set();
       state.bombPrompt = null;
@@ -2896,6 +2983,11 @@
     function continueWerewolfGame() {
       state.selectedVotes = new Set();
       resetWerewolfAbilityPanel();
+      if (state.werewolfResultDestination === "discussion") {
+        state.werewolfResultDestination = "nextNight";
+        advanceToGameMasterDiscussion();
+        return;
+      }
       setupGameMasterRound();
       showScreen("gameMaster");
       playSound("tap");
