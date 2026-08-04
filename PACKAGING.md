@@ -57,10 +57,9 @@ The `Build installable apps` workflow can be run manually from the repository's 
 
 - `ANDROID_KEYSTORE_BASE64`
 - `ANDROID_KEYSTORE_PASSWORD`
-- `ANDROID_KEY_ALIAS`
 - `ANDROID_KEY_PASSWORD`
 
-CI refuses Android debug certificates, verifies the APK signature and checksum, and creates a GitHub build-provenance attestation. Tagged releases attach the APK and `.sha256` file.
+CI reads the private-key alias directly from the keystore, refuses Android debug certificates, verifies the pinned APK signature and checksum, and creates a GitHub build-provenance attestation. Tagged releases attach the APK and `.sha256` file.
 
 Pushing a version tag creates a GitHub Release and attaches both installers:
 
