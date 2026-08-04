@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase.js";
-import unoIcon from "../icons/Uno.png";
+import reverseIcon from "../icons/Uno/reverse.png";
+import skipIcon from "../icons/Uno/skip.png";
+import unoIcon from "../icons/Uno/Uno.png";
 import {
   UNO_COLORS,
   UNO_COLOR_LABELS,
@@ -21,6 +23,10 @@ const UNO_ACTION_SYMBOLS = {
   skip: "\u2715",
   wild: "\u2726",
   wild4: "+4"
+};
+const UNO_CARD_ICONS = {
+  reverse: reverseIcon,
+  skip: skipIcon
 };
 
 function cardImpactType(card) {
@@ -45,7 +51,13 @@ function actionCopy(room) {
   if (action.type === "pass") return `${name} kept the drawn card.`;
   if (action.type === "win") return `${name} played their last card!`;
   if (action.type === "play") {
-    const suffix = action.penalty ? ` ${action.penalty} cards dealt.` : "";
+    const suffix = action.effect === "reverse"
+      ? " Play direction reversed."
+      : action.effect === "skip"
+        ? " Next player skipped."
+        : action.penalty
+          ? ` ${action.penalty} cards dealt.`
+          : "";
     return `${name} played ${action.card}.${suffix}`;
   }
   return "Game updated.";
@@ -208,7 +220,8 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
           type: "play",
           playerId,
           card: cardAriaLabel(card),
-          penalty
+          penalty,
+          ...(["reverse", "skip"].includes(card.value) ? { effect: card.value } : {})
         };
 
         transaction.update(reference, { uno, updatedAt: serverTimestamp() });
@@ -498,9 +511,16 @@ function UnoCard({
       style={style}
       type={onClick ? "button" : undefined}
     >
-      <small>{cardLabel(card)}</small>
-      <span>{cardLabel(card)}</span>
-      <small>{cardLabel(card)}</small>
+      <small><UnoCardMark card={card} /></small>
+      <span><UnoCardMark card={card} /></span>
+      <small><UnoCardMark card={card} /></small>
     </Component>
   );
+}
+
+function UnoCardMark({ card }) {
+  const icon = UNO_CARD_ICONS[card.value];
+  return icon
+    ? <img className={`uno-card-action-icon ${card.value}`} src={icon} alt="" />
+    : cardLabel(card);
 }

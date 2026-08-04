@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { db, ensureAnonymousUser } from "./firebase.js";
 import UnoRoom from "./UnoRoom.jsx";
-import unoIcon from "../icons/Uno.png";
+import unoIcon from "../icons/Uno/Uno.png";
 
 const ROOM_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 
