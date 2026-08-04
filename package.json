@@ -1,6 +1,6 @@
 {
   "name": "ddd-gamehub",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Pass-the-phone party games and live online game rooms.",
   "author": "DDD Game Hub",
   "private": true,
@@ -13,22 +13,23 @@
     "android:sync": "npm run build && cap sync android",
     "android:open": "npm run android:sync && cap open android",
     "android:apk": "npm run android:sync && node scripts/build-android.cjs",
+    "android:apk:debug": "npm run android:sync && node scripts/build-android.cjs --debug",
     "desktop:run": "npm run build && electron .",
     "desktop:installer": "npm run build && electron-builder --win nsis --publish never"
   },
   "dependencies": {
-    "@capacitor/android": "^8.4.1",
-    "@capacitor/core": "^8.4.1",
-    "@vitejs/plugin-react": "^4.3.1",
-    "firebase": "^10.12.5",
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "firebase": "^12.17.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "vite": "^5.4.2"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.4.1",
+    "@capacitor/cli": "^8.5.0",
+    "@vitejs/plugin-react": "^5.2.0",
     "electron": "^43.1.0",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "vite": "^6.4.3"
   },
   "build": {
     "appId": "com.ddd.gamehub",

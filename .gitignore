@@ -4,3 +4,4 @@ release/
 .firebase/
 firebase-debug.log
 *.local
+.release-signing/

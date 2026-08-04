@@ -28,7 +28,22 @@ npm install
 npm run android:apk
 ```
 
-The installable development APK is written to `release/android/DDD-Game-Hub-Android.apk`. It is signed with Android's standard debug key, which is suitable for direct testing and sharing but not for Google Play distribution.
+`android:apk` creates a release APK and intentionally fails unless all four signing variables are present:
+
+- `ANDROID_KEYSTORE_PATH`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+The signed APK and its SHA-256 checksum are written to `release/android/`. Keep the same release key for the lifetime of the app; Android only accepts updates signed by the same identity.
+
+For local device testing only, use the explicitly named debug command:
+
+```powershell
+npm run android:apk:debug
+```
+
+Never attach that debug APK to a public release.
 
 Open the generated native project when Android Studio testing or a production-signed build is needed:
 
@@ -38,15 +53,34 @@ npm run android:open
 
 ## Downloadable builds from GitHub
 
-The `Build installable apps` workflow can be run manually from the repository's Actions page. Its run summary contains separate `DDD-Game-Hub-Windows` and `DDD-Game-Hub-Android` downloads.
+The `Build installable apps` workflow can be run manually from the repository's Actions page. Its run summary contains separate `DDD-Game-Hub-Windows` and `DDD-Game-Hub-Android` downloads. Android publishing requires these encrypted Actions secrets:
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+CI refuses Android debug certificates, verifies the APK signature and checksum, and creates a GitHub build-provenance attestation. Tagged releases attach the APK and `.sha256` file.
 
 Pushing a version tag creates a GitHub Release and attaches both installers:
 
 ```powershell
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.0.4
+git push origin v1.0.4
 ```
 
 ## Signing for public distribution
 
-The generated Windows installer is unsigned, so Windows SmartScreen may warn users until it is signed with a trusted code-signing certificate. A Google Play release also requires an Android upload keystore and a release build configuration. Keep those credentials outside the repository and supply them through encrypted CI secrets.
+Back up the Android release keystore and credentials in at least two encrypted locations. Do not commit either one. Losing the key prevents direct-download users from installing future versions as updates; exposing it lets someone impersonate the publisher.
+
+The pinned DDD Game Hub Android release certificate has this SHA-256 fingerprint:
+
+```text
+B9213DE90134A8F90970E63F575A070C9D6F32D694141C03BA3884EAFE620F83
+```
+
+CI refuses to publish an APK whose signing certificate does not match this fingerprint.
+
+GitHub-hosted APKs are sideloaded apps, so Android can still show an "unknown app/source" warning even when the APK is correctly release-signed. Google Play distribution with Play App Signing provides the clearest public install experience. For direct downloads, publish the SHA-256 checksum and link to the GitHub provenance attestation so users can verify the file.
+
+The generated Windows installer remains unsigned, so Windows SmartScreen may warn users until it is signed with a trusted code-signing certificate.

@@ -7,12 +7,16 @@ on:
       - "v*"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   windows:
     name: Windows installer
     runs-on: windows-latest
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
     steps:
       - name: Check out the app
         uses: actions/checkout@v5
@@ -29,6 +33,11 @@ jobs:
       - name: Build installer
         run: npm run desktop:installer
 
+      - name: Attest Windows installer provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: release/windows/*.exe
+
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
@@ -39,6 +48,10 @@ jobs:
   android:
     name: Android APK
     runs-on: ubuntu-latest
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
     steps:
       - name: Check out the app
         uses: actions/checkout@v5
@@ -61,14 +74,64 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x android/gradlew
 
-      - name: Build APK
+      - name: Configure Android release signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          for variable in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!variable}" ]; then
+              echo "Required Android signing secret is missing: $variable" >&2
+              exit 1
+            fi
+          done
+          keystore_path="$RUNNER_TEMP/ddd-game-hub-release.p12"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore_path"
+          chmod 600 "$keystore_path"
+          echo "ANDROID_KEYSTORE_PATH=$keystore_path" >> "$GITHUB_ENV"
+          echo "ANDROID_KEYSTORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_ALIAS=$ANDROID_KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_PASSWORD=$ANDROID_KEY_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Build signed release APK
         run: npm run android:apk
+
+      - name: Verify APK signature and checksum
+        env:
+          EXPECTED_CERT_SHA256: B9213DE90134A8F90970E63F575A070C9D6F32D694141C03BA3884EAFE620F83
+        run: |
+          apksigner_path="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          if [ -z "$apksigner_path" ]; then
+            echo "apksigner was not found in the Android SDK" >&2
+            exit 1
+          fi
+          verification="$($apksigner_path verify --verbose --print-certs release/android/DDD-Game-Hub-Android.apk)"
+          printf '%s\n' "$verification"
+          if printf '%s' "$verification" | grep -q 'CN=Android Debug'; then
+            echo "Refusing to publish an APK signed with the Android debug certificate" >&2
+            exit 1
+          fi
+          if ! printf '%s' "$verification" | tr '[:lower:]' '[:upper:]' | grep -q "$EXPECTED_CERT_SHA256"; then
+            echo "APK certificate does not match the pinned DDD Game Hub release certificate" >&2
+            exit 1
+          fi
+          cd release/android
+          sha256sum --check DDD-Game-Hub-Android.apk.sha256
+
+      - name: Attest Android APK provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: release/android/DDD-Game-Hub-Android.apk
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
           name: DDD-Game-Hub-Android
-          path: release/android/*.apk
+          path: |
+            release/android/*.apk
+            release/android/*.sha256
           if-no-files-found: error
 
   release:
@@ -78,6 +141,8 @@ jobs:
       - windows
       - android
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download installers
         uses: actions/download-artifact@v4
