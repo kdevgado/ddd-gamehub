@@ -17,6 +17,8 @@ import {
 } from "./unoGame.js";
 
 const CARD_PLAY_ANIMATION_MS = 480;
+const CARD_DRAG_THRESHOLD_PX = 8;
+const CARD_DRAG_SETTLE_MS = 180;
 const UNO_ACTION_SYMBOLS = {
   draw2: "+2",
   reverse: "\u21bb",
@@ -67,8 +69,12 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
   const [busy, setBusy] = useState(false);
   const [wildCardId, setWildCardId] = useState(null);
   const [playingCard, setPlayingCard] = useState(null);
+  const [draggedCard, setDraggedCard] = useState(null);
   const [impactMove, setImpactMove] = useState(null);
   const discardRef = useRef(null);
+  const dragGestureRef = useRef(null);
+  const dragCleanupTimeoutRef = useRef(null);
+  const suppressCardClickRef = useRef(false);
   const previousMoveRef = useRef(room.uno?.moveNumber);
   const moveNumber = room.uno?.moveNumber;
   const lastActionType = room.uno?.lastAction?.type;
@@ -88,6 +94,132 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
 
     return () => window.clearTimeout(timeout);
   }, [lastActionType, moveNumber]);
+
+  useEffect(() => () => {
+    if (dragCleanupTimeoutRef.current) window.clearTimeout(dragCleanupTimeoutRef.current);
+  }, []);
+
+  function pointIsOverDiscard(clientX, clientY) {
+    const bounds = discardRef.current?.getBoundingClientRect();
+    if (!bounds) return false;
+    const tolerance = 14;
+    return clientX >= bounds.left - tolerance
+      && clientX <= bounds.right + tolerance
+      && clientY >= bounds.top - tolerance
+      && clientY <= bounds.bottom + tolerance;
+  }
+
+  function dragVisual(gesture, clientX, clientY, phase = "dragging") {
+    return {
+      card: gesture.card,
+      overDiscard: pointIsOverDiscard(clientX, clientY),
+      phase,
+      style: {
+        top: clientY - gesture.offsetY,
+        left: clientX - gesture.offsetX,
+        width: gesture.sourceRect.width,
+        height: gesture.sourceRect.height
+      }
+    };
+  }
+
+  function scheduleDragCleanup(callback) {
+    if (dragCleanupTimeoutRef.current) window.clearTimeout(dragCleanupTimeoutRef.current);
+    dragCleanupTimeoutRef.current = window.setTimeout(() => {
+      dragCleanupTimeoutRef.current = null;
+      callback();
+    }, CARD_DRAG_SETTLE_MS);
+  }
+
+  function startCardDrag(event, card) {
+    if (busy || (event.pointerType === "mouse" && event.button !== 0)) return;
+    const sourceRect = event.currentTarget.getBoundingClientRect();
+    dragGestureRef.current = {
+      card,
+      dragging: false,
+      offsetX: event.clientX - sourceRect.left,
+      offsetY: event.clientY - sourceRect.top,
+      pointerId: event.pointerId,
+      sourceRect,
+      startX: event.clientX,
+      startY: event.clientY
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }
+
+  function moveCardDrag(event) {
+    const gesture = dragGestureRef.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    if (!gesture.dragging) {
+      const distance = Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY);
+      if (distance < CARD_DRAG_THRESHOLD_PX) return;
+      gesture.dragging = true;
+      suppressCardClickRef.current = true;
+    }
+
+    event.preventDefault();
+    setDraggedCard(dragVisual(gesture, event.clientX, event.clientY));
+  }
+
+  function finishCardDrag(event, cancelled = false) {
+    const gesture = dragGestureRef.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+    dragGestureRef.current = null;
+
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (!gesture.dragging) return;
+
+    event.preventDefault();
+    window.setTimeout(() => {
+      suppressCardClickRef.current = false;
+    }, 0);
+
+    const currentVisual = dragVisual(gesture, event.clientX, event.clientY);
+    if (cancelled || !currentVisual.overDiscard) {
+      setDraggedCard({
+        ...currentVisual,
+        overDiscard: false,
+        phase: "returning",
+        style: {
+          ...currentVisual.style,
+          top: gesture.sourceRect.top,
+          left: gesture.sourceRect.left
+        }
+      });
+      scheduleDragCleanup(() => setDraggedCard(null));
+      return;
+    }
+
+    const discardBounds = discardRef.current.getBoundingClientRect();
+    setDraggedCard({
+      ...currentVisual,
+      phase: "settling",
+      style: {
+        ...currentVisual.style,
+        top: discardBounds.top + (discardBounds.height - gesture.sourceRect.height) / 2,
+        left: discardBounds.left + (discardBounds.width - gesture.sourceRect.width) / 2
+      }
+    });
+
+    if (gesture.card.color === "wild") {
+      scheduleDragCleanup(() => {
+        setDraggedCard(null);
+        setWildCardId(gesture.card.id);
+      });
+      return;
+    }
+
+    void playCard(gesture.card.id, null, false).finally(() => setDraggedCard(null));
+  }
+
+  function handleCardClick(card) {
+    if (suppressCardClickRef.current) return;
+    if (card.color === "wild") setWildCardId(card.id);
+    else void playCard(card.id);
+  }
 
   async function animateCardToDiscard(cardId) {
     if (typeof document === "undefined" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -153,13 +285,13 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
     }
   }
 
-  async function playCard(cardId, chosenColor = null) {
+  async function playCard(cardId, chosenColor = null, animate = true) {
     if (busy) return;
     setBusy(true);
     setError("");
     try {
       if (chosenColor) setWildCardId(null);
-      await animateCardToDiscard(cardId);
+      if (animate) await animateCardToDiscard(cardId);
       await runTransaction(db, async (transaction) => {
         const reference = roomRef(room.code);
         const snapshot = await transaction.get(reference);
@@ -348,6 +480,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
   const isMyTurn = currentPlayerId === playerId;
   const chosenWildCard = hand.find((card) => card.id === wildCardId);
   const discardIsLanding = impactMove === uno.moveNumber;
+  const discardIsDropTarget = draggedCard?.phase === "dragging";
   const impactType = cardImpactType(topCard);
 
   return (
@@ -381,7 +514,11 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
           <img className="uno-deck-logo" src={unoIcon} alt="" />
           <small>{uno.drawPile.length} left</small>
         </button>
-        <div className={`uno-discard ${discardIsLanding ? "is-landing" : ""}`} ref={discardRef}>
+        <div
+          aria-label="Discard pile. Drop a playable card here."
+          className={`uno-discard ${discardIsLanding ? "is-landing" : ""} ${discardIsDropTarget ? "is-drop-target" : ""} ${draggedCard?.overDiscard ? "is-drag-over" : ""}`}
+          ref={discardRef}
+        >
           <UnoCard card={topCard} className={discardIsLanding ? "just-played" : ""} large />
           {discardIsLanding && (
             <span
@@ -417,15 +554,20 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
               disabled={!playable || busy}
               drawn={uno.drawnCardId === card.id}
               key={card.id}
-              onClick={() => card.color === "wild" ? setWildCardId(card.id) : playCard(card.id)}
+              onClick={() => handleCardClick(card)}
+              onPointerCancel={(event) => finishCardDrag(event, true)}
+              onPointerDown={(event) => startCardDrag(event, card)}
+              onPointerMove={moveCardDrag}
+              onPointerUp={finishCardDrag}
               playing={playingCard?.card.id === card.id}
+              dragging={draggedCard?.card.id === card.id}
               playable={playable}
             />
           );
         })}
       </div>
       {!isMyTurn && <p className="waiting-copy">Watch the discard pile while you wait for your turn.</p>}
-      {isMyTurn && !uno.drawnCardId && <p className="waiting-copy">Match the color or symbol, play a wild, or draw one card.</p>}
+      {isMyTurn && !uno.drawnCardId && <p className="waiting-copy">Tap a matching card or drag it onto the discard pile. You can also play a wild or draw one card.</p>}
       {error && <p className="alert">{error}</p>}
 
       {chosenWildCard && (
@@ -452,6 +594,15 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
           className="uno-card-flight"
           key={playingCard.id}
           style={playingCard.style}
+        />,
+        document.body
+      )}
+      {draggedCard && typeof document !== "undefined" && createPortal(
+        <UnoCard
+          ariaHidden
+          card={draggedCard.card}
+          className={`uno-card-dragging is-${draggedCard.phase} ${draggedCard.overDiscard ? "is-over-discard" : ""}`}
+          style={draggedCard.style}
         />,
         document.body
       )}
@@ -492,9 +643,14 @@ function UnoCard({
   card,
   className = "",
   disabled = true,
+  dragging = false,
   drawn = false,
   large = false,
   onClick,
+  onPointerCancel,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
   playable = false,
   playing = false,
   style
@@ -504,10 +660,14 @@ function UnoCard({
     <Component
       aria-hidden={ariaHidden || undefined}
       aria-label={ariaHidden ? undefined : cardAriaLabel(card)}
-      className={`uno-card ${card.color} ${large ? "large" : ""} ${playable ? "playable" : ""} ${drawn ? "drawn" : ""} ${playing ? "is-playing" : ""} ${className}`}
+      className={`uno-card ${card.color} ${large ? "large" : ""} ${playable ? "playable" : ""} ${drawn ? "drawn" : ""} ${playing ? "is-playing" : ""} ${dragging ? "is-dragging" : ""} ${className}`}
       data-card-id={card.id}
       disabled={onClick ? disabled : undefined}
       onClick={onClick}
+      onPointerCancel={onPointerCancel}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
       style={style}
       type={onClick ? "button" : undefined}
     >
