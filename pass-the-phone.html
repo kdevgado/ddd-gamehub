@@ -342,6 +342,11 @@
               <span id="resultSecretLabel">Secret word</span>
               <span id="resultWord">Pizza</span>
             </div>
+            <div class="lover-death-notice is-hidden" id="loverDeathNotice" role="status" aria-live="assertive">
+              <span>Cupid's bond</span>
+              <strong id="loverDeathTitle">A lover died too</strong>
+              <p id="loverDeathCopy"></p>
+            </div>
             <div class="werewolf-ability-panel is-hidden" id="werewolfAbilityPanel">
               <span class="ability-kicker">Special role triggered</span>
               <h3 id="werewolfAbilityTitle">Resolve ability</h3>
@@ -999,6 +1004,9 @@
     const resultSecretWrap = document.getElementById("resultSecretWrap");
     const resultSecretLabel = document.getElementById("resultSecretLabel");
     const resultWord = document.getElementById("resultWord");
+    const loverDeathNotice = document.getElementById("loverDeathNotice");
+    const loverDeathTitle = document.getElementById("loverDeathTitle");
+    const loverDeathCopy = document.getElementById("loverDeathCopy");
     const guessSummary = document.getElementById("guessSummary");
     const werewolfAbilityPanel = document.getElementById("werewolfAbilityPanel");
     const werewolfAbilityTitle = document.getElementById("werewolfAbilityTitle");
@@ -2839,6 +2847,20 @@
       return ` ${state.players[indexes[1]]} also died from heartbreak.`;
     }
 
+    function resetLoverDeathNotice() {
+      loverDeathNotice.classList.add("is-hidden");
+      loverDeathCopy.textContent = "";
+    }
+
+    function showLoverDeathNotice(indexes) {
+      if (indexes.length < 2) return;
+      const eliminatedName = state.players[indexes[0]];
+      const partnerName = state.players[indexes[1]];
+      loverDeathTitle.textContent = `${partnerName} died too`;
+      loverDeathCopy.textContent = `${eliminatedName} and ${partnerName} were paired by Cupid. When ${eliminatedName} died, ${partnerName} died from heartbreak.`;
+      loverDeathNotice.classList.remove("is-hidden");
+    }
+
     function resetWerewolfAbilityPanel() {
       werewolfAbilityPanel.classList.add("is-hidden");
       werewolfAbilityTargets.innerHTML = "";
@@ -3203,6 +3225,7 @@
       resultTitle.textContent = title;
       resultList.innerHTML = "";
       resultSecretWrap.classList.add("is-hidden");
+      resetLoverDeathNotice();
       resetWerewolfAbilityPanel();
       playAgainButton.textContent = buttonLabel;
       playAgainButton.disabled = false;
@@ -3271,6 +3294,7 @@
           state.roles[index].kind === "threat"
         )) && livingWerewolfIndexes().length === 0;
         addEliminationResults(eliminatedIndexes);
+        showLoverDeathNotice(eliminatedIndexes);
         setWerewolfNightResultDestination();
 
         if (attackedRole.title === "Hunter") {
@@ -3351,6 +3375,7 @@
         state.roles[index].kind === "threat"
       )) && livingWerewolfIndexes().length === 0;
       addEliminationResults(eliminatedIndexes);
+      showLoverDeathNotice(eliminatedIndexes);
 
       if (eliminatedRole.kind === "threat") {
         if (livingWerewolfIndexes().length === 0) {
@@ -3925,6 +3950,7 @@
       resultEyebrow.textContent = "The truth";
       resultTitle.textContent = mode.resultTitle;
       resultList.innerHTML = "";
+      resetLoverDeathNotice();
       resetWerewolfAbilityPanel();
       playAgainButton.textContent = "Play again";
       playAgainButton.disabled = false;
