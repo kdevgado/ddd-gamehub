@@ -1551,7 +1551,7 @@ input::placeholder {
 
 .vote-btn {
   display: grid;
-  grid-template-columns: 48px 1fr auto;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-3);
   min-height: 66px;
@@ -1561,6 +1561,22 @@ input::placeholder {
   background: var(--paper);
   box-shadow: 2px 2px 0 var(--border-soft);
   text-align: left;
+}
+
+.vote-btn > span {
+  min-width: 0;
+}
+
+.vote-btn > span:first-of-type {
+  overflow-wrap: anywhere;
+}
+
+.vote-btn > span:last-of-type {
+  justify-self: end;
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  text-align: right;
 }
 
 .vote-btn::before {
@@ -1592,11 +1608,8 @@ input::placeholder {
   background: var(--danger-surface);
 }
 
-.vote-btn.selected::after {
+.vote-btn.selected > span:last-of-type {
   color: var(--danger);
-  content: "Selected";
-  font-size: var(--text-xs);
-  font-weight: 800;
 }
 
 .gm-panel {
@@ -1945,11 +1958,24 @@ input::placeholder {
   }
 
   .vote-btn {
-    grid-template-columns: 44px 1fr;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 0.2rem var(--space-3);
   }
 
-  .vote-btn.selected::after {
+  .vote-btn::before {
+    grid-row: 1 / span 2;
+  }
+
+  .vote-btn > span:first-of-type {
     grid-column: 2;
+    grid-row: 1;
+  }
+
+  .vote-btn > span:last-of-type {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    text-align: left;
   }
 }
 

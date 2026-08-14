@@ -2091,7 +2091,8 @@
         button.type = "button";
         button.dataset.deathIndex = index;
         button.disabled = isDead || isMafiaTeammate;
-        if (state.gmDeathIndex === index) button.classList.add("selected");
+        const isSelected = state.gmDeathIndex === index;
+        if (isSelected) button.classList.add("selected");
 
         const name = document.createElement("span");
         name.textContent = player;
@@ -2101,7 +2102,9 @@
           ? "Out"
           : isMafiaTeammate
             ? "Mafia"
-            : role.title;
+            : isSelected
+              ? "Selected"
+              : role.title;
 
         button.append(name, status);
         gmDeathList.appendChild(button);
