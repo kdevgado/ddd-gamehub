@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase.js";
+import plusFourCardArt from "../icons/Uno/plus_four.jpg";
 import reverseIcon from "../icons/Uno/reverse.png";
 import skipIcon from "../icons/Uno/skip.png";
 import unoIcon from "../icons/Uno/Uno.png";
+import wildCardArt from "../icons/Uno/wild_card.jpg";
 import {
   UNO_COLORS,
   UNO_COLOR_LABELS,
@@ -29,6 +31,10 @@ const UNO_ACTION_SYMBOLS = {
 const UNO_CARD_ICONS = {
   reverse: reverseIcon,
   skip: skipIcon
+};
+const UNO_CARD_ART = {
+  wild: wildCardArt,
+  wild4: plusFourCardArt
 };
 
 function cardImpactType(card) {
@@ -656,11 +662,12 @@ function UnoCard({
   style
 }) {
   const Component = onClick ? "button" : "div";
+  const cardArt = UNO_CARD_ART[card.value];
   return (
     <Component
       aria-hidden={ariaHidden || undefined}
       aria-label={ariaHidden ? undefined : cardAriaLabel(card)}
-      className={`uno-card ${card.color} ${large ? "large" : ""} ${playable ? "playable" : ""} ${drawn ? "drawn" : ""} ${playing ? "is-playing" : ""} ${dragging ? "is-dragging" : ""} ${className}`}
+      className={`uno-card ${card.color} ${cardArt ? "has-art" : ""} ${large ? "large" : ""} ${playable ? "playable" : ""} ${drawn ? "drawn" : ""} ${playing ? "is-playing" : ""} ${dragging ? "is-dragging" : ""} ${className}`}
       data-card-id={card.id}
       disabled={onClick ? disabled : undefined}
       onClick={onClick}
@@ -671,9 +678,15 @@ function UnoCard({
       style={style}
       type={onClick ? "button" : undefined}
     >
-      <small><UnoCardMark card={card} /></small>
-      <span><UnoCardMark card={card} /></span>
-      <small><UnoCardMark card={card} /></small>
+      {cardArt
+        ? <img className="uno-card-art" src={cardArt} alt="" />
+        : (
+          <>
+            <small><UnoCardMark card={card} /></small>
+            <span><UnoCardMark card={card} /></span>
+            <small><UnoCardMark card={card} /></small>
+          </>
+        )}
     </Component>
   );
 }
