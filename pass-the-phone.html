@@ -3282,6 +3282,8 @@
           guessSummary.textContent = `${attackedName} was killed by the Werewolves and is removed from the village.${heartbreakCopy} The existing lovers remain bound.`;
         } else if (attackedRole.title === "Black Cat") {
           guessSummary.textContent = `${attackedName} was killed by the Werewolves and is removed from the village.${heartbreakCopy} The Black Cat does not place votes after dying.`;
+        } else if (attackedRole.title === "Guardian") {
+          guessSummary.textContent = `${attackedName} was the Guardian and is removed from the village.${heartbreakCopy} Any protection chosen earlier tonight still applies, but no new protection activates on death.`;
         } else if (attackedRole.title === "Wise") {
           guessSummary.textContent = `${attackedName}'s protection was already spent, so the Wise is removed from the village.${heartbreakCopy}`;
           showWerewolfAbility(
@@ -3373,6 +3375,8 @@
         guessSummary.textContent = `${eliminatedName} was Cupid and is removed from the village.${heartbreakCopy} Cupid does not choose new lovers after being voted out.`;
       } else if (eliminatedRole.title === "Black Cat") {
         guessSummary.textContent = `${eliminatedName} was the Black Cat and is removed from the village.${heartbreakCopy} The Black Cat does not place votes after being voted out.`;
+      } else if (eliminatedRole.title === "Guardian") {
+        guessSummary.textContent = `${eliminatedName} was the Guardian and is removed from the village.${heartbreakCopy} The Guardian only chooses protection while the village sleeps; no protection activates on elimination.`;
       } else if (eliminatedRole.kind === "player") {
         guessSummary.textContent = `${eliminatedName} was ${eliminatedRole.title} and is removed from all future night and voting lists.${heartbreakCopy}`;
         showWerewolfAbility(
