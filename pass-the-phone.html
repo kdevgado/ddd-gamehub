@@ -289,22 +289,7 @@
         </div>
       </section>
 
-      <!-- 10b. Untimed Werewolf day choice -->
-      <section class="screen" data-screen="werewolfDay">
-        <div class="card">
-          <div class="stack center">
-            <p class="eyebrow">Day break</p>
-            <h2>Choose the village's next move</h2>
-            <p class="lead">No discussion timer is set. Vote when the village is ready, or send everyone back to sleep for another night.</p>
-            <div class="button-row">
-              <button class="btn danger" id="untimedWerewolfVoteButton" type="button">Go to voting</button>
-              <button class="btn secondary" id="untimedWerewolfNextNightButton" type="button">Run next night</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 10c. Word Bomb active round -->
+      <!-- 10b. Word Bomb active round -->
       <section class="screen" data-screen="bombRound">
         <div class="card bomb-card" id="bombCard">
           <div class="stack center">
@@ -341,7 +326,7 @@
             <div class="vote-list" id="voteList"></div>
             <div class="button-row">
               <button class="btn danger" id="revealResultButton" type="button">Reveal truth</button>
-              <button class="btn secondary" type="button" data-go="timer">Back to timer</button>
+              <button class="btn secondary" id="voteSecondaryButton" type="button">Back to timer</button>
             </div>
           </div>
         </div>
@@ -999,8 +984,6 @@
     const timerStatus = document.getElementById("timerStatus");
     const timerStartPause = document.getElementById("timerStartPause");
     const timerReset = document.getElementById("timerReset");
-    const untimedWerewolfVoteButton = document.getElementById("untimedWerewolfVoteButton");
-    const untimedWerewolfNextNightButton = document.getElementById("untimedWerewolfNextNightButton");
     const bombTurn = document.getElementById("bombTurn");
     const bombCard = document.getElementById("bombCard");
     const bombPromptType = document.getElementById("bombPromptType");
@@ -1016,6 +999,7 @@
     const voteList = document.getElementById("voteList");
     const voteHint = document.getElementById("voteHint");
     const revealResultButton = document.getElementById("revealResultButton");
+    const voteSecondaryButton = document.getElementById("voteSecondaryButton");
     const resultEyebrow = document.getElementById("resultEyebrow");
     const resultTitle = document.getElementById("resultTitle");
     const resultList = document.getElementById("resultList");
@@ -2185,26 +2169,25 @@
       state.gmRound += 1;
       state.selectedVotes = new Set();
       resetTimer();
-      if (state.gameId === "werewolf" && !state.timerEnabled) {
-        showScreen("werewolfDay");
-        playSound("success");
-        return;
-      }
       if (!state.timerEnabled) buildVoteList();
       showScreen(state.timerEnabled ? "timer" : "voting");
       playSound("success");
-    }
-
-    function openUntimedWerewolfVote() {
-      buildVoteList();
-      showScreen("voting");
-      playSound("tap");
     }
 
     function runNextGameMasterNight() {
       state.selectedVotes = new Set();
       setupGameMasterRound();
       showScreen("gameMaster");
+      playSound("tap");
+    }
+
+    function handleVoteSecondaryAction() {
+      if (state.gameId === "werewolf" && !state.timerEnabled) {
+        runNextGameMasterNight();
+        return;
+      }
+
+      showScreen("timer");
       playSound("tap");
     }
 
@@ -2713,6 +2696,9 @@
       const mode = currentMode();
       const voteCount = targetVoteCount();
       voteList.innerHTML = "";
+      voteSecondaryButton.textContent = state.gameId === "werewolf" && !state.timerEnabled
+        ? "Run next night"
+        : "Back to timer";
       voteHint.textContent = voteCount === 1 ? mode.voteHintSingle : mode.voteHintPlural;
       if (
         state.gameId === "werewolf"
@@ -4425,8 +4411,7 @@
     });
     gmStartDiscussionButton.addEventListener("click", startGameMasterDiscussion);
     gmNextNightButton.addEventListener("click", runNextGameMasterNight);
-    untimedWerewolfVoteButton.addEventListener("click", openUntimedWerewolfVote);
-    untimedWerewolfNextNightButton.addEventListener("click", runNextGameMasterNight);
+    voteSecondaryButton.addEventListener("click", handleVoteSecondaryAction);
     timerStartPause.addEventListener("click", startPauseTimer);
     timerReset.addEventListener("click", () => {
       resetTimer();
