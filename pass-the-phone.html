@@ -1032,6 +1032,8 @@
     const werewolfAbilityTargets = document.getElementById("werewolfAbilityTargets");
     const resolveWerewolfAbilityButton = document.getElementById("resolveWerewolfAbilityButton");
     const playAgainButton = document.getElementById("playAgainButton");
+    const changeGameButton = document.getElementById("changeGameButton");
+    const newPlayersButton = document.getElementById("newPlayersButton");
     const confettiLayer = document.getElementById("confettiLayer");
     let gameDeckSyncFrame = 0;
 
@@ -3272,6 +3274,12 @@
       resetWerewolfAbilityPanel();
       playAgainButton.textContent = buttonLabel;
       playAgainButton.disabled = false;
+      setResultExitOptionsVisible(true);
+    }
+
+    function setResultExitOptionsVisible(isVisible) {
+      changeGameButton.classList.toggle("is-hidden", !isVisible);
+      newPlayersButton.classList.toggle("is-hidden", !isVisible);
     }
 
     function prepareMafiaResult(eyebrow, title, buttonLabel) {
@@ -3306,6 +3314,7 @@
       const attackedName = state.players[attackedIndex];
       state.werewolfResultDestination = "discussion";
       prepareWerewolfResult("Night result", `${attackedName} was attacked`, "Start day discussion");
+      setResultExitOptionsVisible(false);
       const survivorProtection = useSurvivorProtection(attackedIndex);
 
       if (
@@ -3997,6 +4006,7 @@
       resetWerewolfAbilityPanel();
       playAgainButton.textContent = "Play again";
       playAgainButton.disabled = false;
+      setResultExitOptionsVisible(true);
       [...state.imposterIndexes].forEach((index) => {
         const name = document.createElement("div");
         name.className = "result-name";
@@ -4439,8 +4449,8 @@
     revealResultButton.addEventListener("click", revealResult);
     resolveWerewolfAbilityButton.addEventListener("click", resolveWerewolfAbility);
     playAgainButton.addEventListener("click", handleResultPrimaryAction);
-    document.getElementById("changeGameButton").addEventListener("click", chooseAnotherGame);
-    document.getElementById("newPlayersButton").addEventListener("click", startOver);
+    changeGameButton.addEventListener("click", chooseAnotherGame);
+    newPlayersButton.addEventListener("click", startOver);
 
     renderGameHub();
     selectGame(state.gameId);
