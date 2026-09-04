@@ -7,6 +7,8 @@
   --paper: #f8f2e5;
   --paper-strong: #fffdf7;
   --paper-muted: #eee4d1;
+  --on-accent: #fffdf7;
+  --on-accent-muted: #eee4d1;
 
   /* Ink and borders */
   --ink: #292a26;
@@ -18,13 +20,22 @@
   /* Shared brand and supporting accents */
   --forest: #4f6653;
   --forest-dark: #35483a;
+  --forest-ink: #35483a;
   --terracotta: #b25a42;
   --terracotta-dark: #87402f;
   --mustard: #c49339;
   --mustard-dark: #876523;
   --dusty-blue: #607985;
   --burgundy: #743f47;
+  --burgundy-surface: #eadadd;
   --wood: #49382d;
+
+  /* Fine texture and translucent paper treatments */
+  --texture-ink: rgba(73, 56, 45, 0.018);
+  --texture-light: rgba(255, 253, 247, 0.18);
+  --corner-line: rgba(73, 56, 45, 0.25);
+  --inset-line: rgba(73, 56, 45, 0.18);
+  --paper-wash: rgba(255, 253, 247, 0.45);
 
   /* Semantic states */
   --success: #3f6548;
@@ -71,10 +82,331 @@
   --time-slow: 360ms;
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: #161b19;
+  --canvas-deep: #0e1211;
+  --paper: #202722;
+  --paper-strong: #28312b;
+  --paper-muted: #1b211d;
+
+  --ink: #f3ead8;
+  --ink-muted: #c3baa8;
+  --ink-faint: #918b7e;
+  --border: #8d7960;
+  --border-soft: #5d5548;
+
+  --forest: #789681;
+  --forest-dark: #35483a;
+  --forest-ink: #a8c8ae;
+  --terracotta: #d2765c;
+  --terracotta-dark: #a8533f;
+  --mustard: #deb25a;
+  --mustard-dark: #d0a14d;
+  --dusty-blue: #84a3ae;
+  --burgundy: #bd7180;
+  --burgundy-surface: #432d34;
+  --wood: #090c0a;
+
+  --success: #83ae8c;
+  --success-surface: #253a2b;
+  --warning: #d3aa59;
+  --warning-surface: #3c3321;
+  --danger: #dc8071;
+  --danger-surface: #452c28;
+  --info: #82a7b4;
+  --info-surface: #26373c;
+
+  --texture-ink: rgba(0, 0, 0, 0.16);
+  --texture-light: rgba(229, 214, 185, 0.025);
+  --corner-line: rgba(213, 193, 157, 0.22);
+  --inset-line: rgba(213, 193, 157, 0.13);
+  --paper-wash: rgba(255, 244, 218, 0.035);
+
+  --shadow-xs: 2px 2px 0 rgba(3, 5, 4, 0.92);
+  --shadow-sm: 4px 4px 0 rgba(3, 5, 4, 0.82);
+  --shadow-md: 7px 8px 0 rgba(0, 0, 0, 0.34);
+  --shadow-paper: 0 16px 36px rgba(0, 0, 0, 0.32);
+}
+
+/* Shared light / dark switch */
+.theme-toggle {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 1000;
+  display: grid;
+  width: 70px;
+  height: 42px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  filter: drop-shadow(0 5px 9px rgba(24, 23, 20, 0.2));
+  transition: filter var(--time-base) ease, transform var(--time-base) var(--ease-tactile);
+}
+
+.theme-toggle:hover {
+  filter: drop-shadow(0 7px 11px rgba(24, 23, 20, 0.3));
+  transform: translateY(-2px);
+}
+
+.theme-toggle:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid var(--mustard);
+  outline-offset: 3px;
+}
+
+.theme-toggle-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.theme-toggle-track {
+  position: relative;
+  display: block;
+  width: 66px;
+  height: 36px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #b9d1d5;
+  box-shadow: inset 0 2px 5px rgba(46, 57, 54, 0.18), var(--shadow-xs);
+  transition: background-color 420ms ease, border-color 420ms ease, box-shadow 420ms ease;
+}
+
+.theme-toggle-track::before,
+.theme-toggle-track::after {
+  position: absolute;
+  bottom: -8px;
+  width: 31px;
+  height: 17px;
+  border-radius: 50% 50% 0 0;
+  background: rgba(255, 253, 247, 0.76);
+  content: "";
+  transition: opacity 300ms ease, transform 480ms var(--ease-tactile);
+}
+
+.theme-toggle-track::before {
+  left: 15px;
+}
+
+.theme-toggle-track::after {
+  right: -8px;
+  bottom: -5px;
+  opacity: 0.66;
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  left: 4px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(73, 56, 45, 0.58);
+  border-radius: 50%;
+  background: #fff8df;
+  box-shadow: 1px 2px 3px rgba(39, 39, 34, 0.28);
+  transform: translateX(0) rotate(0);
+  transition: transform 560ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 380ms ease;
+}
+
+.theme-toggle-sun,
+.theme-toggle-moon {
+  position: absolute;
+  border-radius: 50%;
+  transition: opacity 260ms ease, transform 460ms var(--ease-tactile);
+}
+
+.theme-toggle-sun {
+  width: 11px;
+  height: 11px;
+  background: #eaa832;
+  box-shadow:
+    0 -7px 0 -4px #d79024,
+    0 7px 0 -4px #d79024,
+    7px 0 0 -4px #d79024,
+    -7px 0 0 -4px #d79024,
+    5px 5px 0 -4px #d79024,
+    -5px -5px 0 -4px #d79024,
+    5px -5px 0 -4px #d79024,
+    -5px 5px 0 -4px #d79024;
+}
+
+.theme-toggle-moon {
+  width: 15px;
+  height: 15px;
+  background: #6f7891;
+  box-shadow: inset -4px -1px 0 #bbc3d3;
+  opacity: 0;
+  transform: rotate(-75deg) scale(0.55);
+}
+
+.theme-toggle-moon::before,
+.theme-toggle-moon::after {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(44, 49, 66, 0.35);
+  content: "";
+}
+
+.theme-toggle-moon::before {
+  top: 3px;
+  left: 3px;
+  width: 3px;
+  height: 3px;
+}
+
+.theme-toggle-moon::after {
+  right: 3px;
+  bottom: 3px;
+  width: 2px;
+  height: 2px;
+}
+
+.theme-toggle-stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 320ms ease 90ms, transform 460ms var(--ease-tactile);
+}
+
+.theme-toggle-stars i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #f7e5ae;
+  box-shadow: 0 0 4px rgba(247, 229, 174, 0.8);
+}
+
+.theme-toggle-stars i:nth-child(1) { top: 8px; left: 9px; }
+.theme-toggle-stars i:nth-child(2) { top: 18px; left: 18px; width: 2px; height: 2px; }
+.theme-toggle-stars i:nth-child(3) { top: 7px; left: 27px; width: 2px; height: 2px; }
+
+[data-theme="dark"] .theme-toggle-track {
+  background: #273448;
+  border-color: #887a66;
+  box-shadow: inset 0 2px 7px rgba(0, 0, 0, 0.48), var(--shadow-xs);
+}
+
+[data-theme="dark"] .theme-toggle-track::before,
+[data-theme="dark"] .theme-toggle-track::after {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+[data-theme="dark"] .theme-toggle-thumb {
+  background: #e7e2d6;
+  transform: translateX(32px) rotate(360deg);
+}
+
+[data-theme="dark"] .theme-toggle-sun {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.45);
+}
+
+[data-theme="dark"] .theme-toggle-moon {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+[data-theme="dark"] .theme-toggle-stars {
+  opacity: 1;
+  transform: none;
+}
+
+/* View Transitions reveal the new palette from the switch's position. */
+html.theme-is-transitioning::view-transition-old(root),
+html.theme-is-transitioning::view-transition-new(root) {
+  animation-duration: 640ms;
+  animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  mix-blend-mode: normal;
+}
+
+html.theme-is-transitioning::view-transition-old(root) {
+  z-index: 1;
+  animation-name: none;
+}
+
+html.theme-is-transitioning::view-transition-new(root) {
+  z-index: 2;
+  animation-name: themeCircleReveal;
+}
+
+@keyframes themeCircleReveal {
+  from {
+    clip-path: circle(0 at var(--theme-origin-x) var(--theme-origin-y));
+  }
+
+  to {
+    clip-path: circle(var(--theme-reveal-radius) at var(--theme-origin-x) var(--theme-origin-y));
+  }
+}
+
+html.theme-colors-animating *,
+html.theme-colors-animating *::before,
+html.theme-colors-animating *::after {
+  transition-duration: 480ms !important;
+  transition-property: color, background-color, border-color, box-shadow, fill, stroke !important;
+  transition-timing-function: ease !important;
+}
+
+/* A few illustrated surfaces use fixed colours in the light cabinet theme. */
+[data-theme="dark"] .online-visual {
+  background-color: var(--info-surface);
+}
+
+[data-theme="dark"] .uno-table {
+  background: #1b241f;
+}
+
+[data-theme="dark"] .uno-center {
+  background: #213128;
+}
+
+[data-theme="dark"] .werewolf-role-group[data-role-group="werewolves"],
+[data-theme="dark"] .werewolf-role-option[data-role-camp="werewolf"].active {
+  background: var(--burgundy-surface);
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --time-fast: 1ms;
     --time-base: 1ms;
     --time-slow: 1ms;
+  }
+
+  .theme-toggle,
+  .theme-toggle * {
+    animation: none !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .theme-toggle {
+    right: max(11px, env(safe-area-inset-right));
+    bottom: max(11px, env(safe-area-inset-bottom));
+    transform: scale(0.92);
+    transform-origin: right bottom;
+  }
+
+  .theme-toggle:hover {
+    transform: scale(0.92) translateY(-2px);
   }
 }

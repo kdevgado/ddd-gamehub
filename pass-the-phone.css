@@ -90,8 +90,8 @@ h3 {
   inset: 0;
   opacity: 0.58;
   background-image:
-    repeating-linear-gradient(0deg, transparent 0 5px, rgba(73, 56, 45, 0.018) 5px 6px),
-    repeating-linear-gradient(90deg, transparent 0 7px, rgba(255, 253, 247, 0.18) 7px 8px);
+    repeating-linear-gradient(0deg, transparent 0 5px, var(--texture-ink) 5px 6px),
+    repeating-linear-gradient(90deg, transparent 0 7px, var(--texture-light) 7px 8px);
   content: "";
   pointer-events: none;
 }
@@ -103,8 +103,8 @@ h3 {
   bottom: 22px;
   width: 48px;
   height: 48px;
-  border-right: 1px solid rgba(73, 56, 45, 0.28);
-  border-bottom: 1px solid rgba(73, 56, 45, 0.28);
+  border-right: 1px solid var(--corner-line);
+  border-bottom: 1px solid var(--corner-line);
   content: "";
   pointer-events: none;
 }
@@ -147,7 +147,7 @@ main {
 .card::before {
   position: absolute;
   inset: 11px;
-  border: 1px solid rgba(73, 56, 45, 0.18);
+  border: 1px solid var(--inset-line);
   border-radius: var(--radius-sm);
   content: "";
   pointer-events: none;
@@ -183,7 +183,7 @@ main {
 }
 
 h1 {
-  color: var(--forest-dark);
+  color: var(--forest-ink);
   font-size: clamp(3rem, 9vw, 6rem);
   letter-spacing: -0.045em;
 }
@@ -242,7 +242,7 @@ h3 {
   padding: 0.55rem 0.75rem;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  color: var(--forest-dark);
+  color: var(--forest-ink);
   font-size: var(--text-sm);
   font-weight: 800;
   text-decoration: none;
@@ -286,7 +286,7 @@ h3 {
 }
 
 .hub-fullscreen-btn.active {
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--forest);
 }
 
@@ -309,7 +309,7 @@ h3 {
 }
 
 .hub-fullscreen-btn.active .fullscreen-button-copy small {
-  color: var(--paper-muted);
+  color: var(--on-accent-muted);
 }
 
 .fullscreen-button-copy strong {
@@ -349,7 +349,7 @@ h3 {
   margin-right: -5px;
   border: 1px solid var(--border);
   border-radius: 50% 5px 5px 50%;
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--forest);
   box-shadow: 2px 2px 0 var(--wood);
   font-family: var(--font-display);
@@ -489,7 +489,7 @@ h3 {
   width: max-content;
   margin-top: auto;
   padding-top: var(--space-4);
-  color: var(--forest-dark);
+  color: var(--forest-ink);
   font-size: var(--text-xs);
   font-weight: 800;
 }
@@ -545,7 +545,7 @@ h3 {
   height: clamp(118px, 14vw, 158px);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--game-a);
   box-shadow: var(--shadow-sm);
   font-family: var(--font-display);
@@ -588,7 +588,7 @@ h3 {
   height: 38px;
   border: 1px solid var(--border);
   border-radius: 50%;
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--game-b);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -635,7 +635,7 @@ h3 {
   padding: 0.7rem 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--forest);
   box-shadow: var(--shadow-xs);
   font-weight: 800;
@@ -803,7 +803,7 @@ input::placeholder {
 
 .option-btn.active {
   border-color: var(--border);
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--game-a);
   box-shadow: 2px 2px 0 var(--wood);
 }
@@ -842,7 +842,7 @@ input::placeholder {
 }
 
 .category-open-btn > span:last-child {
-  color: var(--forest-dark);
+  color: var(--forest-ink);
   font-size: var(--text-sm);
   font-weight: 800;
 }
@@ -953,7 +953,7 @@ input::placeholder {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 50%;
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--category-color, var(--game-a));
   font-family: var(--font-mono);
   font-size: var(--text-sm);
@@ -994,7 +994,7 @@ input::placeholder {
 
 .category-pill.active {
   border-color: var(--border);
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--forest);
 }
 
@@ -1029,7 +1029,7 @@ input::placeholder {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 50%;
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--category-color, var(--game-a));
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -1058,7 +1058,7 @@ input::placeholder {
 
 .category-row.active .category-check {
   border-color: var(--success);
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--success);
 }
 
@@ -1159,7 +1159,7 @@ input::placeholder {
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 50%;
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--forest);
   font-family: var(--font-mono);
   font-size: 0.66rem;
@@ -1332,7 +1332,7 @@ input::placeholder {
 }
 
 .role-face.back {
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: color-mix(in srgb, var(--game-a) 88%, var(--ink));
   transform: rotateY(180deg);
 }
@@ -1358,7 +1358,7 @@ input::placeholder {
 
 .role-face.back .role-symbol {
   color: var(--ink);
-  border-color: var(--paper-strong);
+  border-color: var(--on-accent);
   background: var(--game-b);
 }
 
@@ -1390,7 +1390,7 @@ input::placeholder {
 }
 
 .role-face.back .hint {
-  color: var(--paper-muted);
+  color: var(--on-accent-muted);
 }
 
 .role-detail-list {
@@ -1409,7 +1409,7 @@ input::placeholder {
 }
 
 .role-detail small {
-  color: var(--paper-muted);
+  color: var(--on-accent-muted);
   font-size: var(--text-xs);
 }
 
@@ -1586,7 +1586,7 @@ input::placeholder {
   height: 42px;
   border: 1px solid var(--border);
   border-radius: 50%;
-  color: var(--paper-strong);
+  color: var(--on-accent);
   background: var(--dusty-blue);
   content: "?";
   font-family: var(--font-display);
@@ -1759,7 +1759,7 @@ input::placeholder {
   padding: 0.55rem 0.75rem;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  color: var(--forest-dark);
+  color: var(--forest-ink);
   background: transparent;
   font-size: var(--text-sm);
   font-weight: 800;
