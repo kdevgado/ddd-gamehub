@@ -2095,6 +2095,7 @@
         : "Choose who the werewolves attacked, or tap no one died.";
       state.gmDeathIndex = null;
       gmNoDeathButton.classList.remove("active");
+      gmStartDiscussionButton.disabled = state.gameId === "werewolf";
 
       gmScriptList.innerHTML = "";
       gameMasterScriptSteps().forEach((step) => {
@@ -2140,6 +2141,7 @@
     function setGameMasterDeath(index) {
       state.gmDeathIndex = index;
       gmNoDeathButton.classList.remove("active");
+      gmStartDiscussionButton.disabled = false;
       const role = state.roles[index];
       if (
         state.gameId === "werewolf"
@@ -2170,6 +2172,7 @@
     function setNoGameMasterDeath() {
       state.gmDeathIndex = null;
       gmNoDeathButton.classList.add("active");
+      gmStartDiscussionButton.disabled = false;
       gmDeathSummary.textContent = state.gameId === "mafia"
         ? "The Mafia did not attack anyone. Continue so living special roles can act."
         : "No one died tonight. Wake the village and start discussion.";
