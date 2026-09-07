@@ -720,11 +720,11 @@
         timerTitle: "Find the werewolf",
         timerLead: "Question alibis, listen for slips, and pick who the village will accuse.",
         voteTitle: "Who leaves the village?",
-        voteHintSingle: "Choose one living player to eliminate from the village.",
-        voteHintPlural: "Choose one living player to eliminate from the village.",
+        voteHintSingle: "Choose one living player to eliminate, or keep No one is voted selected to spare everyone.",
+        voteHintPlural: "Choose one living player to eliminate, or keep No one is voted selected to spare everyone.",
         revealResultButton: "Eliminate player",
         resultTitle: "Village verdict",
-        noVoteSummary: "No one was accused before the reveal.",
+        noVoteSummary: "No one was voted out. Everyone still in the village stays in the game.",
         correctSummary: "The village caught every werewolf.",
         partialSummary: "The village caught one werewolf, but danger remains.",
         missedSummary: "The werewolves survived the vote.",
@@ -2709,6 +2709,24 @@
         voteHint.textContent += ` ${state.players[state.blackCatTargetIndex]} starts with two votes from the Black Cat.`;
       }
 
+      if (state.gameId === "werewolf") {
+        const noVoteButton = document.createElement("button");
+        noVoteButton.id = "noWerewolfVoteButton";
+        noVoteButton.className = "vote-btn";
+        noVoteButton.type = "button";
+
+        const label = document.createElement("span");
+        label.textContent = "No one is voted";
+        const status = document.createElement("span");
+        noVoteButton.append(label, status);
+        noVoteButton.addEventListener("click", () => {
+          state.selectedVotes.clear();
+          syncWerewolfVoteOptions();
+          playSound("tap");
+        });
+        voteList.appendChild(noVoteButton);
+      }
+
       state.players.forEach((player, index) => {
         if (usesGameMasterRound() && state.deadIndexes.has(index)) return;
 
@@ -2728,6 +2746,26 @@
         button.addEventListener("click", () => toggleVote(index, button));
         voteList.appendChild(button);
       });
+      syncWerewolfVoteOptions();
+    }
+
+    function syncWerewolfVoteOptions() {
+      if (state.gameId !== "werewolf") return;
+
+      const noVoteSelected = state.selectedVotes.size === 0;
+      const noVoteButton = document.getElementById("noWerewolfVoteButton");
+      noVoteButton.classList.toggle("selected", noVoteSelected);
+      noVoteButton.setAttribute("aria-pressed", String(noVoteSelected));
+      noVoteButton.lastElementChild.textContent = noVoteSelected ? "Selected" : "No elimination";
+
+      voteList.querySelectorAll("[data-index]").forEach((button) => {
+        const index = Number(button.dataset.index);
+        const selected = state.selectedVotes.has(index);
+        button.classList.toggle("selected", selected);
+        button.setAttribute("aria-pressed", String(selected));
+        button.lastElementChild.textContent = selected ? "Selected" : availableVoteLabel(index);
+      });
+      revealResultButton.textContent = noVoteSelected ? "Confirm no vote" : currentMode().revealResultButton;
     }
 
     function toggleVote(index, button) {
@@ -2737,6 +2775,7 @@
         state.selectedVotes.delete(index);
         button.classList.remove("selected");
         button.lastElementChild.textContent = availableVoteLabel(index);
+        syncWerewolfVoteOptions();
         return;
       }
 
@@ -2753,6 +2792,7 @@
       state.selectedVotes.add(index);
       button.classList.add("selected");
       button.lastElementChild.textContent = "Selected";
+      syncWerewolfVoteOptions();
     }
 
     function eliminateWerewolfPlayer(index) {
@@ -3375,6 +3415,18 @@
     }
 
     function resolveWerewolfVote() {
+      if (state.selectedVotes.size === 0) {
+        state.villageVoteRound += 1;
+        state.werewolfResultDestination = "nextNight";
+        state.blackCatTargetIndex = null;
+        prepareWerewolfResult("Village verdict", "No one was voted out", "Continue to next night");
+        guessSummary.textContent = currentMode().noVoteSummary;
+        finishWerewolfWinIfAtMostOneVillagerRemains();
+        showScreen("result");
+        playSound("success");
+        return;
+      }
+
       if (state.selectedVotes.size !== 1) {
         voteHint.textContent = "Choose one living player before confirming the village vote.";
         return;
