@@ -124,8 +124,8 @@
             <div class="section-block" id="timerSection">
               <h3 id="timerSectionTitle">Round timer</h3>
               <div class="number-switch" style="--cols: 2;" id="timerToggleSwitch">
-                <button class="option-btn active" type="button" data-timer-enabled="on">Timer on</button>
-                <button class="option-btn" type="button" data-timer-enabled="off">Timer off</button>
+                <button class="option-btn active" type="button" data-timer-enabled="off">Timer off</button>
+                <button class="option-btn" type="button" data-timer-enabled="on">Timer on</button>
               </div>
               <div class="timer-switch" style="--cols: 5;" id="timerSwitch">
                 <button class="option-btn" type="button" data-minutes="random">Random</button>
@@ -699,6 +699,7 @@
         difficulty: "Strategic",
         minPlayers: 5,
         defaultTimer: 3,
+        defaultTimerEnabled: false,
         defaultThreats: 1,
         threatOptions: [1, 2],
         twoThreatMin: 7,
