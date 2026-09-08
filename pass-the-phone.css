@@ -1,4 +1,7 @@
 @import url("/cabinet-tokens.css");
+@import url("/lounge-tokens.css");
+@import url("/lounge-art.css");
+@import url("/game-lounge.css");
 
 * {
   box-sizing: border-box;

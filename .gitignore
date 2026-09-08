@@ -3,5 +3,6 @@ dist/
 release/
 .firebase/
 firebase-debug.log
+.codex-screens/
 *.local
 .release-signing/

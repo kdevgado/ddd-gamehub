@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { db, ensureAnonymousUser } from "./firebase.js";
 import UnoRoom from "./UnoRoom.jsx";
-import unoIcon from "../icons/Uno/Uno.png";
+import GameArtwork from "./hub/GameArtwork.jsx";
 
 const ROOM_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 
@@ -83,7 +83,7 @@ function formatClock(milliseconds) {
   return String(Math.max(0, Math.ceil(milliseconds / 1000))).padStart(2, "0");
 }
 
-export default function TriviaRoom({ onBack }) {
+export default function TriviaRoom({ onBack, initialGame = "uno", initialEntryMode = "create" }) {
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
   const [playerId, setPlayerId] = useState("");
   const [authReady, setAuthReady] = useState(false);
@@ -93,8 +93,8 @@ export default function TriviaRoom({ onBack }) {
   const [room, setRoom] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [entryMode, setEntryMode] = useState("create");
-  const [selectedGame, setSelectedGame] = useState("uno");
+  const [entryMode, setEntryMode] = useState(initialEntryMode === "join" ? "join" : "create");
+  const [selectedGame, setSelectedGame] = useState(initialGame === "trivia" ? "trivia" : "uno");
   const [now, setNow] = useState(Date.now());
   const revealLock = useRef(false);
 
@@ -427,7 +427,7 @@ export default function TriviaRoom({ onBack }) {
         <div className="entry-toolbar">
           <button className="back-link" type="button" onClick={onBack}>
             <span className="back-arrow" aria-hidden="true" />
-            Game modes
+            Back to the collection
           </button>
           <span className={`live-indicator ${isOnline ? "" : "offline"}`} role="status">
             <i aria-hidden="true" />
@@ -435,110 +435,124 @@ export default function TriviaRoom({ onBack }) {
           </span>
         </div>
 
-        <div className={`trivia-avatar ${selectedGame === "uno" ? "uno-avatar" : ""}`}>
-          {selectedGame === "uno"
-            ? <img className="uno-logo" src={unoIcon} alt="" />
-            : <img src="/icons/mafia/detective.png" alt="" />}
-        </div>
-        <p className="eyebrow">Online room code</p>
-        <h1>Online Games</h1>
-        <p className="lead">Create a live room, share the four-letter code, and play together from everyone&apos;s phone.</p>
-
-        <div className="room-entry">
-          <div className="entry-switch" aria-label="Room action">
-            <button
-              className={entryMode === "create" ? "active" : ""}
-              type="button"
-              onClick={() => {
-                setEntryMode("create");
-                setError("");
-              }}
-            >
-              Create room
-            </button>
-            <button
-              className={entryMode === "join" ? "active" : ""}
-              type="button"
-              onClick={() => {
-                setEntryMode("join");
-                setError("");
-              }}
-            >
-              Join room
-            </button>
+        <div className="online-entry-layout">
+          <div className="online-intro">
+            <p className="eyebrow">Online together</p>
+            <h1><span className="online-desktop-heading">Good company.<br /><span>One room.</span></span><span className="online-mobile-heading">{entryMode === "create" ? "Start a game." : "Join your friends."}</span></h1>
+            <p className="lead">{entryMode === "create" ? "Pick a game and share your room code. Everyone plays on their own phone." : "Enter your name and the four-letter code from your host."}</p>
+            <div className="online-intro-art">
+              <GameArtwork game={selectedGame} />
+            </div>
+            <span className="online-intro-note">Your own screen · A four-letter code · Everyone together</span>
           </div>
 
-          <form className="room-entry-form" onSubmit={submitEntry}>
-            {entryMode === "create" && (
-              <fieldset className="online-game-fieldset">
-                <legend>Choose a game</legend>
-                <div className="game-picker online-game-picker">
-                  {Object.entries(ONLINE_GAMES).map(([gameId, game]) => (
-                    <button
-                      className={`game-choice ${selectedGame === gameId ? "active" : ""}`}
-                      type="button"
-                      aria-pressed={selectedGame === gameId}
-                      key={gameId}
-                      onClick={() => {
-                        setSelectedGame(gameId);
-                        setError("");
-                      }}
-                    >
-                      <span className={`game-choice-mark ${gameId}`} aria-hidden="true">
-                        {gameId === "uno" ? <img src={unoIcon} alt="" /> : "?"}
-                      </span>
-                      <span>
-                        <strong>{game.title}</strong>
-                        <small>{game.label}</small>
-                        <em>{game.description}</em>
-                        <span className="game-choice-facts">
-                          {game.facts.map((fact) => <i key={fact}>{fact}</i>)}
+          <div className="room-entry">
+            <div className="entry-switch" aria-label="Room action">
+              <button
+                className={entryMode === "create" ? "active" : ""}
+                type="button"
+                aria-pressed={entryMode === "create"}
+                onClick={() => {
+                  setEntryMode("create");
+                  setError("");
+                }}
+              >
+                Create room
+              </button>
+              <button
+                className={entryMode === "join" ? "active" : ""}
+                type="button"
+                aria-pressed={entryMode === "join"}
+                onClick={() => {
+                  setEntryMode("join");
+                  setError("");
+                }}
+              >
+                Join room
+              </button>
+            </div>
+
+            <form className="room-entry-form" onSubmit={submitEntry}>
+              {entryMode === "create" && (
+                <fieldset className="online-game-fieldset">
+                  <legend>Choose a game</legend>
+                  <div className="game-picker online-game-picker">
+                    {Object.entries(ONLINE_GAMES).map(([gameId, game]) => (
+                      <button
+                        className={`game-choice ${selectedGame === gameId ? "active" : ""}`}
+                        type="button"
+                        aria-pressed={selectedGame === gameId}
+                        key={gameId}
+                        onClick={() => {
+                          setSelectedGame(gameId);
+                          setError("");
+                        }}
+                      >
+                        <span className={`game-choice-mark ${gameId}`} aria-hidden="true">
+                          {gameId === "uno" ? "7" : "?"}
                         </span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            )}
+                        <span>
+                          <strong>{game.title}</strong>
+                          <small>{game.label}</small>
+                          <em>{game.description}</em>
+                          <span className="game-choice-facts">
+                            {game.facts.map((fact) => <i key={fact}>{fact}</i>)}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
 
-            <label>
-              Player name
-              <input
-                value={playerName}
-                onChange={(event) => setPlayerName(event.target.value)}
-                placeholder="Your name"
-                maxLength={18}
-                autoComplete="name"
-              />
-            </label>
-
-            {entryMode === "join" && (
               <label>
-                Room code
+                Player name
                 <input
-                  className="room-code-input"
-                  value={joinCode}
-                  onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
-                  placeholder="ABCD"
-                  maxLength={4}
-                  autoCapitalize="characters"
-                  autoComplete="off"
+                  value={playerName}
+                  onChange={(event) => setPlayerName(event.target.value)}
+                  placeholder="Your name"
+                  maxLength={18}
+                  autoComplete="name"
+                  enterKeyHint={entryMode === "join" ? "next" : "go"}
+                  onKeyDown={(event) => {
+                    if (entryMode === "join" && event.key === "Enter" && !event.nativeEvent.isComposing) {
+                      event.preventDefault();
+                      event.currentTarget.form?.querySelector(".room-code-input")?.focus();
+                    }
+                  }}
                 />
               </label>
-            )}
 
-            <button className="primary-btn room-submit-btn" type="submit" disabled={busy || !authReady || !isOnline}>
-              {!isOnline ? "Offline" : busy ? "Connecting..." : entryMode === "create" ? "Create room code" : "Join room"}
-            </button>
-          </form>
+              {entryMode === "join" && (
+                <label>
+                  Room code
+                  <input
+                    className="room-code-input"
+                    value={joinCode}
+                    onChange={(event) => setJoinCode(event.target.value.toUpperCase())}
+                    placeholder="ABCD"
+                    maxLength={4}
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    spellCheck={false}
+                    enterKeyHint="go"
+                  />
+                </label>
+              )}
 
-          <span className="entry-note">
-            {!isOnline
-              ? "Reconnect to the internet to create or join an online room."
-              : entryMode === "create"
-                ? `A new ${ONLINE_GAMES[selectedGame].title} room code will be generated.`
-                : "Enter the code shown on the host's screen."}
-          </span>
+              <button className="primary-btn room-submit-btn" type="submit" disabled={busy || !authReady || !isOnline}>
+                {!isOnline ? "Offline" : busy ? "Connecting..." : entryMode === "create" ? "Create room code" : "Join room"}
+              </button>
+            </form>
+
+            <span className="entry-note">
+              {!isOnline
+                ? "Reconnect to the internet to create or join an online room."
+                : entryMode === "create"
+                  ? `A new ${ONLINE_GAMES[selectedGame].title} room code will be generated.`
+                  : "Enter the code shown on the host's screen."}
+            </span>
+          </div>
         </div>
         {error && <p className="alert">{error}</p>}
       </section>

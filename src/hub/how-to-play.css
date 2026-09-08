@@ -1,0 +1,85 @@
+.how-play-modes { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.how-mode-guide { position: relative; display: flex; flex-direction: column; padding: 32px; border: 1px solid var(--lounge-line); border-radius: 8px; background: var(--lounge-surface); }
+.how-mode-icon { color: var(--lounge-sage); margin-bottom: 24px; }
+.how-mode-guide h3 { font-size: 26px; letter-spacing: -.7px; margin-block: 13px; line-height: 1.2; }
+.how-mode-guide > p:not(.lounge-eyebrow) { max-width: 450px; color: var(--lounge-muted); font-size: 13px; line-height: 1.85; }
+.how-mode-guide ul { display: grid; gap: 13px; padding: 0 0 0 16px; margin: 23px 0 28px; color: var(--lounge-muted); font-size: 12px; line-height: 1.85; }
+.how-mode-guide li { padding-left: 6px; }
+.how-mode-guide li::marker { color: var(--lounge-sage); font-size: 9px; }
+.how-mode-note { display: flex; align-items: center; gap: 9px; margin-top: auto; padding-top: 18px; border-top: 1px solid var(--lounge-line); color: var(--lounge-faint); font-size: 10px; line-height: 1.7; }
+.how-mode-note .status-dot { flex-shrink: 0; }
+.how-mode-instructions { margin-top: 16px; }
+.how-mode-instructions summary { display: flex; align-items: center; justify-content: space-between; min-height: 48px; gap: 16px; list-style: none; color: var(--lounge-text); cursor: pointer; font-size: 13px; }
+.how-mode-instructions summary::-webkit-details-marker { display: none; }
+.how-mode-instructions summary:focus-visible { outline: 2px solid var(--lounge-sage); outline-offset: 4px; }
+.how-mode-instructions summary > span { color: var(--lounge-sage); font-size: 24px; font-weight: 300; transition: transform 250ms ease; }
+.how-mode-instructions[open] summary > span { transform: rotate(45deg); }
+.how-game-guides { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(200px, .7fr) minmax(0, 1.3fr); gap: 80px; }
+.how-guide-intro { padding-top: 21px; }
+.how-guide-intro h3 { font-size: 37px; line-height: 1.15; font-weight: 300; letter-spacing: -1.2px; margin-block: 20px; }
+.how-guide-intro h3 span { color: var(--lounge-sage); }
+.how-guide-intro > p:last-of-type { max-width: 270px; color: var(--lounge-muted); font-size: 12px; line-height: 1.9; }
+.first-game-note { display: flex; gap: 13px; margin-top: 31px; padding-top: 25px; border-top: 1px solid var(--lounge-line); max-width: 280px; color: var(--lounge-sage); }
+.first-game-note p { font-size: 11px; line-height: 1.9; color: var(--lounge-faint); }
+.first-game-note strong { color: var(--lounge-text); font-weight: 400; }
+.game-guide { border-bottom: 1px solid var(--lounge-line); }
+.game-guide:first-child { border-top: 1px solid var(--lounge-line); }
+.game-guide summary { list-style: none; display: flex; gap: 20px; align-items: center; padding: 22px 5px; cursor: pointer; border-radius: 3px; }
+.game-guide summary::-webkit-details-marker { display: none; }
+.game-guide summary:focus-visible { outline: 2px solid var(--lounge-sage); outline-offset: 5px; }
+.guide-number { color: var(--lounge-faint); font-family: var(--font-mono); font-size: 10px; }
+.guide-heading { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 15px; }
+.guide-heading strong { font-size: 17px; font-weight: 400; letter-spacing: -.3px; }
+.guide-heading > span { color: var(--lounge-faint); font-size: 10px; white-space: nowrap; }
+.guide-heading i { margin-inline: 6px; font-style: normal; }
+.guide-toggle { margin-left: 14px; color: var(--lounge-sage); font-size: 26px; font-weight: 200; line-height: 1; transition: transform 300ms var(--lounge-ease); }
+.game-guide[open] .guide-toggle { transform: rotate(45deg); }
+.game-guide summary:hover .guide-heading strong { color: var(--lounge-sage); }
+.game-guide-content { padding: 0 5px 26px 39px; }
+.guide-intro { color: var(--lounge-text); font-size: 13px; line-height: 1.8; }
+.game-guide-content ol { display: grid; gap: 12px; margin: 21px 0; padding-left: 20px; color: var(--lounge-muted); font-size: 12px; line-height: 1.85; }
+.game-guide-content li { padding-left: 7px; }
+.game-guide-content li::marker { color: var(--lounge-sage); font-size: 10px; }
+.guide-goal { padding: 17px 19px; border-left: 2px solid var(--lounge-sage); background: var(--lounge-surface); border-radius: 0 4px 4px 0; }
+.guide-goal > span { display: block; margin-bottom: 7px; color: var(--lounge-sage); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; }
+.guide-goal p { font-size: 12px; color: var(--lounge-text); line-height: 1.8; }
+.guide-tip { color: var(--lounge-muted); font-size: 11px; line-height: 1.9; margin-block: 18px 13px; }
+.guide-tip strong { color: var(--lounge-text); font-weight: 500; margin-right: 5px; }
+.guide-play { display: inline-flex; justify-content: center; align-items: center; gap: 23px; min-height: 44px; padding: 11px 15px; border: 1px solid var(--lounge-line); border-radius: 4px; background: transparent; font-size: 11px; transition: background 250ms, border-color 250ms; }
+.guide-play:hover { background: var(--lounge-surface); border-color: var(--lounge-sage); }
+.how-closing-note { grid-column: 1 / -1; padding-top: 24px; border-top: 1px solid var(--lounge-line); text-align: center; color: var(--lounge-faint); font-size: 11px; line-height: 1.9; }
+
+@media (max-width: 1000px) {
+  .how-mode-guide { padding: 25px; }
+  .how-game-guides { grid-template-columns: minmax(180px, .7fr) minmax(0, 1.3fr); gap: 35px; }
+  .guide-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
+}
+@media (max-width: 760px) {
+  .how-play-modes { grid-template-columns: 1fr; gap: 16px; }
+  .how-mode-guide { padding: 20px; }
+  .how-mode-icon { margin-bottom: 14px; }
+  .how-mode-guide .lounge-eyebrow { font-size: 10px; letter-spacing: 1.3px; }
+  .how-mode-guide h3 { font-size: 25px; }
+  .how-mode-guide > p:not(.lounge-eyebrow) { font-size: 14px; line-height: 1.75; }
+  .how-mode-guide ul { margin-block: 12px 20px; font-size: 14px; line-height: 1.75; }
+  .how-mode-instructions { margin-top: 8px; }
+  .how-mode-instructions summary { font-size: 14px; }
+  .how-mode-note { font-size: 12px; margin-top: 10px; }
+  .how-game-guides { grid-template-columns: 1fr; gap: 24px; }
+  .how-guide-intro { padding-top: 4px; }
+  .how-guide-intro h3 { font-size: 33px; }
+  .how-guide-intro h3 br { display: none; }
+  .how-guide-intro h3 span::before { content: " "; }
+  .how-guide-intro > p:last-of-type { max-width: none; font-size: 14px; }
+  .first-game-note { max-width: none; margin-top: 22px; padding-top: 18px; }
+  .game-guide summary { padding-block: 19px; gap: 14px; }
+  .guide-heading strong { font-size: 17px; }
+  .guide-heading > span { font-size: 12px; }
+  .guide-toggle { margin-left: 5px; }
+  .game-guide-content { padding-left: 4px; }
+  .guide-intro, .game-guide-content ol, .guide-goal p, .guide-tip { font-size: 14px; line-height: 1.75; }
+  .guide-goal > span { font-size: 11px; }
+  .guide-play { width: 100%; min-height: 48px; font-size: 14px; }
+  .first-game-note p { font-size: 13px; }
+  .how-closing-note { font-size: 12px; padding-inline: 12px; }
+}

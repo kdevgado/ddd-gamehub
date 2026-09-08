@@ -1,8 +1,13 @@
-const CACHE_NAME = "ddd-game-hub-v19";
+const CACHE_NAME = "ddd-game-hub-v22";
 
 const APP_SHELL = [
   "/manifest.webmanifest",
   "/cabinet-tokens.css",
+  "/lounge-tokens.css",
+  "/lounge-art.css",
+  "/game-lounge.css",
+  "/images/lounge-orbit.webp",
+  "/images/lounge-orbit-light.webp",
   "/images/mask-transparent.gif",
   "/images/werewolf-transparent.gif",
   "/images/gun-transparent.gif",
@@ -52,6 +57,15 @@ async function cachePageWithBuildAssets(cache, pageUrl) {
   await cache.addAll([...new Set(assetUrls)]);
 }
 
+async function cacheBuildChunks(cache) {
+  // Include deferred room code so opening a room offline can show its offline state.
+  const response = await fetch("/build-manifest.json", { cache: "reload" });
+  if (!response.ok) throw new Error("Could not load the build manifest");
+  const manifest = await response.json();
+  const files = Object.values(manifest).flatMap((entry) => [entry.file, ...(entry.css || []), ...(entry.assets || [])]);
+  await cache.addAll([...new Set(files)].map((file) => `/${file}`));
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -61,6 +75,7 @@ self.addEventListener("install", (event) => {
           cachePageWithBuildAssets(cache, "/index.html"),
           cachePageWithBuildAssets(cache, "/pass-the-phone.html")
         ]);
+        await cacheBuildChunks(cache);
         await cache.addAll(APP_SHELL);
       })
       .then(() => self.skipWaiting())

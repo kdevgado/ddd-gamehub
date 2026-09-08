@@ -1,0 +1,37 @@
+/* Shared visual language for the collection and every game mode. */
+:root {
+  --lounge-bg: #111315;
+  --lounge-surface: #181b1d;
+  --lounge-text: #eeeae2;
+  --lounge-muted: #9a9c98;
+  --lounge-faint: #92978f;
+  --lounge-line: #ffffff12;
+  --lounge-sage: #b1bca7;
+  --lounge-sand: #e6decd;
+  --lounge-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+:root[data-theme="light"] {
+  --lounge-bg: #efede6;
+  --lounge-surface: #e7e5dd;
+  --lounge-text: #252b28;
+  --lounge-muted: #60675e;
+  --lounge-faint: #70766d;
+  --lounge-line: #29312624;
+  --lounge-sage: #566c50;
+  --lounge-sand: #303d32;
+}
+
+/* The shared theme control gets the same restrained treatment on the hub. */
+:root[data-design="lounge"] body .theme-toggle { width: 39px; height: 39px; border: 1px solid var(--lounge-line); border-radius: 50%; background: var(--lounge-surface); filter: none; box-shadow: 0 3px 15px #0002; }
+:root[data-design="lounge"] body .theme-toggle-track { width: 22px; height: 22px; border: 0; background: transparent; box-shadow: none; overflow: visible; }
+:root[data-design="lounge"] body .theme-toggle-track::before, :root[data-design="lounge"] body .theme-toggle-track::after { display: none; }
+:root[data-design="lounge"] body .theme-toggle-thumb { inset: 0; width: 22px; height: 22px; border: 0; background: transparent; box-shadow: none; transform: none; }
+:root[data-design="lounge"] body .theme-toggle-stars { display: none; }
+:root[data-design="lounge"] body .theme-toggle-moon { width: 13px; height: 13px; background: var(--lounge-sage); box-shadow: none; }
+:root[data-design="lounge"] body .theme-toggle-moon::after { background: var(--lounge-surface); }
+:root[data-design="lounge"] body .theme-toggle-sun { background: var(--lounge-sage); color: var(--lounge-sage); }
+
+@media (pointer: coarse) {
+  :root[data-design="lounge"] body .theme-toggle { width: 48px; height: 48px; }
+}

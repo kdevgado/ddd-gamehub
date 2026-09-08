@@ -1,0 +1,57 @@
+/* Each game is a tiny still life, drawn with CSS and a single inline vector. */
+.game-artwork { --art-highlight: #ccd1ba; position: absolute; inset: 0; overflow: hidden; isolation: isolate; background: radial-gradient(ellipse at 47% 22%, #46534660, transparent 70%), #202923; }
+.game-artwork::after { content: ""; position: absolute; inset: 0; z-index: 5; opacity: .12; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' opacity='.5' filter='url(%23n)' d='M0 0h160v160H0z'/%3E%3C/svg%3E"); }
+.art-orbit { position: absolute; z-index: -1; width: 280px; height: 280px; left: 50%; top: 52%; transform: translate(-50%, -50%) rotate(-25deg); border: 1px solid #d4d7c212; border-radius: 50%; }
+.orbit-two { width: 390px; height: 390px; opacity: .6; }
+.art-floor { position: absolute; left: 50%; bottom: 19px; width: 160px; height: 10px; background: #00000050; border-radius: 50%; filter: blur(12px); transform: translateX(-50%); }
+.game-artwork > div { transition: transform 900ms var(--lounge-ease); }
+.lounge-game:hover .game-artwork > div { transform: translate(-50%, -53%) rotate(3deg); }
+.imposter-scene { position: absolute; left: 50%; top: 53%; width: 260px; height: 175px; transform: translate(-50%, -50%) rotate(-6deg); }
+.pawn { position: absolute; bottom: 0; width: 85px; height: 114px; border-radius: 43% 43% 28% 28%; background: linear-gradient(110deg, #bbc2a9, #879578 48%, #485843); box-shadow: inset 1px 1px 2px #e8edca33, inset -12px -5px 25px #17211b30, 9px 11px 15px #00000030; }
+.pawn::before { content: ""; position: absolute; width: 58px; height: 58px; top: -25px; left: 14px; border-radius: 50%; background: radial-gradient(circle at 34% 26%, #c0c6ab, #889577 52%, #4c5d45); box-shadow: 0 11px 15px #29302550; }
+.pawn-back { left: 22px; bottom: 14px; transform: scale(.81) rotate(-14deg); filter: brightness(.68); }
+.pawn-front { z-index: 2; left: 94px; bottom: 0; transform: rotate(3deg); background: linear-gradient(110deg, #333c33, #1b221f 55%, #101714); }
+.pawn-front::before { background: radial-gradient(circle at 30% 23%, #69725f, #343f33 42%, #17201b 78%); }
+.pawn-front i { position: absolute; z-index: 3; top: 0; width: 13px; height: 4px; border-radius: 50%; background: #c9cbb2; transform: rotate(12deg); box-shadow: 0 2px 3px #000; }
+.pawn-front i:first-child { left: 24px; }
+.pawn-front i:last-child { right: 23px; transform: rotate(-12deg); }
+.pawn-side { left: 170px; bottom: 14px; transform: scale(.73) rotate(16deg); filter: brightness(.9); }
+.secret-mark { position: absolute; z-index: 3; right: 28px; top: -19px; color: #d5d6ba; font-size: 30px; font-weight: 200; transform: rotate(14deg); }
+.artwork-uno { background: radial-gradient(ellipse at 60% 22%, #73614950, transparent 75%), #2e2a25; }
+.card-fan { position: absolute; width: 175px; height: 145px; top: 55%; left: 50%; transform: translate(-50%, -50%) rotate(5deg); }
+.playing-card { position: absolute; width: 87px; height: 129px; border-radius: 8px; border: 1px solid #ffffff20; box-shadow: 4px 7px 13px #0006, inset 1px 1px #ffffff25; }
+.playing-card::after { content: ""; position: absolute; inset: 18px 10px; border: 1px solid currentColor; border-radius: 50%; transform: rotate(24deg); opacity: .65; }
+.playing-card > i { position: absolute; top: 7px; left: 9px; font-size: 12px; font-style: normal; font-weight: 500; }
+.playing-card > b { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 300; font-size: 40px; letter-spacing: -3px; }
+.card-clay { left: 4px; top: 7px; color: #e7ccbb; background: linear-gradient(130deg, #b27b61, #815644); transform: rotate(-23deg); }
+.card-sage { left: 44px; top: -6px; color: #d4d6bf; background: linear-gradient(130deg, #829278, #51634e); transform: rotate(-3deg); }
+.card-ivory { left: 86px; top: 6px; color: #696958; background: linear-gradient(130deg, #eee5d0, #b9b49d); transform: rotate(20deg); }
+.artwork-trivia { background: radial-gradient(ellipse at 50% 10%, #5c646c65, transparent 70%), #252b30; }
+.trivia-sculpture { position: absolute; top: 53%; left: 50%; width: 160px; height: 160px; transform: translate(-50%, -50%) rotate(8deg); }
+.question-ring { position: absolute; inset: 15px; border: 13px solid #8d9fa5; border-right-color: #465b64; border-bottom-color: #52666d; border-radius: 50%; transform: rotateY(30deg) rotate(-23deg); box-shadow: inset 3px 1px 4px #d4dde266, 8px 6px 18px #0005; }
+.trivia-sculpture > b { position: absolute; inset: 0; display: grid; place-items: center; color: #ddd9c9; font-size: 110px; font-weight: 300; font-family: Georgia, serif; text-shadow: 3px 3px #8c9286, 6px 7px 7px #0005; transform: rotate(-17deg); }
+.trivia-sculpture > i { position: absolute; width: 22px; height: 22px; right: -5px; top: 34px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #c6ba9d, #796f59 60%, #484434); box-shadow: 4px 7px 8px #0005; }
+.artwork-werewolf { background: radial-gradient(ellipse at 60% 25%, #68647245, transparent 70%), #282630; --art-highlight: #d1c8a7; }
+.night-sculpture { position: absolute; top: 52%; left: 50%; width: 170px; height: 160px; transform: translate(-50%, -50%); }
+.stone-moon { position: absolute; width: 108px; height: 108px; top: 0; right: 12px; border-radius: 50%; background: radial-gradient(circle at 33% 25%, #c3c0b0, #8d8c80 70%, #74776a); box-shadow: inset -7px -3px 15px #424738; }
+.night-sculpture svg { position: absolute; width: 140px; height: 130px; left: 0; bottom: -9px; color: #1c2021; filter: drop-shadow(6px 3px 4px #0003); transform: rotate(-7deg); }
+.artwork-mafia { background: radial-gradient(ellipse at 45% 18%, #74625550, transparent 70%), #302824; }
+.mafia-sculpture { position: absolute; top: 56%; left: 50%; width: 170px; height: 140px; transform: translate(-50%, -50%) rotate(-12deg); }
+.hat-crown { position: absolute; top: 13px; left: 39px; width: 95px; height: 85px; border-radius: 32% 32% 10% 10%; background: linear-gradient(110deg, #646056, #35362f 40%, #1d2420); border-bottom: 17px solid #b5a789; transform: perspective(200px) rotateX(15deg); box-shadow: inset 0 2px 2px #b5af8e4d; }
+.hat-brim { position: absolute; z-index: 2; top: 88px; left: 7px; width: 165px; height: 28px; border-radius: 50%; background: linear-gradient(175deg, #656456, #282e26 60%, #151c17); box-shadow: 0 5px 3px #101510, 3px 12px 20px #0005; }
+.mafia-card { position: absolute; right: -9px; bottom: -5px; display: grid; place-items: center; width: 39px; height: 54px; border-radius: 4px; background: linear-gradient(120deg, #ddceb1, #b6a48a); color: #804b3c; font-size: 25px; box-shadow: 3px 4px 7px #0007; transform: rotate(33deg); }
+.artwork-bomb { background: radial-gradient(ellipse at 50% 12%, #92745045, transparent 80%), #373025; }
+.bomb-sculpture { position: absolute; top: 53%; left: 50%; width: 150px; height: 155px; transform: translate(-50%, -50%) rotate(15deg); }
+.bomb-body { position: absolute; left: 18px; bottom: 0; width: 116px; height: 116px; border-radius: 50%; background: radial-gradient(circle at 30% 23%, #cf9c7a, #a56d4f 37%, #664333 72%, #3e2b22); box-shadow: inset 1px 1px 3px #ecbfa475, 7px 9px 18px #0004; }
+.bomb-body::before { content: ""; position: absolute; left: 42px; top: -8px; width: 31px; height: 17px; border-radius: 4px 4px 0 0; background: linear-gradient(90deg, #7f745c, #baa37b 40%, #554e3d); }
+.bomb-fuse { position: absolute; z-index: -1; width: 43px; height: 44px; left: 70px; top: 5px; border: 4px solid #b6a37b; border-bottom: 0; border-left: 0; border-radius: 0 25px 0 0; transform: rotate(-20deg); }
+.fuse-spark { position: absolute; color: #d9c79a; right: 8px; top: 17px; font-size: 33px; font-weight: 300; }
+.artwork-spyfall { background: radial-gradient(ellipse at 55% 12%, #5b786845, transparent 70%), #24332e; }
+.spy-sculpture { position: absolute; top: 55%; left: 50%; width: 160px; height: 145px; transform: translate(-50%, -50%) rotate(-15deg); }
+.spy-globe { position: absolute; top: 11px; left: 15px; width: 124px; height: 124px; border-radius: 50%; border: 2px solid #8ea694; background: radial-gradient(circle at 33% 22%, #768f77, #334e3e 60%, #1d3027); box-shadow: inset 1px 1px 10px #b0bfa855, 9px 9px 18px #0005; overflow: hidden; }
+.spy-globe::before, .spy-globe::after { content: ""; position: absolute; inset: -1px 27px; border: 1px solid #becbb75c; border-radius: 50%; }
+.spy-globe::after { inset: 26px -1px; }
+.spy-globe i:first-child { position: absolute; inset: 60px 0 auto; border-top: 1px solid #becbb75c; }
+.spy-globe i:last-child { position: absolute; inset: 0 auto 0 60px; border-left: 1px solid #becbb75c; }
+.spy-pin { position: absolute; top: -8px; right: 7px; width: 40px; height: 48px; border-radius: 50% 50% 50% 2px; background: linear-gradient(140deg, #e6ddc4, #9b9a7f); box-shadow: 4px 5px 7px #0005; transform: rotate(-30deg); }
+.spy-pin::after { content: ""; position: absolute; inset: 12px 12px 19px; border-radius: 50%; background: #46614d; box-shadow: inset 2px 2px 3px #243229; }

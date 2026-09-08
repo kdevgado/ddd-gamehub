@@ -14,13 +14,16 @@
   }
 
   function preferredTheme() {
-    return getSavedTheme() || (systemTheme.matches ? "dark" : "light");
+    return getSavedTheme() || root.dataset.defaultTheme || (systemTheme.matches ? "dark" : "light");
   }
 
   function updateThemeMetadata(theme) {
     const themeColor = document.querySelector('meta[name="theme-color"]');
     if (themeColor) {
-      themeColor.setAttribute("content", theme === "dark" ? "#161b19" : "#4f6653");
+      const isLounge = root.dataset.defaultTheme === "dark";
+      themeColor.setAttribute("content", isLounge
+        ? (theme === "dark" ? "#111315" : "#efede6")
+        : (theme === "dark" ? "#161b19" : "#4f6653"));
     }
   }
 
@@ -51,7 +54,12 @@
   function switchTheme(button) {
     const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
 
-    if (!document.startViewTransition || reduceMotion.matches) {
+    if (reduceMotion.matches || root.dataset.defaultTheme === "dark") {
+      applyTheme(nextTheme, true);
+      return;
+    }
+
+    if (!document.startViewTransition) {
       root.classList.add("theme-colors-animating");
       void root.offsetWidth;
       applyTheme(nextTheme, true);
@@ -107,5 +115,9 @@
 
   systemTheme.addEventListener("change", () => {
     if (!getSavedTheme()) applyTheme(preferredTheme(), false);
+  });
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === STORAGE_KEY || event.key === null) applyTheme(preferredTheme(), false);
   });
 })();

@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-default-theme="dark" data-design="lounge">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#4F6653" />
+  <meta name="theme-color" content="#111315" />
   <script src="/theme.js"></script>
   <link rel="manifest" href="/manifest.webmanifest" />
   <title>Pass the Phone — DDD Game Hub</title>
   <link rel="stylesheet" href="/pass-the-phone.css" />
+  <script type="module" src="/src/hub/passArtwork.js"></script>
 </head>
 <body>
   <div class="app" id="app">
@@ -19,7 +20,7 @@
             <div class="hub-toolbar">
               <a class="mode-back-link" href="/">
                 <span class="mode-back-arrow" aria-hidden="true"></span>
-                Game modes
+                Back to the collection
               </a>
               <button class="settings-btn hub-fullscreen-btn" id="fullscreenButton" type="button">
                 <img class="fullscreen-icon" src="/icons/fullscreen.png" alt="" aria-hidden="true" />
@@ -32,15 +33,15 @@
             <p class="settings-status hub-fullscreen-status" id="fullscreenStatus" aria-live="polite"></p>
             <div class="cabinet-intro" aria-hidden="true">
               <span class="shelf-mark"><i>D</i><i>D</i><i>D</i></span>
-              <span>Game cabinet · shelf 01</span>
+              <span>ddd / game hub</span>
             </div>
-            <p class="eyebrow">Pass the phone collection</p>
-            <h1>The tabletop shelf</h1>
-            <p class="lead">Choose a box, gather the group, and pass one phone for private roles, quick clues, and very public accusations.</p>
+            <p class="eyebrow">One screen. Same table.</p>
+            <h1>One phone.<br /><span>All your people.</span></h1>
+            <p class="lead">A few familiar faces. A secret or two. Pick a game and pass the phone for a night worth talking about.</p>
             <div class="mini-badges" aria-label="Hub highlights">
-              <span class="badge">5 game boxes</span>
-              <span class="badge">2–12 players</span>
-              <span class="badge">No login</span>
+              <span class="badge">5 ways to play</span>
+              <span class="badge">One shared phone</span>
+              <span class="badge">No account needed</span>
             </div>
             <div class="game-grid" id="gameGrid" aria-label="Choose a game"></div>
             <div class="game-deck-dots" id="gameDeckDots" aria-label="Game deck navigation"></div>
@@ -58,12 +59,13 @@
               <p class="lead" id="playersLead">Add the players. Keep the phone facing away from curious eyes.</p>
             </div>
             <form class="input-row" id="playerForm">
-              <input id="playerNameInput" type="text" maxlength="18" autocomplete="off" placeholder="Player name" />
+              <input id="playerNameInput" type="text" maxlength="18" autocomplete="off" placeholder="Player name" aria-label="Player name" aria-describedby="playerRosterNote" enterkeyhint="done" />
               <button class="icon-btn" type="submit" aria-label="Add player">+</button>
             </form>
             <div class="chips" id="playerChips" aria-live="polite">
               <p class="empty-state">No players yet.</p>
             </div>
+            <p class="hint" id="playerRosterNote"></p>
             <p class="error" id="playerError" aria-live="polite"></p>
             <div class="button-row">
               <button class="btn" id="playersNextButton" type="button">Continue</button>
@@ -1213,7 +1215,14 @@
       screens.forEach((screen) => {
         screen.classList.toggle("active", screen.dataset.screen === name);
       });
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // New steps start immediately at the top, including after a long mobile form.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+      window.scrollTo({ top: 0, behavior: "instant" });
+      const heading = document.querySelector(`.screen[data-screen="${name}"] h1, .screen[data-screen="${name}"] h2`);
+      if (heading) {
+        heading.setAttribute("tabindex", "-1");
+        heading.focus({ preventScroll: true });
+      }
     }
 
     function randomItem(items) {
@@ -2247,6 +2256,10 @@
 
     function renderPlayers() {
       playerChips.innerHTML = "";
+      const playersNeeded = Math.max(0, currentMode().minPlayers - state.players.length);
+      document.getElementById("playerRosterNote").textContent = playersNeeded
+        ? `Add ${playersNeeded} more ${playersNeeded === 1 ? "player" : "players"} to continue.`
+        : `${state.players.length} players. Ready to continue.`;
 
       if (state.players.length === 0) {
         playerChips.innerHTML = '<p class="empty-state">No players yet.</p>';
@@ -4267,6 +4280,7 @@
     playerForm.addEventListener("submit", (event) => {
       event.preventDefault();
       addPlayer(playerNameInput.value);
+      playerNameInput.focus({ preventScroll: true });
     });
 
     document.getElementById("playersNextButton").addEventListener("click", () => {
@@ -4491,8 +4505,11 @@
     newPlayersButton.addEventListener("click", startOver);
 
     renderGameHub();
-    selectGame(state.gameId);
+    const requestedGame = new URLSearchParams(window.location.search).get("game");
+    const hasRequestedGame = Object.hasOwn(GAME_MODES, requestedGame);
+    selectGame(hasRequestedGame ? requestedGame : state.gameId);
     renderPlayers();
+    if (hasRequestedGame) showScreen(currentMode().type === "wordBomb" ? "setup" : "players");
   </script>
 
   <script type="module">

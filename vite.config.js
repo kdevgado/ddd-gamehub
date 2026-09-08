@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 export default defineConfig({
   plugins: [react()],
   build: {
+    manifest: "build-manifest.json",
     rollupOptions: {
       input: {
         main: resolve("index.html"),
