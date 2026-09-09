@@ -20,6 +20,12 @@ export default function HeroArtwork() {
           fetchPriority="high"
         />
       </div>
+      <div className="hero-play-orbit">
+        <span className="play-orbit-path" />
+        <span className="orbit-die"><i /><i /><i /><i /><i /></span>
+        <span className="orbit-chip">✦</span>
+        <span className="orbit-spark">✳</span>
+      </div>
       <span className="art-coordinate">EST. FOR GOOD TIMES <span>↗</span></span>
       <div className="art-caption">
         <span className="caption-cross">+</span>

@@ -8,20 +8,20 @@ export default function HowToPlay({ onOpenRoom }) {
   // Native disclosures retain the reader's choices after the initial layout.
   const [expandedOnLoad] = useState(() => !window.matchMedia("(max-width: 760px)").matches);
   return (
-    <section className="lounge-how lounge-width" id="how-to-play" aria-labelledby="how-title" data-reveal>
-      <div className="how-intro">
+    <section className="lounge-how lounge-width" id="how-to-play" aria-labelledby="how-title">
+      <div className="how-intro" data-scroll-reveal>
         <p className="lounge-eyebrow">Everyone’s invited</p>
         <h2 id="how-title">Less planning.<br /><span>More playing.</span></h2>
         <p>A few simple rules. A room full of possibilities.<br />Here’s everything you need for your first round.</p>
       </div>
       <div className="how-steps">
-        <div><span>01</span><div><h3>Find your people</h3><p>Gather around one phone, or meet in an online room from wherever you are.</p></div></div>
-        <div><span>02</span><div><h3>Follow your mood</h3><p>A quick icebreaker, a little bluffing, or a battle of wits. Pick what feels right.</p></div></div>
-        <div><span>03</span><div><h3>Make a night of it</h3><p>The game takes you through the setup. You bring the company. And maybe snacks.</p></div></div>
+        <div data-scroll-reveal data-scroll-scene><span>01</span><div><h3>Find your people</h3><p>Gather around one phone, or meet in an online room from wherever you are.</p></div></div>
+        <div data-scroll-reveal data-scroll-scene><span>02</span><div><h3>Follow your mood</h3><p>A quick icebreaker, a little bluffing, or a battle of wits. Pick what feels right.</p></div></div>
+        <div data-scroll-reveal data-scroll-scene><span>03</span><div><h3>Make a night of it</h3><p>The game takes you through the setup. You bring the company. And maybe snacks.</p></div></div>
       </div>
 
       <div className="how-play-modes">
-        <article className="how-mode-guide">
+        <article className="how-mode-guide" data-scroll-reveal data-scroll-scene>
           <span className="how-mode-icon"><Icon name="phone" size={23} /></span>
           <p className="lounge-eyebrow">One screen. Same table.</p>
           <h3>Pass the phone</h3>
@@ -36,7 +36,7 @@ export default function HowToPlay({ onOpenRoom }) {
           </details>
           <span className="how-mode-note"><span className="status-dot" /> Local games work offline once the app is installed or cached.</span>
         </article>
-        <article className="how-mode-guide">
+        <article className="how-mode-guide" data-scroll-reveal data-scroll-scene>
           <span className="how-mode-icon"><Icon name="globe" size={23} /></span>
           <p className="lounge-eyebrow">Your own screens. One room.</p>
           <h3>Play online together</h3>
@@ -54,7 +54,7 @@ export default function HowToPlay({ onOpenRoom }) {
       </div>
 
       <div className="how-game-guides">
-        <div className="how-guide-intro">
+        <div className="how-guide-intro" data-scroll-reveal>
           <p className="lounge-eyebrow">The short version</p>
           <h3>Meet your<br /><span>next game.</span></h3>
           <p>Open a game for the setup, the basics, and what it takes to win. Then jump straight in.</p>
@@ -64,7 +64,7 @@ export default function HowToPlay({ onOpenRoom }) {
           {GAMES.map((game, index) => {
             const guide = GAME_GUIDES[game.id];
             return (
-              <details className="game-guide" name="game-rules" key={game.id} open={expandedOnLoad && game.id === "imposter"}>
+              <details className="game-guide" name="game-rules" key={game.id} open={expandedOnLoad && game.id === "imposter"} data-scroll-reveal>
                 <summary>
                   <span className="guide-number">{String(index + 1).padStart(2, "0")}</span>
                   <span className="guide-heading"><strong>{game.name}</strong><span>{game.players} <i>·</i> {game.time}</span></span>

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from "react";
 import GameHub from "./hub/GameHub.jsx";
 import "./hub/hub.css";
+import "./hub/motion.css";
 
 const TriviaRoom = lazy(() => import("./TriviaRoom.jsx"));
 

@@ -145,8 +145,6 @@ body:has(.lounge) { background: var(--lounge-bg); }
 .pick-dialog .lounge-game { width: 100%; }
 .pick-dialog .game-featured-label { display: none; }
 
-[data-reveal] { transition: opacity 1s var(--lounge-ease), transform 1s var(--lounge-ease); }
-.will-reveal { opacity: 0; transform: translateY(25px); }
 @keyframes lounge-enter { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (min-width: 1600px) {
@@ -331,7 +329,6 @@ body:has(.lounge) { background: var(--lounge-bg); }
 @media (prefers-reduced-motion: reduce) {
   html:has(.lounge) { scroll-behavior: auto; }
   .lounge *, .lounge *::before, .lounge *::after { animation: none !important; transition: none !important; }
-  .lounge .will-reveal { opacity: 1; transform: none; }
   .lounge .hero-art-image { transform: none; }
   .lounge-game:hover, .lounge-button:hover { transform: none; }
 }

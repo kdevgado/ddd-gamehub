@@ -1,0 +1,60 @@
+/* Motion follows the reader's scroll. All copy and controls keep their layout. */
+.lounge-scroll-track { position: fixed; z-index: 45; inset: 0 0 auto; height: 14px; pointer-events: none; opacity: 0; }
+.lounge[data-scroll-motion="on"] .lounge-scroll-track { opacity: clamp(0, calc(var(--scroll-progress, 0) * 20), .8); }
+.lounge-scroll-track i { position: absolute; inset: 0 0 auto; height: 2px; background: var(--lounge-sage); transform: scaleX(var(--scroll-progress, 0)); transform-origin: left; }
+.lounge-scroll-track > span { position: absolute; top: 2px; left: 0; width: 18px; color: var(--lounge-sage); font-size: 12px; line-height: 12px; text-align: center; translate: calc((100vw - 18px) * var(--scroll-progress, 0)) 0; rotate: var(--scroll-turn, 0deg); }
+
+/* A few little game pieces orbit the existing still life. */
+.hero-play-orbit { position: absolute; inset: 12% 6% 12% 8%; pointer-events: none; }
+.play-orbit-path { position: absolute; width: 85%; height: 63%; left: 8%; top: 20%; border: 1px solid var(--lounge-sage); border-radius: 50%; opacity: .15; transform: rotate(-26deg); }
+.orbit-die { position: absolute; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); gap: 4px; width: 47px; height: 47px; top: 22%; left: 17%; padding: 10px; border: 1px solid #f7f3e6; border-radius: 11px; background: linear-gradient(135deg, #f4edda, #b9bba9); box-shadow: inset -3px -4px 0 #68735b26, 7px 12px 20px #0003; transform: rotate(-18deg); }
+.orbit-die i { border-radius: 50%; background: #4a5947; box-shadow: inset 0 1px 1px #0003; }
+.orbit-die i:nth-child(1) { grid-area: 1 / 1; }
+.orbit-die i:nth-child(2) { grid-area: 1 / 3; }
+.orbit-die i:nth-child(3) { grid-area: 2 / 2; }
+.orbit-die i:nth-child(4) { grid-area: 3 / 1; }
+.orbit-die i:nth-child(5) { grid-area: 3 / 3; }
+.orbit-chip { position: absolute; display: grid; place-items: center; right: 9%; bottom: 26%; width: 48px; height: 48px; border: 1px solid #d6dfc499; border-radius: 50%; background: #a8b597; color: #364331; font-size: 27px; box-shadow: inset 0 0 0 4px #a8b597, inset 0 0 0 5px #43523b40, 5px 10px 20px #0002; transform: rotate(16deg); }
+.orbit-spark { position: absolute; right: 18%; top: 15%; color: var(--lounge-sage); font-size: 22px; opacity: .8; }
+.lounge[data-scroll-motion="on"] .hero-art-image { translate: 0 calc(var(--hero-progress, 0) * 56px); rotate: calc(var(--hero-progress, 0) * -5deg); }
+.lounge[data-scroll-motion="on"] .play-orbit-path { rotate: calc(var(--hero-progress, 0) * 30deg); }
+.lounge[data-scroll-motion="on"] .orbit-die { translate: calc(var(--hero-progress, 0) * 54px) calc(var(--hero-progress, 0) * -48px); rotate: calc(var(--hero-progress, 0) * 100deg + var(--scroll-lean, 0deg)); }
+.lounge[data-scroll-motion="on"] .orbit-chip { translate: calc(var(--hero-progress, 0) * -36px) calc(var(--hero-progress, 0) * 28px); rotate: calc(var(--hero-progress, 0) * -120deg); }
+.lounge[data-scroll-motion="on"] :is(.orbit-spark, .tiny-star, .caption-cross, .collection-bottom svg) { rotate: var(--scroll-turn, 0deg); }
+.tiny-star, .caption-cross { display: inline-block; }
+
+/* The illustrations move inside the cards; their touch targets stay steady. */
+.lounge[data-scroll-motion="on"] .lounge-grid .game-artwork { transform: perspective(700px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg)) scale(1.04); transition: transform 500ms var(--lounge-ease); }
+.lounge[data-scroll-motion="on"] .lounge-grid .game-artwork > div { translate: 0 calc(var(--scene-position, 0) * -16px); rotate: calc(var(--scene-position, 0) * 7deg + var(--scroll-lean, 0deg)); }
+.lounge[data-scroll-motion="on"] .lounge-grid :is(.card-clay, .pawn-back) { rotate: calc(var(--scene-position, 0) * -12deg); }
+.lounge[data-scroll-motion="on"] .lounge-grid :is(.card-ivory, .pawn-side) { rotate: calc(var(--scene-position, 0) * 12deg); }
+.lounge[data-scroll-motion="on"] .lounge-grid .stone-moon { translate: calc(var(--scene-position, 0) * -10px) calc(var(--scene-position, 0) * 12px); }
+.lounge[data-scroll-motion="on"] .lounge-grid :is(.fuse-spark, .spy-globe, .question-ring) { rotate: calc(var(--scene-position, 0) * 32deg); }
+.lounge[data-scroll-motion="on"] .lounge-grid .mafia-card { rotate: calc(var(--scene-position, 0) * -18deg); }
+.lounge[data-scroll-motion="on"] .lounge-grid .art-orbit { scale: calc(1 + var(--scene-position, 0) * .1); }
+.lounge-grid .lounge-game.is-scene-active { border-color: color-mix(in srgb, var(--lounge-sage) 38%, transparent); }
+.lounge-grid .lounge-game.is-scene-active .game-launch { border-color: #d6dfc480; background: #a8b59725; }
+
+.how-steps > div > span { position: relative; display: grid; flex: 0 0 38px; place-items: center; height: 38px; padding: 0; border: 1px solid var(--lounge-line); border-radius: 50%; transition: background 400ms, color 400ms; }
+.how-steps > div > span::after { content: ""; position: absolute; inset: -4px; border: 1px solid transparent; border-top-color: var(--lounge-sage); border-radius: 50%; opacity: .5; }
+.lounge[data-scroll-motion="on"] .how-steps > div > span::after { rotate: calc(var(--scene-position, 0) * 160deg); }
+.how-steps > .is-scene-active > span { background: var(--lounge-sage); color: var(--lounge-bg); }
+.how-mode-icon { display: inline-flex; align-self: flex-start; }
+.lounge[data-scroll-motion="on"] .how-mode-icon { translate: 0 calc(var(--scene-position, 0) * -8px); rotate: calc(var(--scene-position, 0) * 12deg); }
+
+@media (max-width: 760px) {
+  .hero-play-orbit { inset: -5% 0 0; }
+  .play-orbit-path { left: 12%; top: 10%; width: 76%; height: 65%; }
+  .orbit-die { width: 32px; height: 32px; padding: 7px; gap: 3px; border-radius: 8px; top: 18%; left: 18%; }
+  .orbit-chip { width: 31px; height: 31px; font-size: 19px; right: 16%; bottom: 22%; }
+  .orbit-spark { font-size: 16px; right: 21%; top: 11%; }
+  .lounge[data-scroll-motion="on"] .hero-art-image { translate: 0 calc(var(--hero-progress, 0) * 24px); }
+  .lounge[data-scroll-motion="on"] .orbit-die { translate: calc(var(--hero-progress, 0) * 20px) calc(var(--hero-progress, 0) * -18px); }
+  .lounge[data-scroll-motion="on"] .orbit-chip { translate: calc(var(--hero-progress, 0) * -18px) calc(var(--hero-progress, 0) * 15px); }
+  .lounge[data-scroll-motion="on"] .lounge-grid .game-artwork > div { translate: 0 calc(var(--scene-position, 0) * -10px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lounge-scroll-track { display: none; }
+  .lounge .hero-art-image, .lounge .hero-play-orbit *, .lounge .game-artwork, .lounge .game-artwork *, .lounge .how-mode-icon { translate: none !important; rotate: none !important; }
+}
