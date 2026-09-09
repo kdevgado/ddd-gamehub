@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { doc, runTransaction, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase.js";
+import useUnoDealAnimation from "./useUnoDealAnimation.js";
 import plusFourCardArt from "../icons/Uno/plus_four.jpg";
 import reverseIcon from "../icons/Uno/reverse.png";
 import skipIcon from "../icons/Uno/skip.png";
@@ -84,6 +85,14 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
   const previousMoveRef = useRef(room.uno?.moveNumber);
   const moveNumber = room.uno?.moveNumber;
   const lastActionType = room.uno?.lastAction?.type;
+  const { deckRef, handRef, opponentsRef, flights, finishFlight } = useUnoDealAnimation(room, playerId);
+  const dealing = flights.some((flight) => flight.opening);
+  const incomingCardIds = new Set(flights.filter((flight) => flight.playerId === playerId).map((flight) => flight.cardId));
+  const receiving = dealing || incomingCardIds.size > 0;
+
+  function visibleCardCount(id) {
+    return Math.max(0, (room.uno?.hands?.[id]?.length || 0) - flights.filter((flight) => flight.playerId === id).length);
+  }
 
   useEffect(() => {
     const previousMove = previousMoveRef.current;
@@ -138,7 +147,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
   }
 
   function startCardDrag(event, card) {
-    if (busy || (event.pointerType === "mouse" && event.button !== 0)) return;
+    if (busy || receiving || (event.pointerType === "mouse" && event.button !== 0)) return;
     const sourceRect = event.currentTarget.getBoundingClientRect();
     dragGestureRef.current = {
       card,
@@ -222,7 +231,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
   }
 
   function handleCardClick(card) {
-    if (suppressCardClickRef.current) return;
+    if (suppressCardClickRef.current || receiving) return;
     if (card.color === "wild") setWildCardId(card.id);
     else void playCard(card.id);
   }
@@ -292,7 +301,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
   }
 
   async function playCard(cardId, chosenColor = null, animate = true) {
-    if (busy) return;
+    if (busy || receiving) return;
     setBusy(true);
     setError("");
     try {
@@ -374,7 +383,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
   }
 
   async function drawOne() {
-    if (busy) return;
+    if (busy || receiving) return;
     setBusy(true);
     setError("");
     try {
@@ -415,7 +424,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
   }
 
   async function endTurn() {
-    if (busy) return;
+    if (busy || receiving) return;
     setBusy(true);
     setError("");
     try {
@@ -502,12 +511,12 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
         <strong>{isMyTurn ? "Your turn" : `${playerName(room, currentPlayerId)}’s turn`}</strong>
       </div>
 
-      <div className="uno-opponents" aria-label="Other players">
+      <div className="uno-opponents" aria-label="Other players" ref={opponentsRef}>
         {uno.turnOrder.filter((id) => id !== playerId).map((id) => (
-          <div className={`uno-opponent ${id === currentPlayerId ? "active" : ""}`} key={id}>
+          <div className={`uno-opponent ${id === currentPlayerId ? "active" : ""}`} data-player-id={id} key={id}>
             <span>{playerName(room, id).slice(0, 2).toUpperCase()}</span>
             <strong>{playerName(room, id)}</strong>
-            <em>{uno.hands?.[id]?.length || 0} cards</em>
+            <em>{visibleCardCount(id)} cards</em>
             {uno.hands?.[id]?.length === 1 && <b>UNO!</b>}
           </div>
         ))}
@@ -516,7 +525,7 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
       <p className="uno-action-copy" aria-live="polite">{actionCopy(room)}</p>
 
       <div className="uno-center">
-        <button className="uno-deck" type="button" disabled={!isMyTurn || Boolean(uno.drawnCardId) || busy} onClick={drawOne}>
+        <button className="uno-deck" type="button" aria-label={`Draw a card. ${uno.drawPile.length} cards left.`} ref={deckRef} disabled={!isMyTurn || Boolean(uno.drawnCardId) || busy || receiving} onClick={drawOne}>
           <img className="uno-deck-logo" src={unoIcon} alt="" />
           <small>{uno.drawPile.length} left</small>
         </button>
@@ -541,15 +550,15 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
       <div className="uno-hand-heading">
         <div>
           <h3>Your hand</h3>
-          <span>{hand.length} cards</span>
+          <span>{dealing ? `${visibleCardCount(playerId)} / ${hand.length}` : visibleCardCount(playerId)} cards</span>
         </div>
         {hand.length === 1 && <strong>UNO!</strong>}
         {isMyTurn && uno.drawnCardId && (
-          <button className="secondary-btn uno-pass-btn" type="button" disabled={busy} onClick={endTurn}>Keep card</button>
+          <button className="secondary-btn uno-pass-btn" type="button" disabled={busy || receiving} onClick={endTurn}>Keep card</button>
         )}
       </div>
 
-      <div className="uno-hand">
+      <div className="uno-hand" ref={handRef} aria-busy={receiving}>
         {hand.map((card) => {
           const playable = isMyTurn
             && (!uno.drawnCardId || uno.drawnCardId === card.id)
@@ -557,7 +566,9 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
           return (
             <UnoCard
               card={card}
-              disabled={!playable || busy}
+              ariaHidden={incomingCardIds.has(card.id)}
+              className={incomingCardIds.has(card.id) ? "is-receiving" : ""}
+              disabled={!playable || busy || receiving}
               drawn={uno.drawnCardId === card.id}
               key={card.id}
               onClick={() => handleCardClick(card)}
@@ -593,6 +604,26 @@ export default function UnoRoom({ room, playerId, players, isHost, error, setErr
         </div>
       )}
       </section>
+      {flights.length > 0 && createPortal(
+        <div className="uno-deal-layer" aria-hidden="true">
+          {flights.map((flight) => (
+            <div
+              className={`uno-deal-flight ${flight.card ? "to-hand" : "to-opponent"}`}
+              key={flight.id}
+              style={flight.style}
+              onAnimationEnd={(event) => {
+                if (event.target === event.currentTarget) finishFlight(flight.id);
+              }}
+            >
+              <div className="uno-deal-turn">
+                <div className="uno-deal-back"><img src={unoIcon} alt="" /></div>
+                {flight.card && <UnoCard ariaHidden card={flight.card} className="uno-deal-front" />}
+              </div>
+            </div>
+          ))}
+        </div>,
+        document.body
+      )}
       {playingCard && typeof document !== "undefined" && createPortal(
         <UnoCard
           ariaHidden
