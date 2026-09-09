@@ -6,7 +6,9 @@ DDD Game Hub is a collection of pass-the-phone party games plus live online UNO 
 
 You do not need to install developer tools or run any code. Choose your device and open the downloaded installer.
 
-Current release: **v1.0.3**
+App version: **v1.1.0** — [What's new](releases/v1.1.0.md).
+
+The links below download the latest published release. New installers become available after the tagged release build finishes.
 
 ### [Download for Android](https://github.com/kdevgado/ddd-gamehub/releases/latest/download/DDD-Game-Hub-Android.apk)
 
@@ -22,7 +24,7 @@ You can also browse [all available releases](https://github.com/kdevgado/ddd-gam
 
 - Pass-the-phone games work offline after installation.
 - Live UNO and trivia rooms require an internet connection.
-- The Android download is debug-signed for direct installation and sharing. A Google Play release requires a private upload key.
+- Published Android downloads are release-signed and include a SHA-256 checksum and GitHub build-provenance attestation.
 - If the repository is private, GitHub will ask you to sign in before downloading.
 
 ## Maintainers

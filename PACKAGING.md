@@ -61,11 +61,15 @@ The `Build installable apps` workflow can be run manually from the repository's 
 
 CI reads the private-key alias directly from the keystore, refuses Android debug certificates, verifies the pinned APK signature and checksum, and creates a GitHub build-provenance attestation. Tagged releases attach the APK and `.sha256` file.
 
-Pushing a version tag creates a GitHub Release and attaches both installers:
+Keep `package.json`, both root version fields in `package-lock.json`, `desktop/package.json`, and the Android `versionName` in sync. Increase Android's `versionCode` for every release so existing installations can update. Version 1.1.0 uses version code 5.
+
+Write release notes in `releases/<tag>.md`. A draft GitHub Release can be prepared before pushing the code. Once the version tag is pushed, the workflow builds both installers, attaches them to the draft, and publishes it. If no draft exists, it creates the release using the checked-in notes, with generated notes as a fallback. Already published releases are left intact on reruns.
+
+Create an annotated tag on the version-update commit if it is not already tagged, then push the branch and tag together:
 
 ```powershell
-git tag v1.0.4
-git push origin v1.0.4
+git tag -a v1.1.0 -m "DDD Game Hub v1.1.0"
+git push origin master v1.1.0
 ```
 
 ## Signing for public distribution

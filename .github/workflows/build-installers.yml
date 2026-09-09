@@ -148,14 +148,30 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out release notes
+        uses: actions/checkout@v5
+
       - name: Download installers
         uses: actions/download-artifact@v4
         with:
           path: release-assets
           merge-multiple: true
 
-      - name: Create GitHub release
+      - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create "$GITHUB_REF_NAME" release-assets/* --generate-notes --title "DDD Game Hub $GITHUB_REF_NAME"
+        run: |
+          notes_file="releases/${GITHUB_REF_NAME}.md"
+          if is_draft="$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft)"; then
+            if [ "$is_draft" != "true" ]; then
+              echo "Release $GITHUB_REF_NAME is already published."
+              exit 0
+            fi
+            gh release upload "$GITHUB_REF_NAME" release-assets/* --clobber
+            gh release edit "$GITHUB_REF_NAME" --draft=false --verify-tag
+          elif [ -f "$notes_file" ]; then
+            gh release create "$GITHUB_REF_NAME" release-assets/* --verify-tag --notes-file "$notes_file" --title "DDD Game Hub $GITHUB_REF_NAME"
+          else
+            gh release create "$GITHUB_REF_NAME" release-assets/* --verify-tag --generate-notes --title "DDD Game Hub $GITHUB_REF_NAME"
+          fi
