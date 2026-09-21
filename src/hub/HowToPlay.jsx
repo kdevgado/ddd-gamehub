@@ -25,7 +25,7 @@ export default function HowToPlay({ onOpenRoom }) {
           <span className="how-mode-icon"><Icon name="phone" size={23} /></span>
           <p className="lounge-eyebrow">One screen. Same table.</p>
           <h3>Pass the phone</h3>
-          <p>For Imposter, Werewolf, Mafia, Bomb, and Spyfall. You only need one device and a few people nearby.</p>
+          <p>For MisCalculated, Imposter, Werewolf, Mafia, Bomb, and Spyfall. You only need one device and a few people nearby.</p>
           <details className="how-mode-instructions" open={expandedOnLoad}>
             <summary>Setup instructions <span aria-hidden="true">+</span></summary>
             <ul>

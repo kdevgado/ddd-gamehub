@@ -74,7 +74,7 @@ export default function GameHub({ onOpenRoom }) {
             <h1 id="lounge-title">Good company.<br />Great games.<br /><span>A little chaos.</span></h1>
             <p className="hero-description">Put the everyday on pause. A collection of games<br className="desktop-break" /> for your favourite people and the moments in between.</p>
             <div className="hero-actions"><a className="lounge-button" href="#collection">Find your next game <Icon name="arrow" /></a><span className="hero-note">Free to play.<br />Easy to get carried away.</span></div>
-            <div className="hero-footnote"><span className="status-dot" /> Seven games. Endless “one more round.”</div>
+            <div className="hero-footnote"><span className="status-dot" /> {GAMES.length} games. Endless “one more round.”</div>
           </div>
           <HeroArtwork />
           <a className="hero-scroll" href="#collection"><Icon name="down" size={14} /><span>Scroll to play</span></a>
@@ -83,8 +83,8 @@ export default function GameHub({ onOpenRoom }) {
         <div className="lounge-values"><div className="lounge-width"><span><Icon name="people" size={16} /> Good with your kind of people</span><i /><span><Icon name="phone" size={16} /> One phone or a whole room</span><i /><span><Icon name="star" size={16} /> Less setup. More stories.</span></div></div>
 
         <section className="lounge-collection lounge-width" id="collection" aria-labelledby="collection-title">
-          <div className="collection-heading" data-scroll-reveal><div><p className="lounge-eyebrow">The collection <span className="collection-count">07</span></p><h2 id="collection-title">Find your kind of fun<span>.</span></h2></div><p>Same couch or miles apart.<br />There’s a game for that.</p></div>
-          <div className="collection-toolbar"><div className="collection-filters" role="group" aria-label="Filter games by play style">{FILTERS.map((item) => <button type="button" key={item.id} aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>{item.label}{item.id === "all" && <span>7</span>}</button>)}</div><button className="shuffle-button" type="button" aria-label="Surprise me" onClick={surpriseMe} ref={shuffleRef}><Icon name="shuffle" size={16} /><span>Surprise me</span></button></div>
+          <div className="collection-heading" data-scroll-reveal><div><p className="lounge-eyebrow">The collection <span className="collection-count">{String(GAMES.length).padStart(2, "0")}</span></p><h2 id="collection-title">Find your kind of fun<span>.</span></h2></div><p>Same couch or miles apart.<br />There’s a game for that.</p></div>
+          <div className="collection-toolbar"><div className="collection-filters" role="group" aria-label="Filter games by play style">{FILTERS.map((item) => <button type="button" key={item.id} aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}>{item.label}{item.id === "all" && <span>{GAMES.length}</span>}</button>)}</div><button className="shuffle-button" type="button" aria-label="Surprise me" onClick={surpriseMe} ref={shuffleRef}><Icon name="shuffle" size={16} /><span>Surprise me</span></button></div>
           <p className="sr-only" role="status">{visibleGames.length} games shown</p>
           <div className={`lounge-grid ${filter === "online" ? "grid-online" : ""}`}>
             {visibleGames.map((game) => <GameCard game={game} key={game.id} onOpenRoom={onOpenRoom} />)}

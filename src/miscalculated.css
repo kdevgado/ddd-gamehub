@@ -1,0 +1,30 @@
+.mc-content { width: 100%; }
+.mc-source { color: var(--ink-muted); font-size: 12px; line-height: 1.5; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.mc-content h2, .mc-player, .mc-question { overflow-wrap: anywhere; }
+.mc-question-card, .mc-answer { width: 100%; padding: clamp(20px, 5vw, 32px); border: 1px solid var(--border); border-radius: 16px; background: var(--paper); }
+.mc-content .mc-question { font-size: clamp(22px, 4.5vw, 32px); line-height: 1.3; letter-spacing: -.02em; }
+.mc-content h2:focus { outline: none; }
+.mc-card-back { min-height: 260px; border-style: dashed; }
+.mc-card-mark { color: var(--game-a); font: 80px/1 var(--font-display); }
+.mc-card-flip { animation: mc-flip 350ms ease-out both; }
+.mc-slider-panel { width: 100%; }
+.mc-estimate-value { display: block; font-size: clamp(25px, 6vw, 44px); line-height: 1.2; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.mc-adjustment { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; gap: 12px; width: 100%; }
+.mc-step { width: 48px; height: 48px; border: 1px solid var(--border); border-radius: 50%; background: var(--paper); font-size: 24px; }
+[data-design="lounge"] .mc-slider { display: block; width: 100%; min-width: 0; height: 48px; padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; accent-color: var(--forest); cursor: pointer; }
+.mc-range-labels { display: flex; justify-content: space-between; width: 100%; margin-top: -12px; color: var(--ink-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.mc-estimates { display: grid; gap: 10px; width: 100%; padding: 0; margin: 0; list-style: none; }
+.mc-estimate-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--paper); }
+.mc-player { min-width: 0; }
+.mc-number { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.mc-score { text-align: right; }
+.mc-role-label { display: block; margin-top: 4px; color: var(--ink-muted); font-size: 12px; }
+.mc-is-closest { border-color: var(--forest); box-shadow: inset 3px 0 var(--forest); }
+.mc-closest { text-align: center; font-weight: 600; overflow-wrap: anywhere; }
+.mc-content .vote-btn { overflow-wrap: anywhere; }
+@keyframes mc-flip { from { opacity: 0; transform: perspective(800px) rotateY(-75deg); } to { opacity: 1; transform: perspective(800px) rotateY(0); } }
+@media (prefers-reduced-motion: reduce) { .mc-card-flip { animation: none; } }
+@media (max-width: 380px) {
+  .mc-adjustment { gap: 6px; }
+  .mc-estimate-row { padding: 12px; gap: 10px; }
+}

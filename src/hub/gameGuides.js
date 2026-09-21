@@ -1,5 +1,17 @@
 // These guides describe this app's rules, including its local game variants.
 export const GAME_GUIDES = {
+  miscalculated: {
+    intro: "An adult party mix of Australian and Asian dating habits, food debates, pets and awkward friendships. Guess real survey results while someone unknowingly answers a different question.",
+    steps: [
+      "Add at least three players and choose one or two imposters.",
+      "Pass the phone and flip your card privately. Regular players get the same estimation question; imposters get a different one with no warning.",
+      "Guess the percentage with the 0–100% slider. Go with your gut, then lock your estimate and hide the card before passing the phone.",
+      "Once everyone has answered, reveal the real question. Take turns explaining your numbers, then agree on one suspect for each imposter.",
+      "Confirm the group vote to reveal who had the different question. Finally, reveal the survey answer and its source, and see whose estimate was closest, including imposters.",
+    ],
+    goal: "The group wins only if it identifies every imposter. Otherwise, the imposters win. Being closest to the answer is a separate honour, and ties count.",
+    tip: "Keep your question private until everyone has answered. Even an imposter can have the best estimate without knowing the real question.",
+  },
   imposter: {
     intro: "A secret word, a few careful clues, and someone making it all up.",
     steps: [

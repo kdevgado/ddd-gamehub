@@ -1,6 +1,7 @@
 // Static, author-owned markup shared by the React hub and the vanilla game page.
 // No player names or other user input is accepted as markup.
 const SCENES = {
+  miscalculated: '<div class="calculator-sculpture"><span class="calculator-body"><span class="calculator-display">≈ 42</span><span class="calculator-keys"><i>7</i><i>8</i><i>9</i><i>4</i><i>?</i><i>6</i><i>1</i><i>2</i><i>3</i></span></span><span class="calculator-secret">?</span></div>',
   imposter: '<div class="imposter-scene"><span class="pawn pawn-back"></span><span class="pawn pawn-front"><i></i><i></i></span><span class="pawn pawn-side"></span><span class="secret-mark">?</span></div>',
   uno: '<div class="card-fan"><span class="playing-card card-clay"><i>4</i><b>4</b></span><span class="playing-card card-sage"><i>7</i><b>7</b></span><span class="playing-card card-ivory"><i>+4</i><b>+4</b></span></div>',
   trivia: '<div class="trivia-sculpture"><span class="question-ring"></span><b>?</b><i></i></div>',

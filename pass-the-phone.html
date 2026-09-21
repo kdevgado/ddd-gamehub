@@ -8,7 +8,6 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <title>Pass the Phone — DDD Game Hub</title>
   <link rel="stylesheet" href="/pass-the-phone.css" />
-  <script type="module" src="/src/hub/passArtwork.js"></script>
 </head>
 <body>
   <div class="app" id="app">
@@ -39,7 +38,7 @@
             <h1>One phone.<br /><span>All your people.</span></h1>
             <p class="lead">A few familiar faces. A secret or two. Pick a game and pass the phone for a night worth talking about.</p>
             <div class="mini-badges" aria-label="Hub highlights">
-              <span class="badge">5 ways to play</span>
+              <span class="badge">6 ways to play</span>
               <span class="badge">One shared phone</span>
               <span class="badge">No account needed</span>
             </div>
@@ -241,6 +240,10 @@
         </div>
       </section>
 
+      <section class="screen" data-screen="miscalculated">
+        <div class="card" id="miscalculatedRoot"></div>
+      </section>
+
       <!-- 10. Game master script -->
       <section class="screen" data-screen="gameMaster">
         <div class="card">
@@ -368,10 +371,13 @@
     <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
   </div>
 
-  <script>
+  <script type="module">
+    import { MISCALCULATED_MODE, createMisCalculated } from "/src/MisCalculated.js";
+    import { decoratePassArtwork } from "/src/hub/passArtwork.js";
+
     /*
       Pass the Phone Game Hub
-      Everything is intentionally kept in this one script so beginners can edit it.
+      Shared setup and the original games live here. MisCalculated has its own module.
       Add games, roles, or location lists below to customize the hub for your group.
     */
 
@@ -691,6 +697,7 @@
         missedSummary: "The imposter escaped suspicion this round.",
         buildRoles: createImposterRoles
       },
+      miscalculated: MISCALCULATED_MODE,
       werewolf: {
         name: "Werewolf",
         mark: "WW",
@@ -1633,6 +1640,7 @@
       });
 
       setActiveGameDeckDot(0);
+      decoratePassArtwork();
       requestAnimationFrame(syncGameDeckDots);
     }
 
@@ -1674,7 +1682,7 @@
       setupLead.textContent = mode.setupLead;
       modeSummary.textContent = mode.summary;
       threatTitle.textContent = mode.threatLabel;
-      assignButton.textContent = mode.type === "wordBomb" ? "Start bomb" : `Shuffle ${mode.name} roles`;
+      assignButton.textContent = mode.type === "miscalculated" ? "Deal question cards" : mode.type === "wordBomb" ? "Start bomb" : `Shuffle ${mode.name} roles`;
       shuffleTitle.textContent = mode.shuffleTitle;
       shuffleLead.textContent = mode.shuffleLead;
       timerEyebrow.textContent = mode.timerEyebrow;
@@ -1689,6 +1697,7 @@
       categorySection.classList.toggle("is-hidden", !(mode.hasSecret || mode.criteriaBanks));
       hintSection.classList.toggle("is-hidden", !usesImposterHints(mode));
       threatSection.classList.toggle("is-hidden", mode.type === "wordBomb");
+      document.getElementById("timerSection").classList.toggle("is-hidden", mode.type === "miscalculated");
       renderCategoryButtons();
       renderHintToggle();
       renderThreatOptions();
@@ -2375,6 +2384,12 @@
 
       if (mode.hasSecret && !state.secretWord) {
         setError(setupError, mode.emptySecretError);
+        return;
+      }
+
+      if (mode.type === "miscalculated") {
+        setError(setupError, "");
+        miscalculated.start(state.players, state.imposters);
         return;
       }
 
@@ -4127,6 +4142,7 @@
     }
 
     function clearRound() {
+      miscalculated.clear();
       state.currentRevealIndex = 0;
       state.roles = [];
       state.imposterIndexes = new Set();
@@ -4503,6 +4519,15 @@
     playAgainButton.addEventListener("click", handleResultPrimaryAction);
     changeGameButton.addEventListener("click", chooseAnotherGame);
     newPlayersButton.addEventListener("click", startOver);
+
+    const miscalculated = createMisCalculated({
+      root: document.getElementById("miscalculatedRoot"),
+      showScreen,
+      playSound,
+      onPlayAgain: playAgain,
+      onChangeGame: chooseAnotherGame,
+      onNewPlayers: startOver,
+    });
 
     renderGameHub();
     const requestedGame = new URLSearchParams(window.location.search).get("game");
