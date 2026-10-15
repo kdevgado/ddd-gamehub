@@ -257,6 +257,7 @@
               <h3>Script</h3>
               <ol class="gm-script-list" id="gmScriptList"></ol>
             </div>
+            <div id="werewolfNightStory" class="is-hidden"></div>
             <div class="gm-panel">
               <h3 id="gmDeathTitle">Who died?</h3>
               <div class="vote-list" id="gmDeathList"></div>
@@ -344,6 +345,7 @@
             <p class="eyebrow" id="resultEyebrow">The truth</p>
             <h2 id="resultTitle">Role revealed</h2>
             <div class="result-list" id="resultList"></div>
+            <div id="werewolfResultStory" class="is-hidden"></div>
             <div class="word-reveal" id="resultSecretWrap">
               <span id="resultSecretLabel">Secret word</span>
               <span id="resultWord">Pizza</span>
@@ -374,6 +376,81 @@
   <script type="module">
     import { MISCALCULATED_MODE, createMisCalculated } from "/src/MisCalculated.js";
     import { decoratePassArtwork } from "/src/hub/passArtwork.js";
+    import { createStoryRotation, nightScenes, abilityScenes, dawnScene, discussionScene, votingScene, createStoryGuide } from "/src/werewolfStory.js";
+
+    let storyStorage;
+    try { storyStorage = window.localStorage; } catch { /* Rotation also works without storage. */ }
+    const werewolfStoryRotation = createStoryRotation(storyStorage);
+
+    function selectWerewolfNightScript() {
+      if (state.gameId !== "werewolf") return;
+      if (!state.werewolfNarration || state.werewolfNarrationRound !== state.gmRound) {
+        state.werewolfNarration = werewolfStoryRotation.next();
+        state.werewolfNarrationRound = state.gmRound;
+      }
+    }
+
+    let resultStoryGuide = null;
+    let nightControlsHome = null;
+    let nightButtonHome = null;
+    let abilityControlsHome = null;
+
+    function renderWerewolfResultStory() {
+      const story = document.getElementById("werewolfResultStory");
+      const resultScreen = document.querySelector('[data-screen="result"]');
+      // Restore the original controls before replacing any scene DOM.
+      if (abilityControlsHome) abilityControlsHome.after(werewolfAbilityPanel);
+      story.replaceChildren();
+      resultStoryGuide = null;
+      const enabled = state.gameId === "werewolf";
+      story.classList.toggle("is-hidden", !enabled);
+      resultScreen.classList.toggle("has-werewolf-story", enabled);
+      playAgainButton.hidden = false;
+      if (!enabled) return;
+      resultList.before(story);
+      let scenes;
+      const type = state.pendingWerewolfAbility;
+      if (state.werewolfShowingDawn) {
+        const names = [...state.deadIndexes]
+          .filter((index) => !state.werewolfNightStartDead.has(index))
+          .map((index) => state.players[index]);
+        scenes = [dawnScene(names, state.werewolfNarration)];
+      } else if (type) {
+        const night = state.werewolfResultDestination !== "nextNight";
+        scenes = abilityScenes(type, night, state.werewolfNarration, type === "cupid" || (type === "thief" && state.loverIndexes.size !== 2));
+      } else if (state.werewolfGameOver) {
+        scenes = [{ title: "Game over", read: `${resultTitle.textContent}. Game over. Everyone may reveal their role.`, action: "Announce the winning side and let everyone compare what happened.", note: guessSummary.textContent }];
+      } else {
+        const night = state.werewolfResultDestination !== "nextNight";
+        scenes = [{
+          title: night ? "Night actions continue" : "The vote is settled",
+          read: night ? "Keep your eyes closed. There are still night actions to finish." : `The votes are in. ${resultTitle.textContent}. Give me a moment to check what happens next.`,
+          action: night ? "Review the private outcome below and continue to the next night phase." : "Announce the vote result below. Resolve any triggered effect before beginning another night.",
+          note: night ? "These are intermediate results. Do not announce deaths until dawn; more abilities may still change the night’s outcome." : "The result below describes the village vote. Surviving players’ identities remain private."
+        }];
+      }
+      if (!abilityControlsHome) {
+        abilityControlsHome = document.createComment("Ability controls home");
+        werewolfAbilityPanel.before(abilityControlsHome);
+      }
+      resultStoryGuide = createStoryGuide(story, scenes, {
+        controls: type ? werewolfAbilityPanel : null,
+        blocked: () => Boolean(state.pendingWerewolfAbility),
+        onLast: (last) => { playAgainButton.hidden = !last; }
+      });
+    }
+
+    function renderWerewolfDayStory(name) {
+      const screen = document.querySelector(`.screen[data-screen="${name}"] .stack`);
+      let story = screen.querySelector(".werewolf-day-story");
+      if (!story) {
+        story = document.createElement("div");
+        story.className = "werewolf-day-story";
+        screen.prepend(story);
+      }
+      story.classList.toggle("is-hidden", state.gameId !== "werewolf");
+      if (state.gameId === "werewolf") createStoryGuide(story, [name === "timer" ? discussionScene : votingScene]);
+    }
 
     /*
       Pass the Phone Game Hub
@@ -878,6 +955,11 @@
       deadIndexes: new Set(),
       gmRound: 1,
       gmDeathIndex: null,
+      werewolfNightStartDead: new Set(),
+      werewolfDawnReady: false,
+      werewolfShowingDawn: false,
+      werewolfNarration: undefined,
+      werewolfNarrationRound: null,
       villageVoteRound: 0,
       werewolfGameOver: false,
       werewolfResultDestination: "nextNight",
@@ -1219,6 +1301,8 @@
     }
 
     function showScreen(name) {
+      if (name === "result") renderWerewolfResultStory();
+      if (name === "timer" || name === "voting") renderWerewolfDayStory(name);
       screens.forEach((screen) => {
         screen.classList.toggle("active", screen.dataset.screen === name);
       });
@@ -1967,55 +2051,6 @@
       return state.gameId === "werewolf" || state.gameId === "mafia";
     }
 
-    function werewolfScriptSteps() {
-      const steps = ["Everyone closes their eyes. Say: the village is asleep."];
-
-      if (roleIsInGame("Little Girl")) {
-        steps.push("The Little Girl may secretly peek while the werewolves choose, but must not let the werewolves catch her.");
-      }
-
-      steps.push("Werewolves open their eyes, silently choose one player to attack, then close their eyes.");
-
-      if (roleIsInGame("Black Werewolf")) {
-        steps.push("Ask the Black Werewolf whether they will use their one infection this game. If yes, their chosen player becomes a Werewolf instead of dying.");
-      }
-
-      if (roleIsInGame("Seer")) {
-        steps.push("Seer opens their eyes, points to one player, and the game master silently confirms that player's role.");
-      }
-
-      if (roleIsInGame("Guardian")) {
-        steps.push("Guardian opens their eyes and protects one player from being killed, then closes their eyes. They cannot protect the same player two nights in a row.");
-      }
-
-      if (roleIsInGame("Easter Bunny")) {
-        steps.push("Easter Bunny opens their eyes and gives Easter eggs to two players who do not already have one.");
-      }
-
-      if (roleIsInGame("Wise")) {
-        steps.push("Remember that Wise survives one werewolf attack. If the village votes Wise out, every surviving villager loses their power.");
-      }
-
-      if (roleIsInGame("Survivor")) {
-        steps.push("Remember that Survivor may prevent their own death twice during the game.");
-      }
-
-      if (roleIsInGame("Hunter")) {
-        steps.push("If Hunter is voted out or killed by a werewolf, pause and let them shoot one player before dying.");
-      }
-
-      if (roleIsInGame("Cupid")) {
-        steps.push("If either lover dies, the other dies immediately. Lovers win with their camp, or together as the last players alive.");
-      }
-
-      if (state.gmRound === 1 && roleIsInGame("Angel")) {
-        steps.push("During the first village vote, Angel wins if they are voted out. After that first round, Angel becomes a Simple Villager.");
-      }
-
-      steps.push("Keep everyone asleep. Mark the Werewolves' target; any remaining night abilities will resolve before the village wakes.");
-      return steps;
-    }
-
     function mafiaScriptSteps() {
       const steps = [
         "Everyone closes their eyes. Say: the city goes quiet.",
@@ -2035,16 +2070,17 @@
       return steps;
     }
 
-    function gameMasterScriptSteps() {
-      if (state.gameId === "mafia") return mafiaScriptSteps();
-      return werewolfScriptSteps();
-    }
-
     function livingRoleIndex(title) {
       return [...state.aliveIndexes].find((index) => state.roles[index]?.title === title);
     }
 
     function startGameMasterRoundFlow() {
+      // This entry point starts a new game, even if its round number matches the last game.
+      state.werewolfNarration = undefined;
+      selectWerewolfNightScript();
+      state.werewolfShowingDawn = false;
+      state.werewolfDawnReady = false;
+      state.werewolfNightStartDead = new Set(state.deadIndexes);
       const cupidIndex = livingRoleIndex("Cupid");
       const thiefIndex = livingRoleIndex("Thief");
       if (
@@ -2083,6 +2119,10 @@
     }
 
     function setupGameMasterRound() {
+      selectWerewolfNightScript();
+      state.werewolfShowingDawn = false;
+      state.werewolfDawnReady = false;
+      state.werewolfNightStartDead = new Set(state.deadIndexes);
       const mode = currentMode();
       const nightLabel = state.gmRound === 1 ? "First night script" : "Night script";
       gmEyebrow.textContent = `${mode.name} round ${state.gmRound}`;
@@ -2103,13 +2143,14 @@
       gmStartDiscussionButton.disabled = state.gameId === "werewolf";
 
       gmScriptList.innerHTML = "";
-      gameMasterScriptSteps().forEach((step) => {
+      (state.gameId === "mafia" ? mafiaScriptSteps() : []).forEach((step) => {
         const item = document.createElement("li");
         item.textContent = step;
         gmScriptList.appendChild(item);
       });
 
       renderGameMasterDeathList();
+      setupWerewolfNightStory();
     }
 
     function renderGameMasterDeathList() {
@@ -2174,17 +2215,64 @@
       renderGameMasterDeathList();
     }
 
+    function setupWerewolfNightStory() {
+      const story = document.getElementById("werewolfNightStory");
+      const scriptPanel = gmScriptList.parentElement;
+      const controls = gmDeathList.parentElement;
+      if (!nightControlsHome) {
+        nightControlsHome = document.createComment("Night controls home");
+        controls.before(nightControlsHome);
+        nightButtonHome = document.createComment("Night confirmation home");
+        gmStartDiscussionButton.before(nightButtonHome);
+      }
+      nightControlsHome.after(controls);
+      nightButtonHome.after(gmStartDiscussionButton);
+      story.replaceChildren();
+      const enabled = state.gameId === "werewolf";
+      scriptPanel.classList.toggle("is-hidden", enabled);
+      story.classList.toggle("is-hidden", !enabled);
+      if (enabled) {
+        gmLead.textContent = "Read the narration aloud. Follow the teal actions and keep amber notes private. Keep this screen facing you.";
+        gmNoDeathButton.textContent = "No one was killed by the pack";
+        gmDeathSummary.textContent = "Record the pack’s target after checking manual protection. The app applies Wise and Survivor protection automatically.";
+        controls.append(gmStartDiscussionButton);
+        const openingAlreadyRead = state.gmRound === 1 && (state.loverIndexes.size === 2 || state.thiefAbilityUsed);
+        createStoryGuide(story, nightScenes(roleIsInGame, state.gmRound, state.werewolfNarration, openingAlreadyRead), { controls });
+        const reference = document.createElement("details");
+        reference.className = "story-block story-note";
+        const label = document.createElement("summary");
+        label.textContent = "Game master only · Living role reference";
+        const list = document.createElement("ul");
+        [...state.aliveIndexes].forEach((index) => {
+          const item = document.createElement("li");
+          item.textContent = `${state.players[index]}: ${state.roles[index].title}`;
+          list.append(item);
+        });
+        reference.append(label, list);
+        story.append(reference);
+      }
+    }
+
     function setNoGameMasterDeath() {
       state.gmDeathIndex = null;
       gmNoDeathButton.classList.add("active");
       gmStartDiscussionButton.disabled = false;
       gmDeathSummary.textContent = state.gameId === "mafia"
         ? "The Mafia did not attack anyone. Continue so living special roles can act."
-        : "No one died tonight. Wake the village and start discussion.";
+        : "No pack kill is recorded. Keep everyone asleep and continue to any remaining night abilities.";
       renderGameMasterDeathList();
     }
 
     function advanceToGameMasterDiscussion() {
+      if (state.gameId === "werewolf" && !state.werewolfDawnReady) {
+        state.werewolfShowingDawn = true;
+        state.werewolfResultDestination = "dawn";
+        prepareWerewolfResult("Morning", "Dawn breaks", state.timerEnabled ? "Begin day discussion" : "Continue to village vote");
+        guessSummary.textContent = "Read the dawn announcement before continuing. Keep your role record private.";
+        showScreen("result");
+        return;
+      }
+      state.werewolfShowingDawn = false;
       state.gmRound += 1;
       state.selectedVotes = new Set();
       resetTimer();
@@ -4142,6 +4230,11 @@
     }
 
     function clearRound() {
+      state.werewolfNarration = undefined;
+      state.werewolfNarrationRound = null;
+      state.werewolfShowingDawn = false;
+      state.werewolfDawnReady = false;
+      state.werewolfNightStartDead = new Set();
       miscalculated.clear();
       state.currentRevealIndex = 0;
       state.roles = [];
@@ -4181,6 +4274,12 @@
     function continueWerewolfGame() {
       state.selectedVotes = new Set();
       resetWerewolfAbilityPanel();
+      if (state.werewolfResultDestination === "dawn") {
+        state.werewolfDawnReady = true;
+        state.werewolfResultDestination = "nextNight";
+        advanceToGameMasterDiscussion();
+        return;
+      }
       if (state.werewolfResultDestination === "thief") {
         startThiefOpeningPhase();
         playSound("tap");
@@ -4515,7 +4614,13 @@
       showScreen("voting");
     });
     revealResultButton.addEventListener("click", revealResult);
-    resolveWerewolfAbilityButton.addEventListener("click", resolveWerewolfAbility);
+    resolveWerewolfAbilityButton.addEventListener("click", () => {
+      resolveWerewolfAbility();
+      if (state.gameId === "werewolf") {
+        if (state.werewolfGameOver) renderWerewolfResultStory();
+        else if (resultStoryGuide) resultStoryGuide.refresh();
+      }
+    });
     playAgainButton.addEventListener("click", handleResultPrimaryAction);
     changeGameButton.addEventListener("click", chooseAnotherGame);
     newPlayersButton.addEventListener("click", startOver);

@@ -1641,6 +1641,91 @@ input::placeholder {
   font-weight: 800;
 }
 
+/* Host scripts keep spoken words, role actions and private notes distinct. */
+:root {
+  --story-action: #096b63;
+  --story-note: #80520c;
+}
+
+:root[data-theme="dark"],
+:root[data-design="lounge"]:not([data-theme="light"]) {
+  --story-action: #80ded0;
+  --story-note: #f1ca7c;
+}
+
+.werewolf-story {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+}
+
+.story-progress {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.story-blocks {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.story-block {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid currentColor;
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  overflow-wrap: anywhere;
+}
+
+.story-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.story-block p { margin: 0; color: inherit; }
+.story-read { color: var(--ink); font-size: 1.1rem; line-height: 1.75; }
+.story-action { color: var(--story-action); }
+.story-note { color: var(--story-note); }
+.story-navigation { justify-content: space-between; }
+.werewolf-story [hidden], #playAgainButton[hidden] { display: none !important; }
+
+.has-werewolf-story #guessSummary,
+.has-werewolf-story #werewolfAbilityCopy,
+.has-werewolf-story .result-list {
+  width: 100%;
+  color: var(--story-note);
+  text-align: left;
+}
+
+.has-werewolf-story #guessSummary::before,
+.has-werewolf-story #werewolfAbilityCopy::before,
+.has-werewolf-story .result-list:not(:empty)::before {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--story-note);
+  font-weight: 700;
+  content: "Game master only · Outcome";
+}
+
+.has-werewolf-story .werewolf-ability-panel {
+  width: 100%;
+  text-align: left;
+}
+
+.werewolf-day-story { width: 100%; }
+
+@media (max-width: 480px) {
+  .story-block { padding: var(--space-3); }
+  .story-navigation { display: flex; flex-wrap: wrap; }
+  .story-navigation .btn { flex: 1; min-height: 44px; }
+}
+
 .result-list {
   width: 100%;
 }
